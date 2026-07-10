@@ -1,18 +1,20 @@
 # Redmine MCP Phase 1 Design — Read-Only MVP
 
 **Date:** 2026-07-10  
-**Status:** Approved for implementation planning  
+**Status:** Approved for implementation planning (amended: Phase 1 slash skills)  
 **Source requirements:** `Redmine MCP 및 Codex·Claude Code 로컬 플러그인 요구사항.pdf`  
 **Scope:** Phase 1 (조회 전용 MVP) only
 
 ## 1. Goal
 
-Enable developers to query Redmine from Codex and Claude Code via natural language, using a shared STDIO MCP server. Phase 1 must not mutate Redmine data.
+Enable developers to query Redmine from Codex and Claude Code via natural language **and slash-command skills**, using a shared STDIO MCP server. Phase 1 must not mutate Redmine data.
 
 Success looks like:
 
 - “Cloud HMI에서 내게 할당된 열린 이슈를 보여줘”
 - “#1523 이슈의 상세 내용과 최근 댓글을 보여줘”
+- `/redmine:my-issues` lists open issues assigned to me
+- `/redmine:issue` (with an issue id) shows detail and recent journals
 - Connection/auth failures are clear and do not crash the MCP process
 - API keys never appear in logs, errors, manifests, or tool output
 
@@ -21,7 +23,7 @@ Success looks like:
 | Decision | Choice |
 | --- | --- |
 | Phase | Phase 1 read-only MVP |
-| Plugins | Thin wrappers only (no skills) |
+| Plugins | Thin wrappers + **2 read-only slash skills** (`my-issues`, `issue`) |
 | Repo layout | PDF-recommended monorepo with `redmine-client` + `redmine-mcp` |
 | Integration tests | Docker local Redmine |
 | Package publish | Internal npm `@m2i/redmine-client@0.1.0` and `@m2i/redmine-mcp@0.1.0` |
@@ -33,6 +35,7 @@ Success looks like:
 - `@m2i/redmine-mcp` STDIO MCP server
 - Four read tools (see §5)
 - Thin Claude Code and Codex plugins (manifest + `.mcp.json`)
+- Two read-only skills exposed as slash commands (see §6.5)
 - Docker Redmine for integration tests
 - Internal npm publish of `0.1.0`
 - Install/security/troubleshooting docs sufficient for local use
@@ -41,7 +44,8 @@ Success looks like:
 
 - Write tools and `confirm` preview/approval flow
 - `redmine_get_project_context`
-- Skills (`redmine-issue-search/create/update/work-summary`)
+- Extra slash skills (`search`, `projects`, `test-connection`, create/update/work-summary)
+- PDF Phase-3 skills (`redmine-issue-create/update/work-summary`) and broad `redmine-issue-search` skill (natural language + MCP covers general search)
 - Formal marketplace rollout (beyond what is needed to load plugins locally)
 - Remote HTTP MCP, OAuth
 - Issue delete, attachments upload, time entries, webhooks
@@ -51,7 +55,9 @@ Success looks like:
 ## 3. Architecture
 
 ```
-Claude Code / Codex (thin plugin)
+Claude Code / Codex
+  (thin plugin + slash skills)
+        │ skill guides tool use
         │ MCP STDIO
         ▼
   @m2i/redmine-mcp
@@ -68,7 +74,8 @@ Claude Code / Codex (thin plugin)
 Design principles carried from the requirements doc:
 
 - All Redmine business logic lives in packages, not in plugins
-- Plugins stay thin: register MCP + env wiring only
+- Plugins stay thin: register MCP + env wiring + minimal skill prompts
+- Skills only orchestrate MCP tools and format output; they never call Redmine HTTP directly
 - Read vs write remains clearly separated (Phase 1 = read only)
 - Respect existing Redmine user permissions; no server-side Ruby plugin
 - Never store API keys in code, repo, or logs
@@ -98,10 +105,16 @@ redmine-agent-integration/
 │   ├── claude-code/
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── .mcp.json
+│   │   ├── skills/
+│   │   │   ├── my-issues/SKILL.md
+│   │   │   └── issue/SKILL.md
 │   │   └── README.md
 │   └── codex/
 │       ├── .codex-plugin/plugin.json
 │       ├── .mcp.json
+│       ├── skills/
+│       │   ├── my-issues/SKILL.md
+│       │   └── issue/SKILL.md
 │       └── README.md
 ├── docker/
 │   └── redmine/          # compose + seed notes for integration tests
@@ -218,22 +231,40 @@ Claude Code plugin:
 - `.claude-plugin/plugin.json` with name `redmine` (or company-approved equivalent), semver `0.1.0`
 - `.mcp.json` launching `npx -y @m2i/redmine-mcp@0.1.0`
 - Env passthrough: `REDMINE_URL`, `REDMINE_API_KEY` (and optionally `REDMINE_CA_CERT_PATH`)
-- No `skills/` directory in Phase 1
+- `skills/my-issues` and `skills/issue` (see §6.5); slash form `/redmine:my-issues`, `/redmine:issue`
 
 Codex plugin:
 
 - `.codex-plugin/plugin.json` + `.mcp.json` (direct server map preferred)
 - Same package pin and env var names
+- Same two skills under `skills/`
 - Document recommended approval mode: read tools `approve` (auto-allow after policy), writes deferred to Phase 2
-- No skills in Phase 1
 
 ### 6.4 Example read flow
 
-1. User asks for open issues assigned to them in a project
-2. Agent calls `redmine_search_issues` with `assignedTo: "me"`, `status: "open"`, project filter
+1. User asks for open issues assigned to them in a project **or** runs `/redmine:my-issues`
+2. Agent (guided by skill or natural language) calls `redmine_search_issues` with `assignedTo: "me"`, `status: "open"`, optional project filter
 3. MCP validates input → client builds query → `GET /issues.json`
 4. Client paginates if needed → returns normalized list
-5. If detail needed, agent calls `redmine_get_issue` with `include: ["journals"]`
+5. If detail needed (or `/redmine:issue 1523`), agent calls `redmine_get_issue` with `include: ["journals"]`
+
+### 6.5 Read-only slash skills
+
+Skills are thin prompt wrappers. They must not embed Redmine URLs, API keys, or duplicate REST logic.
+
+| Skill folder | Claude slash command | Behavior | MCP tools |
+| --- | --- | --- | --- |
+| `my-issues` | `/redmine:my-issues` | Default: open issues assigned to current user. If user names a project, resolve via `redmine_list_projects` / search filters first. Present a compact table: id, subject, status, priority, updated_on. | `redmine_search_issues` (`assignedTo: "me"`, `status: "open"`); optionally `redmine_list_projects` |
+| `issue` | `/redmine:issue` | Extract issue id from args or conversation (`1523`, `#1523`). If missing, ask once. Show core fields + recent journals summary. | `redmine_get_issue` with `include: ["journals"]` |
+
+SKILL.md requirements (both plugins, keep content aligned):
+
+- State which MCP tools to call and with which default arguments
+- Define output formatting (table vs sections)
+- Forbid inventing write operations or calling non-existent tools
+- On MCP/auth errors, surface the standardized error message; do not retry with alternate credentials
+
+Intentionally **not** shipped in Phase 1 as slash commands: `search`, `projects`, `test-connection` (available via natural language + MCP tools only).
 
 ## 7. Configuration
 
@@ -349,6 +380,8 @@ Process stability:
 
 - Claude: `claude --plugin-dir ./plugins/claude-code` — plugin visible, MCP starts, missing-env error is clear
 - Codex: local plugin load — `.mcp.json` loads, `/mcp` shows connected, read tools available
+- Slash/skills: `/redmine:my-issues` and `/redmine:issue` are listed/invokable; `issue` without an id asks for the number once
+- Skills do not register write workflows
 
 ## 12. Implementation Order
 
@@ -358,8 +391,9 @@ Process stability:
 4. Implement `@m2i/redmine-mcp` STDIO server
 5. Docker Redmine + unit/integration tests
 6. Thin Claude and Codex plugins pinned to `@m2i/redmine-mcp@0.1.0`
-7. Inspector + CLI smoke tests
-8. Publish `0.1.0` to internal npm and document install
+7. Add `my-issues` and `issue` SKILL.md to both plugins (keep prompts in sync)
+8. Inspector + CLI smoke tests including slash skill invocation
+9. Publish `0.1.0` to internal npm and document install (include slash command examples)
 
 ## 13. Phase 1 Acceptance Checklist
 
@@ -377,21 +411,22 @@ Process stability:
 
 - [ ] Claude `--plugin-dir` loads plugin and starts MCP
 - [ ] Codex local plugin loads and starts MCP
-- [ ] Read vs write separation preserved (no write tools registered)
+- [ ] `/redmine:my-issues` and `/redmine:issue` work (or equivalent skill invoke on Codex)
+- [ ] Read vs write separation preserved (no write tools or write skills)
 - [ ] Env-based credentials only
 
 ### Release
 
 - [ ] `@m2i/redmine-client@0.1.0` published internally
 - [ ] `@m2i/redmine-mcp@0.1.0` published internally
-- [ ] Install docs cover Redmine REST enablement, API key, env vars, CA cert, troubleshooting
+- [ ] Install docs cover Redmine REST enablement, API key, env vars, CA cert, slash commands, troubleshooting
 
 ## 14. Follow-on Phases (reference only)
 
 Not part of this design’s delivery, but boundaries for later work:
 
-- **Phase 2:** create/comment/status with `confirm=false|true`, audit log for writes
-- **Phase 3:** Git-diff issue drafts, work summary skills
+- **Phase 2:** create/comment/status with `confirm=false|true`, audit log for writes; optional write slash skills later
+- **Phase 3:** Git-diff issue drafts, work summary skills; broader search skill if still needed
 - **Phase 4:** formal marketplaces, security review, version policy
 
 ## 15. Open Dependencies
