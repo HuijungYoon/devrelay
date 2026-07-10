@@ -1,0 +1,7 @@
+﻿{
+  "name": "redmine",
+  "description": "Search and view Redmine issues from Claude Code.",
+  "version": "0.1.0",
+  "author": { "name": "M2I" },
+  "license": "MIT"
+}

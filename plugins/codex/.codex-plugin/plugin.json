@@ -1,0 +1,17 @@
+﻿{
+  "name": "redmine",
+  "version": "0.1.0",
+  "description": "Search and view Redmine issues from Codex.",
+  "author": { "name": "M2I" },
+  "license": "MIT",
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Redmine",
+    "shortDescription": "View Redmine issues",
+    "longDescription": "Search and view Redmine issues from Codex (read-only Phase 1).",
+    "developerName": "M2I",
+    "category": "Productivity",
+    "capabilities": ["Read"]
+  }
+}
