@@ -26,7 +26,7 @@ importers:
 
   packages/redmine-mcp:
     dependencies:
-      '@m2i/redmine-client':
+      'redmine-client':
         specifier: workspace:*
         version: link:../redmine-client
       '@modelcontextprotocol/sdk':

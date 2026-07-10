@@ -1,4 +1,4 @@
-import type { RedmineClient } from "@m2i/redmine-client";
+import type { RedmineClient } from "redmine-client";
 import type { ListProjectsInput } from "./schemas.js";
 
 export async function handleListProjects(
