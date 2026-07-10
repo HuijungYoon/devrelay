@@ -27,7 +27,7 @@ export REDMINE_URL=http://localhost:3000
 export REDMINE_API_KEY=<your-key>
 export REDMINE_ALLOWED_HOSTS=localhost
 export REDMINE_INTEGRATION=1
-pnpm --filter @m2i/redmine-client test
+pnpm --filter redmine-client test
 ```
 
 Without `REDMINE_INTEGRATION=1`, integration tests are skipped.

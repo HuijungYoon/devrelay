@@ -26,13 +26,13 @@ Success looks like:
 | Plugins | Thin wrappers + **2 read-only slash skills** (`my-issues`, `issue`) |
 | Repo layout | PDF-recommended monorepo with `redmine-client` + `redmine-mcp` |
 | Integration tests | Docker local Redmine |
-| Package publish | Internal npm `@m2i/redmine-client@0.1.0` and `@m2i/redmine-mcp@0.1.0` |
+| Package publish | Internal npm `redmine-client@0.1.0` and `redmine-mcp@0.1.0` |
 | Approach | Layer split (client vs MCP) + schema-first tool contracts |
 
 ### In scope
 
-- `@m2i/redmine-client` HTTP client
-- `@m2i/redmine-mcp` STDIO MCP server
+- `redmine-client` HTTP client
+- `redmine-mcp` STDIO MCP server
 - Four read tools (see §5)
 - Thin Claude Code and Codex plugins (manifest + `.mcp.json`)
 - Two read-only skills exposed as slash commands (see §6.5)
@@ -60,11 +60,11 @@ Claude Code / Codex
         │ skill guides tool use
         │ MCP STDIO
         ▼
-  @m2i/redmine-mcp
+  redmine-mcp
   (tool schemas, instructions, STDIO I/O)
         │
         ▼
-  @m2i/redmine-client
+  redmine-client
   (REST, auth, pagination, error mapping)
         │ HTTPS
         ▼
@@ -132,8 +132,8 @@ Workspace tooling: pnpm, TypeScript, eslint + formatter, Node.js 20+ (recommend 
 
 Package names:
 
-- `@m2i/redmine-client@0.1.0`
-- `@m2i/redmine-mcp@0.1.0`
+- `redmine-client@0.1.0`
+- `redmine-mcp@0.1.0`
 
 Publish target: internal GitLab Package Registry or Nexus. Pin exact versions (no `latest`, no unbounded `^` in plugin launch args).
 
@@ -184,7 +184,7 @@ State clearly, early in the instructions text:
 
 ## 6. Components and Data Flow
 
-### 6.1 `@m2i/redmine-client`
+### 6.1 `redmine-client`
 
 Responsibilities:
 
@@ -213,7 +213,7 @@ Retry policy (GET only):
 - Max 2 retries with exponential backoff
 - No automatic retry for POST/PUT (relevant from Phase 2)
 
-### 6.2 `@m2i/redmine-mcp`
+### 6.2 `redmine-mcp`
 
 Responsibilities:
 
@@ -229,7 +229,7 @@ Responsibilities:
 Claude Code plugin:
 
 - `.claude-plugin/plugin.json` with name `redmine` (or company-approved equivalent), semver `0.1.0`
-- `.mcp.json` launching `npx -y @m2i/redmine-mcp@0.1.0`
+- `.mcp.json` launching `npx -y redmine-mcp@0.1.0`
 - Env passthrough: `REDMINE_URL`, `REDMINE_API_KEY` (and optionally `REDMINE_CA_CERT_PATH`)
 - `skills/my-issues` and `skills/issue` (see §6.5); slash form `/redmine:my-issues`, `/redmine:issue`
 
@@ -387,10 +387,10 @@ Process stability:
 
 1. Monorepo scaffold (pnpm workspace, TS, lint/format)
 2. Freeze JSON Schemas + error types for the four tools
-3. Implement `@m2i/redmine-client` read APIs
-4. Implement `@m2i/redmine-mcp` STDIO server
+3. Implement `redmine-client` read APIs
+4. Implement `redmine-mcp` STDIO server
 5. Docker Redmine + unit/integration tests
-6. Thin Claude and Codex plugins pinned to `@m2i/redmine-mcp@0.1.0`
+6. Thin Claude and Codex plugins pinned to `redmine-mcp@0.1.0`
 7. Add `my-issues` and `issue` SKILL.md to both plugins (keep prompts in sync)
 8. Inspector + CLI smoke tests including slash skill invocation
 9. Publish `0.1.0` to internal npm and document install (include slash command examples)
@@ -417,8 +417,8 @@ Process stability:
 
 ### Release
 
-- [ ] `@m2i/redmine-client@0.1.0` published internally
-- [ ] `@m2i/redmine-mcp@0.1.0` published internally
+- [ ] `redmine-client@0.1.0` published internally
+- [ ] `redmine-mcp@0.1.0` published internally
 - [ ] Install docs cover Redmine REST enablement, API key, env vars, CA cert, slash commands, troubleshooting
 
 ## 14. Follow-on Phases (reference only)
@@ -431,6 +431,6 @@ Not part of this design’s delivery, but boundaries for later work:
 
 ## 15. Open Dependencies
 
-- Internal npm registry endpoint and `@m2i` scope permissions must exist before publish step
+- Internal npm registry endpoint and publish permissions for unscoped `redmine-client` / `redmine-mcp` must exist before publish step
 - Docker image/tag for Redmine used in CI/dev should be pinned in `docker/` when implementation starts
 - Exact verified `@modelcontextprotocol/sdk` 1.x version is chosen at implementation time and locked in lockfile

@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Ship a read-only `@m2i/redmine-mcp` STDIO server (4 tools), thin Claude/Codex plugins with `/redmine:my-issues` and `/redmine:issue` skills, Docker-backed tests, and internal npm `0.1.0` publish readiness.
+**Goal:** Ship a read-only `redmine-mcp` STDIO server (4 tools), thin Claude/Codex plugins with `/redmine:my-issues` and `/redmine:issue` skills, Docker-backed tests, and internal npm `0.1.0` publish readiness.
 
-**Architecture:** Monorepo with `@m2i/redmine-client` (REST/auth/pagination/errors) and `@m2i/redmine-mcp` (schemas + STDIO tools). Plugins only wire env + MCP + two thin skills. Schema-first, TDD, no write tools.
+**Architecture:** Monorepo with `redmine-client` (REST/auth/pagination/errors) and `redmine-mcp` (schemas + STDIO tools). Plugins only wire env + MCP + two thin skills. Schema-first, TDD, no write tools.
 
 **Tech Stack:** Node.js 20+, pnpm workspaces, TypeScript, Vitest, `@modelcontextprotocol/sdk` 1.x (pin exact version at install), Zod or JSON Schema for tool inputs, Docker Compose for Redmine, undici/fetch for HTTP.
 
@@ -144,7 +144,7 @@ coverage/
 `packages/redmine-client/package.json`:
 ```json
 {
-  "name": "@m2i/redmine-client",
+  "name": "redmine-client",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -184,7 +184,7 @@ coverage/
 `packages/redmine-mcp/package.json`:
 ```json
 {
-  "name": "@m2i/redmine-mcp",
+  "name": "redmine-mcp",
   "version": "0.1.0",
   "type": "module",
   "bin": {
@@ -199,7 +199,7 @@ coverage/
     "start": "node dist/index.js"
   },
   "dependencies": {
-    "@m2i/redmine-client": "workspace:*",
+    "redmine-client": "workspace:*",
     "@modelcontextprotocol/sdk": "1.12.1"
   },
   "devDependencies": {
@@ -299,7 +299,7 @@ describe("loadConfig", () => {
 
 - [ ] **Step 2: Run tests — expect FAIL**
 
-Run: `pnpm --filter @m2i/redmine-client test`
+Run: `pnpm --filter redmine-client test`
 Expected: FAIL (modules not found)
 
 - [ ] **Step 3: Implement**
@@ -476,7 +476,7 @@ export default defineConfig({
 
 - [ ] **Step 4: Run tests — expect PASS**
 
-Run: `pnpm --filter @m2i/redmine-client test`
+Run: `pnpm --filter redmine-client test`
 Expected: PASS
 
 - [ ] **Step 5: Commit**
@@ -555,7 +555,7 @@ describe("RedmineHttp", () => {
 
 - [ ] **Step 2: Run test — expect FAIL**
 
-Run: `pnpm --filter @m2i/redmine-client exec vitest run tests/http.test.ts`
+Run: `pnpm --filter redmine-client exec vitest run tests/http.test.ts`
 Expected: FAIL (RedmineHttp missing)
 
 - [ ] **Step 3: Implement `RedmineHttp`**
@@ -881,7 +881,7 @@ Audit log line (stderr JSON): `timestamp`, `tool`, `host`, `userId?`, `ok`, `htt
 
 Run:
 ```bash
-pnpm --filter @m2i/redmine-mcp build
+pnpm --filter redmine-mcp build
 npx @modelcontextprotocol/inspector node packages/redmine-mcp/dist/index.js
 ```
 Expected: four tools listed; invalid input rejected; stdout not polluted when setting `REDMINE_LOG_LEVEL=debug`.
@@ -993,7 +993,7 @@ git commit -m "test: add Docker Redmine compose and gated integration tests"
   "mcpServers": {
     "redmine": {
       "command": "npx",
-      "args": ["-y", "@m2i/redmine-mcp@0.1.0"],
+      "args": ["-y", "redmine-mcp@0.1.0"],
       "env": {
         "REDMINE_URL": "${REDMINE_URL}",
         "REDMINE_API_KEY": "${REDMINE_API_KEY}"
@@ -1008,7 +1008,7 @@ For local pre-publish testing, temporarily use:
 "command": "node",
 "args": ["../../packages/redmine-mcp/dist/index.js"]
 ```
-Document both modes in plugin README; publish mode must pin `@m2i/redmine-mcp@0.1.0`.
+Document both modes in plugin README; publish mode must pin `redmine-mcp@0.1.0`.
 
 - [ ] **Step 2: Write `my-issues/SKILL.md`**
 
@@ -1051,7 +1051,7 @@ description: Show Redmine issue detail and recent comments
 - [ ] **Step 4: Manual smoke**
 
 ```bash
-pnpm --filter @m2i/redmine-mcp build
+pnpm --filter redmine-mcp build
 claude --plugin-dir ./plugins/claude-code
 ```
 Expected: plugin listed; `/mcp` shows redmine; `/redmine:my-issues` and `/redmine:issue` available (with env set).
@@ -1102,7 +1102,7 @@ git commit -m "feat(plugins): add Claude Code redmine plugin with read skills"
 {
   "redmine": {
     "command": "npx",
-    "args": ["-y", "@m2i/redmine-mcp@0.1.0"],
+    "args": ["-y", "redmine-mcp@0.1.0"],
     "env_vars": ["REDMINE_URL", "REDMINE_API_KEY", "REDMINE_CA_CERT_PATH"]
   }
 }
@@ -1159,7 +1159,7 @@ REDMINE_ALLOWED_HOSTS=redmine.example.com
 
 - [ ] **Step 2: Write docs**
 
-`installation.md`: enable REST API, create API key, set env, Claude `--plugin-dir`, Codex plugin load, slash examples `/redmine:my-issues`, `/redmine:issue 1523`, internal npm install of `@m2i/redmine-mcp@0.1.0`.
+`installation.md`: enable REST API, create API key, set env, Claude `--plugin-dir`, Codex plugin load, slash examples `/redmine:my-issues`, `/redmine:issue 1523`, internal npm install of `redmine-mcp@0.1.0`.
 
 `security.md`: no keys in git, allowlist, CA path, no SSL verify disable, audit log fields.
 
@@ -1170,17 +1170,17 @@ REDMINE_ALLOWED_HOSTS=redmine.example.com
 - [ ] **Step 3: Publish dry-run**
 
 ```bash
-pnpm --filter @m2i/redmine-client build
-pnpm --filter @m2i/redmine-mcp build
-pnpm --filter @m2i/redmine-client exec npm pack --dry-run
-pnpm --filter @m2i/redmine-mcp exec npm pack --dry-run
+pnpm --filter redmine-client build
+pnpm --filter redmine-mcp build
+pnpm --filter redmine-client exec npm pack --dry-run
+pnpm --filter redmine-mcp exec npm pack --dry-run
 ```
 Expected: `dist/**` included; no `.env` or tests secrets.
 
 Actual publish to internal registry (when credentials exist):
 ```bash
-pnpm --filter @m2i/redmine-client publish --registry <internal>
-pnpm --filter @m2i/redmine-mcp publish --registry <internal>
+pnpm --filter redmine-client publish --registry <internal>
+pnpm --filter redmine-mcp publish --registry <internal>
 ```
 
 - [ ] **Step 4: Acceptance pass against spec §13**
@@ -1214,7 +1214,7 @@ git commit -m "docs: add install, security, and development guides for Phase 1"
 
 ## Type/name consistency
 
-- Package: `@m2i/redmine-client`, `@m2i/redmine-mcp`
+- Package: `redmine-client`, `redmine-mcp`
 - Class: `RedmineClient`, `RedmineHttp`, `RedmineError`
 - Tools: `redmine_test_connection`, `redmine_list_projects`, `redmine_search_issues`, `redmine_get_issue`
 - Skills: `my-issues`, `issue` → `/redmine:my-issues`, `/redmine:issue`

@@ -1,5 +1,5 @@
 {
-  "name": "@m2i/redmine-client",
+  "name": "redmine-client",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
