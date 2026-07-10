@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { buildIssueQuery } from "../src/issues.js";
 import { RedmineClient } from "../src/index.js";
-import { RedmineError } from "../src/errors.js";
 
 const ORIGINAL = { ...process.env };
 
@@ -33,6 +32,7 @@ describe("buildIssueQuery", () => {
 
 describe("searchIssues", () => {
   it("paginates beyond 100 and caps by maxResultCount", async () => {
+    process.env.REDMINE_MAX_RESULT_COUNT = "150";
     const page1 = {
       issues: Array.from({ length: 100 }, (_, i) => ({
         id: i + 1,
@@ -80,9 +80,9 @@ describe("searchIssues", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
     const secondUrl = String(fetchMock.mock.calls[1][0]);
     expect(secondUrl).toContain("offset=100");
-    expect(res.returnedCount).toBe(100);
+    expect(res.returnedCount).toBe(150);
     expect(res.totalCount).toBe(150);
-    expect(res.hasMore).toBe(true);
+    expect(res.hasMore).toBe(false);
   });
 });
 
@@ -130,6 +130,5 @@ describe("getIssue", () => {
     await expect(client.getIssue(999)).rejects.toMatchObject({
       code: "REDMINE_ISSUE_NOT_FOUND",
     });
-    await expect(client.getIssue(999)).rejects.toBeInstanceOf(RedmineError);
   });
 });

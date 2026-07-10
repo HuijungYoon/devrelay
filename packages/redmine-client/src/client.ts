@@ -2,10 +2,15 @@ import type { RedmineConfig } from "./config.js";
 import { loadConfig } from "./config.js";
 import { RedmineHttp } from "./http.js";
 import type {
+  IssueInclude,
   ListProjectsResult,
+  NormalizedIssueDetail,
   RedmineProject,
   RedmineUser,
+  SearchIssuesInput,
+  SearchIssuesResult,
 } from "./types.js";
+import { getIssue, searchIssues } from "./issues.js";
 
 type RawUser = {
   user: {
@@ -111,5 +116,16 @@ export class RedmineClient {
       returnedCount: projects.length,
       hasMore: offset < totalCount && projects.length >= wanted,
     };
+  }
+
+  searchIssues(input: SearchIssuesInput = {}): Promise<SearchIssuesResult> {
+    return searchIssues(this.http, this.config, input);
+  }
+
+  getIssue(
+    issueId: number,
+    opts: { include?: IssueInclude[] } = {}
+  ): Promise<NormalizedIssueDetail> {
+    return getIssue(this.http, issueId, opts);
   }
 }
