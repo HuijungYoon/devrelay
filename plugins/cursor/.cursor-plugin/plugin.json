@@ -23,7 +23,7 @@
     "mcp",
     "issues"
   ],
-  "logo": "assets/logo.svg",
+  "logo": "https://raw.githubusercontent.com/HuijungYoon/devrelay/main/plugins/cursor/assets/logo.svg",
   "skills": "./skills/",
   "commands": "./commands/",
   "mcpServers": "mcp.json"

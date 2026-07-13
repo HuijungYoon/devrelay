@@ -15,7 +15,8 @@
       "description": "Read-only Redmine MCP with my-issues and issue skills",
       "version": "0.1.0",
       "keywords": ["redmine", "mcp", "issues"],
-      "category": "developer-tools"
+      "category": "developer-tools",
+      "logo": "https://raw.githubusercontent.com/HuijungYoon/devrelay/main/plugins/cursor/assets/logo.svg"
     }
   ]
 }
