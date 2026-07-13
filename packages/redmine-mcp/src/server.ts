@@ -14,6 +14,7 @@ import { handleListProjects } from "./tools/projects.js";
 import {
   handleAddComment,
   handleCreateIssue,
+  handleUpdateIssue,
   handleUpdateStatus,
 } from "./tools/writes.js";
 import { handleSearchUsers } from "./tools/users.js";
@@ -27,20 +28,18 @@ import {
   safeParseListProjects,
   safeParseSearch,
   safeParseSearchUsers,
+  safeParseUpdateIssue,
   safeParseUpdateStatus,
   toolJsonSchemas,
 } from "./tools/schemas.js";
 
 const INSTRUCTIONS = `Redmine read tools may be used without write confirmation.
-Write tools (redmine_create_issue, redmine_add_comment, redmine_update_status) default to dry-run.
-Only pass confirm=true after the user explicitly approves the dry-run preview.
-For create-issue:
-- projectId required first
-- assignedTo = 담당자 (often "me")
-- watchers = 일감관리자 (any project members by id/name; optional, multi)
-Use redmine_list_project_members to pick people when unsure.
+ALL write tools default to dry-run. Flow: preview → ask user → confirm=true only after approval.
+Never call Redmine REST directly for fields that have MCP tools.
+redmine_create_issue: project first; assignedTo=담당자; watchers=일감관리자; include tracker/status/priority/startDate/doneRatio in preview when set.
+redmine_update_issue: multi-field update with before→after changes; prefer this for bundled edits.
+redmine_update_status: still valid for status-only.
 Do not print API keys or credentials.
-Do not invent write operations beyond the three write tools.
 Prefer redmine_search_issues with assignedTo=me for "my open issues".`;
 
 const TOOLS = [
@@ -81,8 +80,14 @@ const TOOLS = [
   {
     name: "redmine_create_issue",
     description:
-      'Create issue. Requires projectId+subject. assignedTo=담당자 ("me"/id/name). watchers=일감관리자 (array of id/name, optional). Dry-run default; confirm=true to apply.',
+      'Create issue. projectId+subject required. Optional: tracker/status/priority/startDate/doneRatio, assignedTo(담당자), watchers(일감관리자). Dry-run default; confirm=true to apply.',
     inputSchema: toolJsonSchemas.redmine_create_issue,
+  },
+  {
+    name: "redmine_update_issue",
+    description:
+      "Update issue fields (tracker/status/priority/dates/doneRatio/assignee/watchers/subject...). Dry-run returns before→after changes; confirm=true applies. Watchers replace-all when set.",
+    inputSchema: toolJsonSchemas.redmine_update_issue,
   },
   {
     name: "redmine_add_comment",
@@ -178,6 +183,12 @@ export async function startServer(
           const parsed = safeParseCreateIssue(req.params.arguments);
           if (!parsed.success) throw validationError(parsed.error.message);
           result = await handleCreateIssue(client, parsed.data);
+          break;
+        }
+        case "redmine_update_issue": {
+          const parsed = safeParseUpdateIssue(req.params.arguments);
+          if (!parsed.success) throw validationError(parsed.error.message);
+          result = await handleUpdateIssue(client, parsed.data);
           break;
         }
         case "redmine_search_users": {

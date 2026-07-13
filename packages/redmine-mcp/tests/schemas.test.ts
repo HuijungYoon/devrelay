@@ -5,6 +5,7 @@ import {
   safeParseCreateIssue,
   safeParseGetIssue,
   safeParseSearch,
+  safeParseUpdateIssue,
   safeParseUpdateStatus,
 } from "../src/tools/schemas.js";
 
@@ -52,6 +53,25 @@ describe("tool schemas", () => {
         assignedTo: "me",
         watchers: ["윤석준", 12],
       }).success
+    ).toBe(true);
+  });
+
+  it("createIssue accepts richer preview fields", () => {
+    expect(
+      safeParseCreateIssue({
+        projectId: 1,
+        subject: "x",
+        statusId: 1,
+        startDate: "2026-07-13",
+        doneRatio: 10,
+      }).success
+    ).toBe(true);
+  });
+
+  it("updateIssue requires a mutable field", () => {
+    expect(safeParseUpdateIssue({ issueId: 1 }).success).toBe(false);
+    expect(
+      safeParseUpdateIssue({ issueId: 1, doneRatio: 20 }).success
     ).toBe(true);
   });
 

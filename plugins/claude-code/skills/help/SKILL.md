@@ -14,7 +14,8 @@ Do **not** call Redmine MCP tools. Only show available slash commands.
 | `/redmine:list-projects` | 프로젝트 목록 (검색어 가능) |
 | `/redmine:my-issues` | 내게 할당된 열린 이슈 |
 | `/redmine:issue` | 이슈 상세 + journals (이슈 id 전달) |
-| `/redmine:create-issue` | 이슈 생성 (담당자·일감관리자 지정, dry-run 후 확인) |
+| `/redmine:create-issue` | 이슈 생성 (유형·상태·우선순위·시작일·진척도 포함 미리보기) |
+| `/redmine:update-issue` | 이슈 수정 (이전→이후 미리보기 후 확인) |
 | `/redmine:add-comment` | 댓글 추가 (dry-run 후 확인) |
 | `/redmine:update-status` | 상태 변경 statusId (dry-run 후 확인) |
 

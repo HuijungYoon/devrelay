@@ -90,11 +90,39 @@ export type CreateIssueInput = {
   subject: string;
   description?: string;
   trackerId?: number;
+  statusId?: number;
   priorityId?: number;
+  startDate?: string;
+  dueDate?: string;
+  doneRatio?: number;
+  estimatedHours?: number;
   /** "me", numeric user id (담당자) */
   assignedTo?: "me" | number;
   /** 일감관리자 — Redmine watcher_user_ids */
   watcherUserIds?: number[];
+};
+
+export type UpdateIssueInput = {
+  issueId: number;
+  subject?: string;
+  description?: string;
+  trackerId?: number;
+  statusId?: number;
+  priorityId?: number;
+  startDate?: string;
+  dueDate?: string;
+  doneRatio?: number;
+  estimatedHours?: number;
+  assignedTo?: "me" | number;
+  /** replace-all when provided (including empty) */
+  watcherUserIds?: number[];
+  notes?: string;
+};
+
+export type UpdateIssueResult = {
+  issueId: number;
+  subject?: string;
+  status: { id: number; name: string } | null;
 };
 
 export type SearchUsersResult = {

@@ -1,6 +1,6 @@
 {
   "name": "redmine-devrelay-client",
-  "version": "0.2.6",
+  "version": "0.3.0",
   "description": "Redmine REST client for redmine-devrelay MCP — auth, pagination, issue read/write helpers",
   "type": "module",
   "main": "./dist/index.js",

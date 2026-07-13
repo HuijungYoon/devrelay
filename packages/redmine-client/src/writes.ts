@@ -3,6 +3,8 @@ import type {
   AddCommentResult,
   CreateIssueInput,
   CreateIssueResult,
+  UpdateIssueInput,
+  UpdateIssueResult,
   UpdateStatusResult,
 } from "./types.js";
 
@@ -15,6 +17,42 @@ type RawIssue = {
   };
 };
 
+function applyOptionalIssueFields(
+  issue: Record<string, unknown>,
+  input: {
+    description?: string;
+    trackerId?: number;
+    statusId?: number;
+    priorityId?: number;
+    startDate?: string;
+    dueDate?: string;
+    doneRatio?: number;
+    estimatedHours?: number;
+    assignedTo?: "me" | number;
+    watcherUserIds?: number[];
+    notes?: string;
+  },
+  opts: { includeWatchersEmpty?: boolean } = {}
+): void {
+  if (input.description !== undefined) issue.description = input.description;
+  if (input.trackerId !== undefined) issue.tracker_id = input.trackerId;
+  if (input.statusId !== undefined) issue.status_id = input.statusId;
+  if (input.priorityId !== undefined) issue.priority_id = input.priorityId;
+  if (input.startDate !== undefined) issue.start_date = input.startDate;
+  if (input.dueDate !== undefined) issue.due_date = input.dueDate;
+  if (input.doneRatio !== undefined) issue.done_ratio = input.doneRatio;
+  if (input.estimatedHours !== undefined) {
+    issue.estimated_hours = input.estimatedHours;
+  }
+  if (input.assignedTo !== undefined) issue.assigned_to_id = input.assignedTo;
+  if (input.watcherUserIds !== undefined) {
+    if (input.watcherUserIds.length > 0 || opts.includeWatchersEmpty) {
+      issue.watcher_user_ids = input.watcherUserIds;
+    }
+  }
+  if (input.notes !== undefined) issue.notes = input.notes;
+}
+
 export async function createIssue(
   http: RedmineHttp,
   input: CreateIssueInput
@@ -23,13 +61,7 @@ export async function createIssue(
     project_id: input.projectId,
     subject: input.subject,
   };
-  if (input.description !== undefined) issue.description = input.description;
-  if (input.trackerId !== undefined) issue.tracker_id = input.trackerId;
-  if (input.priorityId !== undefined) issue.priority_id = input.priorityId;
-  if (input.assignedTo !== undefined) issue.assigned_to_id = input.assignedTo;
-  if (input.watcherUserIds !== undefined && input.watcherUserIds.length > 0) {
-    issue.watcher_user_ids = input.watcherUserIds;
-  }
+  applyOptionalIssueFields(issue, input, { includeWatchersEmpty: false });
 
   const data = await http.postJson<RawIssue>("/issues.json", { issue });
   if (!data?.issue) {
@@ -40,6 +72,24 @@ export async function createIssue(
     subject: data.issue.subject ?? input.subject,
     project: data.issue.project ?? null,
     status: data.issue.status ?? null,
+  };
+}
+
+export async function updateIssue(
+  http: RedmineHttp,
+  input: UpdateIssueInput
+): Promise<UpdateIssueResult> {
+  const issue: Record<string, unknown> = {};
+  if (input.subject !== undefined) issue.subject = input.subject;
+  applyOptionalIssueFields(issue, input, { includeWatchersEmpty: true });
+
+  const data = await http.putJson<RawIssue>(`/issues/${input.issueId}.json`, {
+    issue,
+  });
+  return {
+    issueId: input.issueId,
+    subject: data?.issue?.subject ?? input.subject,
+    status: data?.issue?.status ?? null,
   };
 }
 

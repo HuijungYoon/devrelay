@@ -71,6 +71,57 @@ describe("write methods", () => {
     });
   });
 
+  it("createIssue sends status_id start_date done_ratio", async () => {
+    const postJson = vi.fn().mockResolvedValue({
+      issue: { id: 44, subject: "Bug", project: null, status: { id: 1, name: "New" } },
+    });
+    const http = { postJson, putJson: vi.fn() } as unknown as RedmineHttp;
+    const client = new RedmineClient(http, config);
+    await client.createIssue({
+      projectId: 1,
+      subject: "Bug",
+      trackerId: 2,
+      statusId: 1,
+      priorityId: 4,
+      startDate: "2026-07-13",
+      doneRatio: 10,
+    });
+    expect(postJson).toHaveBeenCalledWith("/issues.json", {
+      issue: {
+        project_id: 1,
+        subject: "Bug",
+        tracker_id: 2,
+        status_id: 1,
+        priority_id: 4,
+        start_date: "2026-07-13",
+        done_ratio: 10,
+      },
+    });
+  });
+
+  it("updateIssue PUTs only provided fields and watcher_user_ids", async () => {
+    const putJson = vi.fn().mockResolvedValue({
+      issue: { id: 7, subject: "X", status: { id: 2, name: "WIP" } },
+    });
+    const http = { postJson: vi.fn(), putJson } as unknown as RedmineHttp;
+    const client = new RedmineClient(http, config);
+    await client.updateIssue({
+      issueId: 7,
+      doneRatio: 20,
+      assignedTo: "me",
+      watcherUserIds: [99],
+      notes: "progress",
+    });
+    expect(putJson).toHaveBeenCalledWith("/issues/7.json", {
+      issue: {
+        done_ratio: 20,
+        assigned_to_id: "me",
+        watcher_user_ids: [99],
+        notes: "progress",
+      },
+    });
+  });
+
   it("addComment PUTs notes", async () => {
     const putJson = vi.fn().mockResolvedValue({});
     const http = { postJson: vi.fn(), putJson } as unknown as RedmineHttp;

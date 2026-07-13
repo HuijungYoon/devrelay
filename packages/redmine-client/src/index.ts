@@ -7,6 +7,7 @@ export { buildIssueQuery } from "./issues.js";
 export {
   addComment,
   createIssue,
+  updateIssue,
   updateIssueStatus,
 } from "./writes.js";
 export { searchUsers, normalizeListedUser } from "./users.js";

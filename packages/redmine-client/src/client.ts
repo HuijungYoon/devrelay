@@ -14,6 +14,8 @@ import type {
   SearchIssuesInput,
   SearchIssuesResult,
   SearchUsersResult,
+  UpdateIssueInput,
+  UpdateIssueResult,
   UpdateStatusResult,
 } from "./types.js";
 import { getIssue, searchIssues } from "./issues.js";
@@ -22,6 +24,7 @@ import { searchUsers } from "./users.js";
 import {
   addComment,
   createIssue,
+  updateIssue,
   updateIssueStatus,
 } from "./writes.js";
 
@@ -159,6 +162,10 @@ export class RedmineClient {
 
   createIssue(input: CreateIssueInput): Promise<CreateIssueResult> {
     return createIssue(this.http, input);
+  }
+
+  updateIssue(input: UpdateIssueInput): Promise<UpdateIssueResult> {
+    return updateIssue(this.http, input);
   }
 
   addComment(issueId: number, notes: string): Promise<AddCommentResult> {

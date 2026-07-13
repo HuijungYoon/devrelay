@@ -3,6 +3,7 @@ import { RedmineError, matchMemberByName } from "redmine-devrelay-client";
 import type {
   AddCommentInput,
   CreateIssueInput,
+  UpdateIssueInput,
   UpdateStatusInput,
 } from "./schemas.js";
 
@@ -185,7 +186,14 @@ export async function handleCreateIssue(
       ? { description: input.description }
       : {}),
     ...(input.trackerId !== undefined ? { trackerId: input.trackerId } : {}),
+    ...(input.statusId !== undefined ? { statusId: input.statusId } : {}),
     ...(input.priorityId !== undefined ? { priorityId: input.priorityId } : {}),
+    ...(input.startDate !== undefined ? { startDate: input.startDate } : {}),
+    ...(input.dueDate !== undefined ? { dueDate: input.dueDate } : {}),
+    ...(input.doneRatio !== undefined ? { doneRatio: input.doneRatio } : {}),
+    ...(input.estimatedHours !== undefined
+      ? { estimatedHours: input.estimatedHours }
+      : {}),
     ...(assignee
       ? {
           assignedTo: assignee.assignedTo,
@@ -212,8 +220,23 @@ export async function handleCreateIssue(
     ...(wouldApply.trackerId !== undefined
       ? { trackerId: wouldApply.trackerId }
       : {}),
+    ...(wouldApply.statusId !== undefined
+      ? { statusId: wouldApply.statusId }
+      : {}),
     ...(wouldApply.priorityId !== undefined
       ? { priorityId: wouldApply.priorityId }
+      : {}),
+    ...(wouldApply.startDate !== undefined
+      ? { startDate: wouldApply.startDate }
+      : {}),
+    ...(wouldApply.dueDate !== undefined
+      ? { dueDate: wouldApply.dueDate }
+      : {}),
+    ...(wouldApply.doneRatio !== undefined
+      ? { doneRatio: wouldApply.doneRatio }
+      : {}),
+    ...(wouldApply.estimatedHours !== undefined
+      ? { estimatedHours: wouldApply.estimatedHours }
       : {}),
     ...(wouldApply.assignedTo !== undefined
       ? { assignedTo: wouldApply.assignedTo }
@@ -224,6 +247,117 @@ export async function handleCreateIssue(
   };
   const result = await client.createIssue(createInput);
   return { dryRun: false as const, result };
+}
+
+export type FieldChange = {
+  field: string;
+  from: unknown;
+  to: unknown;
+};
+
+export async function handleUpdateIssue(
+  client: RedmineClient,
+  input: UpdateIssueInput
+) {
+  const current = await client.getIssue(input.issueId);
+  const projectId = current.project?.id;
+  if (!projectId) {
+    throw new RedmineError({
+      code: "REDMINE_VALIDATION_ERROR",
+      message: `Issue #${input.issueId} has no project id`,
+      check: ["Verify the issue exists and is accessible"],
+    });
+  }
+
+  const assignee = await resolveAssignedTo(
+    client,
+    projectId,
+    input.assignedTo
+  );
+  const watchers = await resolveWatchers(
+    client,
+    projectId,
+    input.watchers,
+    assignee?.members
+  );
+
+  const changes: FieldChange[] = [];
+  const push = (field: string, from: unknown, to: unknown) => {
+    if (from === to) return;
+    changes.push({ field, from, to });
+  };
+
+  if (input.subject !== undefined) {
+    push("subject", current.subject, input.subject);
+  }
+  if (input.description !== undefined) {
+    push("description", current.description, input.description);
+  }
+  if (input.trackerId !== undefined) {
+    push("trackerId", current.tracker?.id ?? null, input.trackerId);
+  }
+  if (input.statusId !== undefined) {
+    push("statusId", current.status?.id ?? null, input.statusId);
+  }
+  if (input.priorityId !== undefined) {
+    push("priorityId", current.priority?.id ?? null, input.priorityId);
+  }
+  if (input.startDate !== undefined) {
+    push("startDate", current.startDate, input.startDate);
+  }
+  if (input.dueDate !== undefined) {
+    push("dueDate", current.dueDate, input.dueDate);
+  }
+  if (input.doneRatio !== undefined) {
+    push("doneRatio", current.doneRatio ?? 0, input.doneRatio);
+  }
+  if (input.estimatedHours !== undefined) {
+    push("estimatedHours", current.estimatedHours, input.estimatedHours);
+  }
+  if (assignee) {
+    push(
+      "assignedTo",
+      current.assignedTo?.id ?? null,
+      assignee.assignedTo === "me" ? "me" : assignee.assignedTo
+    );
+  }
+  if (watchers) {
+    push("watchers", "(current)", watchers.watcherUserIds);
+  }
+  if (input.notes !== undefined) {
+    changes.push({ field: "notes", from: null, to: "(journal note)" });
+  }
+
+  if (!input.confirm) {
+    return {
+      dryRun: true as const,
+      issueId: input.issueId,
+      changes,
+      ...(assignee?.label ? { assignedToLabel: assignee.label } : {}),
+      ...(watchers ? { watcherLabels: watchers.watcherLabels } : {}),
+    };
+  }
+
+  const result = await client.updateIssue({
+    issueId: input.issueId,
+    ...(input.subject !== undefined ? { subject: input.subject } : {}),
+    ...(input.description !== undefined
+      ? { description: input.description }
+      : {}),
+    ...(input.trackerId !== undefined ? { trackerId: input.trackerId } : {}),
+    ...(input.statusId !== undefined ? { statusId: input.statusId } : {}),
+    ...(input.priorityId !== undefined ? { priorityId: input.priorityId } : {}),
+    ...(input.startDate !== undefined ? { startDate: input.startDate } : {}),
+    ...(input.dueDate !== undefined ? { dueDate: input.dueDate } : {}),
+    ...(input.doneRatio !== undefined ? { doneRatio: input.doneRatio } : {}),
+    ...(input.estimatedHours !== undefined
+      ? { estimatedHours: input.estimatedHours }
+      : {}),
+    ...(assignee ? { assignedTo: assignee.assignedTo } : {}),
+    ...(watchers ? { watcherUserIds: watchers.watcherUserIds } : {}),
+    ...(input.notes !== undefined ? { notes: input.notes } : {}),
+  });
+  return { dryRun: false as const, result, changes };
 }
 
 export async function handleAddComment(

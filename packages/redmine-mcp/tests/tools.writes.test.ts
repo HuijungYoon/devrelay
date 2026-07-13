@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import {
   handleAddComment,
   handleCreateIssue,
+  handleUpdateIssue,
   handleUpdateStatus,
 } from "../src/tools/writes.js";
 
@@ -24,6 +25,35 @@ describe("write handlers confirm gate", () => {
         projectId: 1,
         subject: "S",
       },
+    });
+  });
+
+  it("createIssue wouldApply includes status startDate doneRatio", async () => {
+    const createIssue = vi.fn();
+    const result = await handleCreateIssue(
+      {
+        createIssue,
+        listProjectMembers: vi.fn(),
+        searchUsers: vi.fn(),
+        getCurrentUser: vi.fn(),
+      } as never,
+      {
+        projectId: 1,
+        subject: "S",
+        statusId: 1,
+        startDate: "2026-07-13",
+        doneRatio: 10,
+        trackerId: 2,
+        priorityId: 4,
+        confirm: false,
+      }
+    );
+    expect(result.wouldApply).toMatchObject({
+      statusId: 1,
+      startDate: "2026-07-13",
+      doneRatio: 10,
+      trackerId: 2,
+      priorityId: 4,
     });
   });
 
@@ -59,28 +89,77 @@ describe("write handlers confirm gate", () => {
       watcherUserIds: [99],
       watcherLabels: ["윤 석준"],
     });
+  });
 
-    await handleCreateIssue(
+  it("updateIssue dry-run returns before→after and does not PUT", async () => {
+    const getIssue = vi.fn().mockResolvedValue({
+      id: 7,
+      subject: "Old",
+      description: "",
+      project: { id: 1, name: "P" },
+      tracker: { id: 1, name: "Feature" },
+      status: { id: 1, name: "New" },
+      priority: { id: 2, name: "Normal" },
+      assignedTo: { id: 1, name: "Me" },
+      doneRatio: 0,
+      startDate: "2026-07-01",
+      dueDate: null,
+      estimatedHours: null,
+    });
+    const updateIssue = vi.fn();
+    const result = await handleUpdateIssue(
       {
-        createIssue,
-        listProjectMembers,
-        searchUsers: vi.fn(),
+        getIssue,
+        updateIssue,
+        listProjectMembers: vi.fn(),
         getCurrentUser: vi.fn(),
+        searchUsers: vi.fn(),
       } as never,
+      { issueId: 7, doneRatio: 20, trackerId: 2, confirm: false }
+    );
+    expect(updateIssue).not.toHaveBeenCalled();
+    expect(result.dryRun).toBe(true);
+    expect(result.changes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ field: "doneRatio", from: 0, to: 20 }),
+        expect.objectContaining({ field: "trackerId", from: 1, to: 2 }),
+      ])
+    );
+  });
+
+  it("updateIssue confirm calls client.updateIssue", async () => {
+    const getIssue = vi.fn().mockResolvedValue({
+      id: 7,
+      subject: "Old",
+      description: "",
+      project: { id: 1, name: "P" },
+      tracker: { id: 1, name: "Feature" },
+      status: { id: 1, name: "New" },
+      priority: { id: 2, name: "Normal" },
+      assignedTo: null,
+      doneRatio: 0,
+      startDate: null,
+      dueDate: null,
+      estimatedHours: null,
+    });
+    const updateIssue = vi.fn().mockResolvedValue({
+      issueId: 7,
+      status: { id: 1, name: "New" },
+    });
+    const result = await handleUpdateIssue(
       {
-        projectId: 1,
-        subject: "S",
-        assignedTo: "me",
-        watchers: ["윤석준"],
-        confirm: true,
-      }
+        getIssue,
+        updateIssue,
+        listProjectMembers: vi.fn(),
+        getCurrentUser: vi.fn(),
+        searchUsers: vi.fn(),
+      } as never,
+      { issueId: 7, doneRatio: 20, confirm: true }
     );
-    expect(createIssue).toHaveBeenCalledWith(
-      expect.objectContaining({
-        assignedTo: "me",
-        watcherUserIds: [99],
-      })
+    expect(updateIssue).toHaveBeenCalledWith(
+      expect.objectContaining({ issueId: 7, doneRatio: 20 })
     );
+    expect(result.dryRun).toBe(false);
   });
 
   it("addComment dry-run skips client", async () => {

@@ -72,23 +72,61 @@ export const getIssueInputSchema = z
   })
   .strict();
 
+const ymd = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+const doneRatio = z.number().int().min(0).max(100);
+const userRef = z.union([z.literal("me"), positiveInt, z.string().min(1)]);
+
 export const createIssueInputSchema = z
   .object({
     projectId: positiveInt,
     subject: z.string().min(1),
     description: z.string().optional(),
     trackerId: positiveInt.optional(),
+    statusId: positiveInt.optional(),
     priorityId: positiveInt.optional(),
-    assignedTo: z
-      .union([z.literal("me"), positiveInt, z.string().min(1)])
-      .optional(),
-    /** 일감관리자 (Redmine watchers) — ids, "me", or names */
-    watchers: z
-      .array(z.union([z.literal("me"), positiveInt, z.string().min(1)]))
-      .optional(),
+    startDate: ymd.optional(),
+    dueDate: ymd.optional(),
+    doneRatio: doneRatio.optional(),
+    estimatedHours: z.number().positive().optional(),
+    assignedTo: userRef.optional(),
+    watchers: z.array(userRef).optional(),
     confirm: z.boolean().optional(),
   })
   .strict();
+
+export const updateIssueInputSchema = z
+  .object({
+    issueId: positiveInt,
+    subject: z.string().min(1).optional(),
+    description: z.string().optional(),
+    trackerId: positiveInt.optional(),
+    statusId: positiveInt.optional(),
+    priorityId: positiveInt.optional(),
+    startDate: ymd.optional(),
+    dueDate: ymd.optional(),
+    doneRatio: doneRatio.optional(),
+    estimatedHours: z.number().positive().optional(),
+    assignedTo: userRef.optional(),
+    watchers: z.array(userRef).optional(),
+    notes: z.string().optional(),
+    confirm: z.boolean().optional(),
+  })
+  .strict()
+  .refine(
+    (v) =>
+      v.subject !== undefined ||
+      v.description !== undefined ||
+      v.trackerId !== undefined ||
+      v.statusId !== undefined ||
+      v.priorityId !== undefined ||
+      v.startDate !== undefined ||
+      v.dueDate !== undefined ||
+      v.doneRatio !== undefined ||
+      v.estimatedHours !== undefined ||
+      v.assignedTo !== undefined ||
+      v.watchers !== undefined,
+    { message: "At least one field to update is required" }
+  );
 
 export const searchUsersInputSchema = z
   .object({
@@ -127,6 +165,7 @@ export type ListProjectsInput = z.infer<typeof listProjectsInputSchema>;
 export type SearchIssuesInput = z.infer<typeof searchIssuesInputSchema>;
 export type GetIssueInput = z.infer<typeof getIssueInputSchema>;
 export type CreateIssueInput = z.infer<typeof createIssueInputSchema>;
+export type UpdateIssueInput = z.infer<typeof updateIssueInputSchema>;
 export type SearchUsersInput = z.infer<typeof searchUsersInputSchema>;
 export type ListProjectMembersInput = z.infer<
   typeof listProjectMembersInputSchema
@@ -152,6 +191,10 @@ export function safeParseGetIssue(input: unknown) {
 
 export function safeParseCreateIssue(input: unknown) {
   return createIssueInputSchema.safeParse(input ?? {});
+}
+
+export function safeParseUpdateIssue(input: unknown) {
+  return updateIssueInputSchema.safeParse(input ?? {});
 }
 
 export function safeParseSearchUsers(input: unknown) {
@@ -272,8 +315,38 @@ export const toolJsonSchemas = {
         description: "Issue subject/title (required)",
       },
       description: { type: "string", description: "Issue description body" },
-      trackerId: { type: "integer", minimum: 1 },
-      priorityId: { type: "integer", minimum: 1 },
+      trackerId: {
+        type: "integer",
+        minimum: 1,
+        description: "유형 (tracker id)",
+      },
+      statusId: {
+        type: "integer",
+        minimum: 1,
+        description: "상태 (status id)",
+      },
+      priorityId: {
+        type: "integer",
+        minimum: 1,
+        description: "우선순위 (priority id)",
+      },
+      startDate: {
+        type: "string",
+        pattern: "^\\d{4}-\\d{2}-\\d{2}$",
+        description: "시작일 YYYY-MM-DD",
+      },
+      dueDate: {
+        type: "string",
+        pattern: "^\\d{4}-\\d{2}-\\d{2}$",
+        description: "완료기한 YYYY-MM-DD",
+      },
+      doneRatio: {
+        type: "integer",
+        minimum: 0,
+        maximum: 100,
+        description: "진척도 0-100",
+      },
+      estimatedHours: { type: "number", exclusiveMinimum: 0 },
       assignedTo: {
         description:
           '담당자 (assignee): "me", user id, or name matched in project members',
@@ -285,7 +358,7 @@ export const toolJsonSchemas = {
       },
       watchers: {
         description:
-          '일감관리자 (Redmine watchers): array of "me", user ids, or names — any members, not hardcoded',
+          '일감관리자 (Redmine watchers): array of "me", user ids, or names',
         type: "array",
         items: {
           oneOf: [
@@ -301,6 +374,73 @@ export const toolJsonSchemas = {
       },
     },
     required: ["projectId", "subject"],
+    additionalProperties: false,
+  },
+  redmine_update_issue: {
+    type: "object",
+    properties: {
+      issueId: { type: "integer", minimum: 1 },
+      subject: { type: "string", minLength: 1 },
+      description: { type: "string" },
+      trackerId: {
+        type: "integer",
+        minimum: 1,
+        description: "유형 (tracker id)",
+      },
+      statusId: {
+        type: "integer",
+        minimum: 1,
+        description: "상태 (status id)",
+      },
+      priorityId: {
+        type: "integer",
+        minimum: 1,
+        description: "우선순위 (priority id)",
+      },
+      startDate: {
+        type: "string",
+        pattern: "^\\d{4}-\\d{2}-\\d{2}$",
+        description: "시작일 YYYY-MM-DD",
+      },
+      dueDate: {
+        type: "string",
+        pattern: "^\\d{4}-\\d{2}-\\d{2}$",
+        description: "완료기한 YYYY-MM-DD",
+      },
+      doneRatio: {
+        type: "integer",
+        minimum: 0,
+        maximum: 100,
+        description: "진척도 0-100",
+      },
+      estimatedHours: { type: "number", exclusiveMinimum: 0 },
+      assignedTo: {
+        description: '담당자: "me", user id, or name',
+        oneOf: [
+          { type: "string", const: "me" },
+          { type: "integer", minimum: 1 },
+          { type: "string", minLength: 1 },
+        ],
+      },
+      watchers: {
+        description:
+          "일감관리자 replace-all when provided; omit to leave unchanged",
+        type: "array",
+        items: {
+          oneOf: [
+            { type: "string", const: "me" },
+            { type: "integer", minimum: 1 },
+            { type: "string", minLength: 1 },
+          ],
+        },
+      },
+      notes: { type: "string", description: "Optional journal note" },
+      confirm: {
+        type: "boolean",
+        description: "false/omit = before→after preview; true = apply",
+      },
+    },
+    required: ["issueId"],
     additionalProperties: false,
   },
   redmine_search_users: {
