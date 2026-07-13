@@ -79,8 +79,17 @@ export const createIssueInputSchema = z
     description: z.string().optional(),
     trackerId: positiveInt.optional(),
     priorityId: positiveInt.optional(),
-    assignedTo: z.union([z.literal("me"), positiveInt]).optional(),
+    assignedTo: z
+      .union([z.literal("me"), positiveInt, z.string().min(1)])
+      .optional(),
     confirm: z.boolean().optional(),
+  })
+  .strict();
+
+export const searchUsersInputSchema = z
+  .object({
+    query: z.string().optional(),
+    limit: z.number().int().positive().max(1000).optional(),
   })
   .strict();
 
@@ -106,6 +115,7 @@ export type ListProjectsInput = z.infer<typeof listProjectsInputSchema>;
 export type SearchIssuesInput = z.infer<typeof searchIssuesInputSchema>;
 export type GetIssueInput = z.infer<typeof getIssueInputSchema>;
 export type CreateIssueInput = z.infer<typeof createIssueInputSchema>;
+export type SearchUsersInput = z.infer<typeof searchUsersInputSchema>;
 export type AddCommentInput = z.infer<typeof addCommentInputSchema>;
 export type UpdateStatusInput = z.infer<typeof updateStatusInputSchema>;
 
@@ -127,6 +137,10 @@ export function safeParseGetIssue(input: unknown) {
 
 export function safeParseCreateIssue(input: unknown) {
   return createIssueInputSchema.safeParse(input ?? {});
+}
+
+export function safeParseSearchUsers(input: unknown) {
+  return searchUsersInputSchema.safeParse(input ?? {});
 }
 
 export function safeParseAddComment(input: unknown) {
@@ -228,17 +242,45 @@ export const toolJsonSchemas = {
   redmine_create_issue: {
     type: "object",
     properties: {
-      projectId: { type: "integer", minimum: 1 },
-      subject: { type: "string", minLength: 1 },
-      description: { type: "string" },
+      projectId: {
+        type: "integer",
+        minimum: 1,
+        description: "Redmine project id (required)",
+      },
+      subject: {
+        type: "string",
+        minLength: 1,
+        description: "Issue subject/title (required)",
+      },
+      description: { type: "string", description: "Issue description body" },
       trackerId: { type: "integer", minimum: 1 },
       priorityId: { type: "integer", minimum: 1 },
       assignedTo: {
-        oneOf: [{ type: "string", const: "me" }, { type: "integer", minimum: 1 }],
+        description:
+          'Assignee (일감 담당자): "me", numeric user id, or user name/login (e.g. "윤석준") resolved via Redmine users API',
+        oneOf: [
+          { type: "string", const: "me" },
+          { type: "integer", minimum: 1 },
+          { type: "string", minLength: 1 },
+        ],
       },
-      confirm: { type: "boolean" },
+      confirm: {
+        type: "boolean",
+        description: "false/omit = dry-run preview; true = create",
+      },
     },
     required: ["projectId", "subject"],
+    additionalProperties: false,
+  },
+  redmine_search_users: {
+    type: "object",
+    properties: {
+      query: {
+        type: "string",
+        description: "Filter by name or login (partial match)",
+      },
+      limit: { type: "integer", minimum: 1, maximum: 1000 },
+    },
     additionalProperties: false,
   },
   redmine_add_comment: {

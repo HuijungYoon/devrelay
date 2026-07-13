@@ -14,8 +14,8 @@ description: Create a Redmine issue after dry-run confirmation
 2. **subject** (필수)와 description 등 옵션을 모은다.
 3. **일감 담당자 (`assignedTo`)** — 지정 여부를 묻는다.
    - 본인: `assignedTo: "me"`
-   - 다른 사용자: Redmine **user id(숫자)** 를 받아 전달 (이름만으로는 조회 도구가 없음)
-   - 미지정: 필드를 생략
+   - 이름(예: 윤석준): 그대로 문자열로 전달 가능 (서버가 user id로 해석). 모호하면 `redmine_search_users`로 id 확인.
+   - 숫자 user id / 미지정(생략)도 가능.
    - 이미 담당자를 말했으면 다시 묻지 않고 매핑한다.
 4. `redmine_create_issue`를 `confirm` 생략/`false`로 호출하고 `wouldApply`(프로젝트·제목·담당자 포함)를 보여 준다.
 5. 사용자가 명시한 뒤에만 `confirm: true`로 다시 호출한다.

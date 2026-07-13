@@ -9,4 +9,5 @@ export {
   createIssue,
   updateIssueStatus,
 } from "./writes.js";
+export { searchUsers, normalizeListedUser } from "./users.js";
 export type * from "./types.js";

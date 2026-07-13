@@ -91,7 +91,14 @@ export type CreateIssueInput = {
   description?: string;
   trackerId?: number;
   priorityId?: number;
+  /** "me", numeric user id, or (MCP) display name/login resolved before create */
   assignedTo?: "me" | number;
+};
+
+export type SearchUsersResult = {
+  users: RedmineUser[];
+  totalCount: number;
+  returnedCount: number;
 };
 
 export type CreateIssueResult = {

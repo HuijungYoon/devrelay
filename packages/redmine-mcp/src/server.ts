@@ -16,6 +16,7 @@ import {
   handleCreateIssue,
   handleUpdateStatus,
 } from "./tools/writes.js";
+import { handleSearchUsers } from "./tools/users.js";
 import {
   safeParseAddComment,
   safeParseConnection,
@@ -23,6 +24,7 @@ import {
   safeParseGetIssue,
   safeParseListProjects,
   safeParseSearch,
+  safeParseSearchUsers,
   safeParseUpdateStatus,
   toolJsonSchemas,
 } from "./tools/schemas.js";
@@ -30,6 +32,7 @@ import {
 const INSTRUCTIONS = `Redmine read tools may be used without write confirmation.
 Write tools (redmine_create_issue, redmine_add_comment, redmine_update_status) default to dry-run.
 Only pass confirm=true after the user explicitly approves the dry-run preview.
+For create-issue: require projectId first; set assignedTo to "me", user id, or name (e.g. 윤석준). Use redmine_search_users when unsure.
 Do not print API keys or credentials.
 Do not invent write operations beyond the three write tools.
 Prefer redmine_search_issues with assignedTo=me for "my open issues".`;
@@ -46,6 +49,12 @@ const TOOLS = [
     inputSchema: toolJsonSchemas.redmine_list_projects,
   },
   {
+    name: "redmine_search_users",
+    description:
+      "Search Redmine users by name/login to resolve assignee ids for create-issue.",
+    inputSchema: toolJsonSchemas.redmine_search_users,
+  },
+  {
     name: "redmine_search_issues",
     description:
       "Search Redmine issues. Defaults to open issues. Supports assignedTo=me.",
@@ -60,7 +69,7 @@ const TOOLS = [
   {
     name: "redmine_create_issue",
     description:
-      "Create a Redmine issue. Defaults to dry-run; set confirm=true to apply. Requires projectId. Optional assignedTo: \"me\" or user id (assignee).",
+      'Create a Redmine issue. Requires projectId + subject. Optional assignedTo: "me", user id, or name/login (일감 담당자). Defaults to dry-run; set confirm=true to apply.',
     inputSchema: toolJsonSchemas.redmine_create_issue,
   },
   {
@@ -157,6 +166,12 @@ export async function startServer(
           const parsed = safeParseCreateIssue(req.params.arguments);
           if (!parsed.success) throw validationError(parsed.error.message);
           result = await handleCreateIssue(client, parsed.data);
+          break;
+        }
+        case "redmine_search_users": {
+          const parsed = safeParseSearchUsers(req.params.arguments);
+          if (!parsed.success) throw validationError(parsed.error.message);
+          result = await handleSearchUsers(client, parsed.data);
           break;
         }
         case "redmine_add_comment": {

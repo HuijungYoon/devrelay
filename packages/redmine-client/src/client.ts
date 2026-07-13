@@ -12,9 +12,11 @@ import type {
   RedmineUser,
   SearchIssuesInput,
   SearchIssuesResult,
+  SearchUsersResult,
   UpdateStatusResult,
 } from "./types.js";
 import { getIssue, searchIssues } from "./issues.js";
+import { searchUsers } from "./users.js";
 import {
   addComment,
   createIssue,
@@ -129,6 +131,13 @@ export class RedmineClient {
 
   searchIssues(input: SearchIssuesInput = {}): Promise<SearchIssuesResult> {
     return searchIssues(this.http, this.config, input);
+  }
+
+  searchUsers(opts: {
+    query?: string;
+    limit?: number;
+  } = {}): Promise<SearchUsersResult> {
+    return searchUsers(this.http, this.config, opts);
   }
 
   getIssue(
