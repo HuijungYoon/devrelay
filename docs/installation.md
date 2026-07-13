@@ -22,13 +22,13 @@ For private CA certificates:
 export REDMINE_CA_CERT_PATH=/path/to/company-ca.pem
 ```
 
-## 4. Install MCP package (internal npm)
+## 4. Install MCP package (npm)
 
 ```bash
-npm install -g redmine-mcp@0.1.0 --registry <internal-registry>
+npm install -g redmine-devrelay@0.1.0
 ```
 
-Or rely on `npx -y redmine-mcp@0.1.0` from plugin `.mcp.json`.
+Or rely on `npx -y redmine-devrelay@0.1.0` from plugin `.mcp.json`.
 
 ## 5. Claude Code
 
@@ -45,6 +45,11 @@ Slash commands:
 
 Load `plugins/codex` per Codex plugin docs. Skills: `my-issues`, `issue`.
 
-## 7. Connection check
+## 7. Cursor
+
+After Marketplace listing: `/add-plugin redmine-devrelay`.  
+See `plugins/cursor/README.md`.
+
+## 8. Connection check
 
 Ask the agent to call `redmine_test_connection`, or use MCP Inspector.

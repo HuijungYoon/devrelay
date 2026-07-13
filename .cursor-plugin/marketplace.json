@@ -1,0 +1,21 @@
+{
+  "name": "devrelay",
+  "owner": {
+    "name": "M2I",
+    "email": "hjyoon@mxon.co.kr"
+  },
+  "metadata": {
+    "description": "DevRelay Cursor plugins — Redmine MCP integration",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "redmine-devrelay",
+      "source": "./plugins/cursor",
+      "description": "Read-only Redmine MCP with my-issues and issue skills",
+      "version": "0.1.0",
+      "keywords": ["redmine", "mcp", "issues"],
+      "category": "developer-tools"
+    }
+  ]
+}

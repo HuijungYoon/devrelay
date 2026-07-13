@@ -1,4 +1,4 @@
-import type { RedmineClient } from "redmine-client";
+import type { RedmineClient } from "redmine-devrelay-client";
 import type { GetIssueInput, SearchIssuesInput } from "./schemas.js";
 
 export async function handleSearchIssues(

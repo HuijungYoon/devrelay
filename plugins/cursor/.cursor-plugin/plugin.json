@@ -1,0 +1,30 @@
+{
+  "name": "redmine-devrelay",
+  "displayName": "Redmine DevRelay",
+  "version": "0.1.0",
+  "description": "Read-only Redmine MCP: test connection, list projects, search and view issues assigned to you.",
+  "author": {
+    "name": "M2I / markyoon",
+    "email": "hjyoon@mxon.co.kr"
+  },
+  "homepage": "https://github.com/HuijungYoon/devrelay",
+  "repository": "https://github.com/HuijungYoon/devrelay",
+  "license": "MIT",
+  "keywords": [
+    "redmine",
+    "mcp",
+    "issues",
+    "devrelay",
+    "project-management"
+  ],
+  "category": "developer-tools",
+  "tags": [
+    "redmine",
+    "mcp",
+    "issues"
+  ],
+  "logo": "assets/logo.svg",
+  "skills": "./skills/",
+  "commands": "./commands/",
+  "mcpServers": "mcp.json"
+}
