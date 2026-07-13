@@ -28,5 +28,7 @@ approval_mode = "approve"
 
 ## Skills
 
+- `test-connection` — verify URL / API key
+- `list-projects` — list or search projects
 - `my-issues` — open issues assigned to me
 - `issue` — issue detail + journals

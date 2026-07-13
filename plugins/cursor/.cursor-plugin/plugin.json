@@ -2,7 +2,7 @@
   "name": "redmine-devrelay",
   "displayName": "Redmine DevRelay",
   "version": "0.1.0",
-  "description": "Connect Cursor to your Redmine with a read-only MCP server. Test the connection, list projects, search open issues assigned to you, and open issue details with journals — without write access.",
+  "description": "Connect Cursor to your Redmine with a read-only MCP server. Slash commands: /test-connection, /list-projects, /my-issues, /issue — without write access.",
   "author": {
     "name": "M2I / markyoon",
     "email": "hjyoon@mxon.co.kr"
