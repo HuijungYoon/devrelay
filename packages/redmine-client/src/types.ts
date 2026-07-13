@@ -91,12 +91,21 @@ export type CreateIssueInput = {
   description?: string;
   trackerId?: number;
   priorityId?: number;
-  /** "me", numeric user id, or (MCP) display name/login resolved before create */
+  /** "me", numeric user id (담당자) */
   assignedTo?: "me" | number;
+  /** 일감관리자 — Redmine watcher_user_ids */
+  watcherUserIds?: number[];
 };
 
 export type SearchUsersResult = {
   users: RedmineUser[];
+  totalCount: number;
+  returnedCount: number;
+};
+
+export type ListProjectMembersResult = {
+  projectId: number;
+  members: RedmineUser[];
   totalCount: number;
   returnedCount: number;
 };

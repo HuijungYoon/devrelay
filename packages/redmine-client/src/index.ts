@@ -10,4 +10,5 @@ export {
   updateIssueStatus,
 } from "./writes.js";
 export { searchUsers, normalizeListedUser } from "./users.js";
+export { listProjectMembers, matchMemberByName } from "./memberships.js";
 export type * from "./types.js";

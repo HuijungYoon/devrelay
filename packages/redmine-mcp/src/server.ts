@@ -17,11 +17,13 @@ import {
   handleUpdateStatus,
 } from "./tools/writes.js";
 import { handleSearchUsers } from "./tools/users.js";
+import { handleListProjectMembers } from "./tools/members.js";
 import {
   safeParseAddComment,
   safeParseConnection,
   safeParseCreateIssue,
   safeParseGetIssue,
+  safeParseListProjectMembers,
   safeParseListProjects,
   safeParseSearch,
   safeParseSearchUsers,
@@ -32,7 +34,11 @@ import {
 const INSTRUCTIONS = `Redmine read tools may be used without write confirmation.
 Write tools (redmine_create_issue, redmine_add_comment, redmine_update_status) default to dry-run.
 Only pass confirm=true after the user explicitly approves the dry-run preview.
-For create-issue: require projectId first; set assignedTo to "me", user id, or name (e.g. 윤석준). Use redmine_search_users when unsure.
+For create-issue:
+- projectId required first
+- assignedTo = 담당자 (often "me")
+- watchers = 일감관리자 (any project members by id/name; optional, multi)
+Use redmine_list_project_members to pick people when unsure.
 Do not print API keys or credentials.
 Do not invent write operations beyond the three write tools.
 Prefer redmine_search_issues with assignedTo=me for "my open issues".`;
@@ -49,9 +55,15 @@ const TOOLS = [
     inputSchema: toolJsonSchemas.redmine_list_projects,
   },
   {
+    name: "redmine_list_project_members",
+    description:
+      "List project members (for 담당자 / 일감관리자 picker). Prefer this over redmine_search_users.",
+    inputSchema: toolJsonSchemas.redmine_list_project_members,
+  },
+  {
     name: "redmine_search_users",
     description:
-      "Search Redmine users by name/login to resolve assignee ids for create-issue.",
+      "Search all Redmine users (may require admin). Prefer redmine_list_project_members.",
     inputSchema: toolJsonSchemas.redmine_search_users,
   },
   {
@@ -69,7 +81,7 @@ const TOOLS = [
   {
     name: "redmine_create_issue",
     description:
-      'Create a Redmine issue. Requires projectId + subject. Optional assignedTo: "me", user id, or name/login (일감 담당자). Defaults to dry-run; set confirm=true to apply.',
+      'Create issue. Requires projectId+subject. assignedTo=담당자 ("me"/id/name). watchers=일감관리자 (array of id/name, optional). Dry-run default; confirm=true to apply.',
     inputSchema: toolJsonSchemas.redmine_create_issue,
   },
   {
@@ -172,6 +184,12 @@ export async function startServer(
           const parsed = safeParseSearchUsers(req.params.arguments);
           if (!parsed.success) throw validationError(parsed.error.message);
           result = await handleSearchUsers(client, parsed.data);
+          break;
+        }
+        case "redmine_list_project_members": {
+          const parsed = safeParseListProjectMembers(req.params.arguments);
+          if (!parsed.success) throw validationError(parsed.error.message);
+          result = await handleListProjectMembers(client, parsed.data);
           break;
         }
         case "redmine_add_comment": {

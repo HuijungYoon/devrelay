@@ -44,6 +44,17 @@ describe("tool schemas", () => {
     ).toBe(true);
   });
 
+  it("createIssue accepts watchers array for 일감관리자", () => {
+    expect(
+      safeParseCreateIssue({
+        projectId: 1,
+        subject: "x",
+        assignedTo: "me",
+        watchers: ["윤석준", 12],
+      }).success
+    ).toBe(true);
+  });
+
   it("addComment requires notes", () => {
     expect(safeParseAddComment({ issueId: 1 }).success).toBe(false);
     expect(

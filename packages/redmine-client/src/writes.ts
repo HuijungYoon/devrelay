@@ -27,6 +27,9 @@ export async function createIssue(
   if (input.trackerId !== undefined) issue.tracker_id = input.trackerId;
   if (input.priorityId !== undefined) issue.priority_id = input.priorityId;
   if (input.assignedTo !== undefined) issue.assigned_to_id = input.assignedTo;
+  if (input.watcherUserIds !== undefined && input.watcherUserIds.length > 0) {
+    issue.watcher_user_ids = input.watcherUserIds;
+  }
 
   const data = await http.postJson<RawIssue>("/issues.json", { issue });
   if (!data?.issue) {

@@ -6,6 +6,7 @@ import type {
   CreateIssueInput,
   CreateIssueResult,
   IssueInclude,
+  ListProjectMembersResult,
   ListProjectsResult,
   NormalizedIssueDetail,
   RedmineProject,
@@ -16,6 +17,7 @@ import type {
   UpdateStatusResult,
 } from "./types.js";
 import { getIssue, searchIssues } from "./issues.js";
+import { listProjectMembers } from "./memberships.js";
 import { searchUsers } from "./users.js";
 import {
   addComment,
@@ -138,6 +140,14 @@ export class RedmineClient {
     limit?: number;
   } = {}): Promise<SearchUsersResult> {
     return searchUsers(this.http, this.config, opts);
+  }
+
+  listProjectMembers(opts: {
+    projectId: number;
+    query?: string;
+    limit?: number;
+  }): Promise<ListProjectMembersResult> {
+    return listProjectMembers(this.http, this.config, opts);
   }
 
   getIssue(

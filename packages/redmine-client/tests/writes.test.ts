@@ -44,6 +44,33 @@ describe("write methods", () => {
     expect(result.id).toBe(42);
   });
 
+  it("createIssue sends watcher_user_ids", async () => {
+    const postJson = vi.fn().mockResolvedValue({
+      issue: {
+        id: 43,
+        subject: "Bug",
+        project: { id: 1, name: "P" },
+        status: { id: 1, name: "New" },
+      },
+    });
+    const http = { postJson, putJson: vi.fn() } as unknown as RedmineHttp;
+    const client = new RedmineClient(http, config);
+    await client.createIssue({
+      projectId: 1,
+      subject: "Bug",
+      assignedTo: "me",
+      watcherUserIds: [99, 12],
+    });
+    expect(postJson).toHaveBeenCalledWith("/issues.json", {
+      issue: {
+        project_id: 1,
+        subject: "Bug",
+        assigned_to_id: "me",
+        watcher_user_ids: [99, 12],
+      },
+    });
+  });
+
   it("addComment PUTs notes", async () => {
     const putJson = vi.fn().mockResolvedValue({});
     const http = { postJson: vi.fn(), putJson } as unknown as RedmineHttp;

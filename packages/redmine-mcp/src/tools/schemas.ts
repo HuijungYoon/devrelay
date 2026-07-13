@@ -82,12 +82,24 @@ export const createIssueInputSchema = z
     assignedTo: z
       .union([z.literal("me"), positiveInt, z.string().min(1)])
       .optional(),
+    /** 일감관리자 (Redmine watchers) — ids, "me", or names */
+    watchers: z
+      .array(z.union([z.literal("me"), positiveInt, z.string().min(1)]))
+      .optional(),
     confirm: z.boolean().optional(),
   })
   .strict();
 
 export const searchUsersInputSchema = z
   .object({
+    query: z.string().optional(),
+    limit: z.number().int().positive().max(1000).optional(),
+  })
+  .strict();
+
+export const listProjectMembersInputSchema = z
+  .object({
+    projectId: positiveInt,
     query: z.string().optional(),
     limit: z.number().int().positive().max(1000).optional(),
   })
@@ -116,6 +128,9 @@ export type SearchIssuesInput = z.infer<typeof searchIssuesInputSchema>;
 export type GetIssueInput = z.infer<typeof getIssueInputSchema>;
 export type CreateIssueInput = z.infer<typeof createIssueInputSchema>;
 export type SearchUsersInput = z.infer<typeof searchUsersInputSchema>;
+export type ListProjectMembersInput = z.infer<
+  typeof listProjectMembersInputSchema
+>;
 export type AddCommentInput = z.infer<typeof addCommentInputSchema>;
 export type UpdateStatusInput = z.infer<typeof updateStatusInputSchema>;
 
@@ -141,6 +156,10 @@ export function safeParseCreateIssue(input: unknown) {
 
 export function safeParseSearchUsers(input: unknown) {
   return searchUsersInputSchema.safeParse(input ?? {});
+}
+
+export function safeParseListProjectMembers(input: unknown) {
+  return listProjectMembersInputSchema.safeParse(input ?? {});
 }
 
 export function safeParseAddComment(input: unknown) {
@@ -257,12 +276,24 @@ export const toolJsonSchemas = {
       priorityId: { type: "integer", minimum: 1 },
       assignedTo: {
         description:
-          'Assignee (일감 담당자): "me", numeric user id, or user name/login (e.g. "윤석준") resolved via Redmine users API',
+          '담당자 (assignee): "me", user id, or name matched in project members',
         oneOf: [
           { type: "string", const: "me" },
           { type: "integer", minimum: 1 },
           { type: "string", minLength: 1 },
         ],
+      },
+      watchers: {
+        description:
+          '일감관리자 (Redmine watchers): array of "me", user ids, or names — any members, not hardcoded',
+        type: "array",
+        items: {
+          oneOf: [
+            { type: "string", const: "me" },
+            { type: "integer", minimum: 1 },
+            { type: "string", minLength: 1 },
+          ],
+        },
       },
       confirm: {
         type: "boolean",
@@ -281,6 +312,23 @@ export const toolJsonSchemas = {
       },
       limit: { type: "integer", minimum: 1, maximum: 1000 },
     },
+    additionalProperties: false,
+  },
+  redmine_list_project_members: {
+    type: "object",
+    properties: {
+      projectId: {
+        type: "integer",
+        minimum: 1,
+        description: "Project id whose members to list (for 담당자/일감관리자)",
+      },
+      query: {
+        type: "string",
+        description: "Optional name filter",
+      },
+      limit: { type: "integer", minimum: 1, maximum: 1000 },
+    },
+    required: ["projectId"],
     additionalProperties: false,
   },
   redmine_add_comment: {
