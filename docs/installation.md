@@ -25,10 +25,10 @@ export REDMINE_CA_CERT_PATH=/path/to/company-ca.pem
 ## 4. Install MCP package (npm)
 
 ```bash
-npm install -g redmine-devrelay@0.1.0
+npm install -g redmine-devrelay@0.2.0
 ```
 
-Or rely on `npx -y redmine-devrelay@0.1.0` from plugin `.mcp.json`.
+Or rely on `npx -y redmine-devrelay@0.2.0` from plugin `.mcp.json`.
 
 ## 5. Claude Code
 

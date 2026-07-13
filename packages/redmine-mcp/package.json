@@ -1,7 +1,7 @@
 {
   "name": "redmine-devrelay",
-  "version": "0.1.0",
-  "description": "Read-only Redmine MCP server (DevRelay) — test connection, list projects, search/get issues",
+  "version": "0.2.0",
+  "description": "Read-only Redmine MCP server (DevRelay) ??test connection, list projects, search/get issues",
   "type": "module",
   "bin": {
     "redmine-devrelay": "./dist/index.js"

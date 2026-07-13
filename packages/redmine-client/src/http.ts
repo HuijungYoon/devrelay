@@ -84,7 +84,7 @@ export class RedmineHttp {
       );
       if (!response.ok) {
         const bodyText = await response.text();
-        this.mapStatus(response.status, bodyText);
+        this.mapStatus(response.status, bodyText, path);
       }
       if (response.status === 204) {
         return undefined;
@@ -141,7 +141,11 @@ export class RedmineHttp {
     return fetch(url, init);
   }
 
-  private mapStatus(status: number, bodyText: string): never {
+  private mapStatus(
+    status: number,
+    bodyText: string,
+    path?: string
+  ): never {
     const maskedBody = maskSecret(bodyText, this.config.apiKey);
     if (status === 401) {
       throw new RedmineError({
@@ -162,8 +166,11 @@ export class RedmineHttp {
       });
     }
     if (status === 404) {
+      const issuePath = path?.includes("/issues/");
       throw new RedmineError({
-        code: "REDMINE_UNKNOWN_ERROR",
+        code: issuePath
+          ? "REDMINE_ISSUE_NOT_FOUND"
+          : "REDMINE_UNKNOWN_ERROR",
         message: `Redmine resource not found: ${maskedBody || status}`,
         httpStatus: status,
         retrySafe: false,

@@ -72,10 +72,42 @@ export const getIssueInputSchema = z
   })
   .strict();
 
+export const createIssueInputSchema = z
+  .object({
+    projectId: positiveInt,
+    subject: z.string().min(1),
+    description: z.string().optional(),
+    trackerId: positiveInt.optional(),
+    priorityId: positiveInt.optional(),
+    assignedTo: z.union([z.literal("me"), positiveInt]).optional(),
+    confirm: z.boolean().optional(),
+  })
+  .strict();
+
+export const addCommentInputSchema = z
+  .object({
+    issueId: positiveInt,
+    notes: z.string().min(1),
+    confirm: z.boolean().optional(),
+  })
+  .strict();
+
+export const updateStatusInputSchema = z
+  .object({
+    issueId: positiveInt,
+    statusId: positiveInt,
+    notes: z.string().optional(),
+    confirm: z.boolean().optional(),
+  })
+  .strict();
+
 export type ConnectionInput = z.infer<typeof connectionInputSchema>;
 export type ListProjectsInput = z.infer<typeof listProjectsInputSchema>;
 export type SearchIssuesInput = z.infer<typeof searchIssuesInputSchema>;
 export type GetIssueInput = z.infer<typeof getIssueInputSchema>;
+export type CreateIssueInput = z.infer<typeof createIssueInputSchema>;
+export type AddCommentInput = z.infer<typeof addCommentInputSchema>;
+export type UpdateStatusInput = z.infer<typeof updateStatusInputSchema>;
 
 export function safeParseConnection(input: unknown) {
   return connectionInputSchema.safeParse(input ?? {});
@@ -91,6 +123,18 @@ export function safeParseSearch(input: unknown) {
 
 export function safeParseGetIssue(input: unknown) {
   return getIssueInputSchema.safeParse(input);
+}
+
+export function safeParseCreateIssue(input: unknown) {
+  return createIssueInputSchema.safeParse(input ?? {});
+}
+
+export function safeParseAddComment(input: unknown) {
+  return addCommentInputSchema.safeParse(input ?? {});
+}
+
+export function safeParseUpdateStatus(input: unknown) {
+  return updateStatusInputSchema.safeParse(input ?? {});
 }
 
 /** JSON Schema objects for MCP ListTools (additionalProperties: false). */
@@ -179,6 +223,43 @@ export const toolJsonSchemas = {
       },
     },
     required: ["issueId"],
+    additionalProperties: false,
+  },
+  redmine_create_issue: {
+    type: "object",
+    properties: {
+      projectId: { type: "integer", minimum: 1 },
+      subject: { type: "string", minLength: 1 },
+      description: { type: "string" },
+      trackerId: { type: "integer", minimum: 1 },
+      priorityId: { type: "integer", minimum: 1 },
+      assignedTo: {
+        oneOf: [{ type: "string", const: "me" }, { type: "integer", minimum: 1 }],
+      },
+      confirm: { type: "boolean" },
+    },
+    required: ["projectId", "subject"],
+    additionalProperties: false,
+  },
+  redmine_add_comment: {
+    type: "object",
+    properties: {
+      issueId: { type: "integer", minimum: 1 },
+      notes: { type: "string", minLength: 1 },
+      confirm: { type: "boolean" },
+    },
+    required: ["issueId", "notes"],
+    additionalProperties: false,
+  },
+  redmine_update_status: {
+    type: "object",
+    properties: {
+      issueId: { type: "integer", minimum: 1 },
+      statusId: { type: "integer", minimum: 1 },
+      notes: { type: "string" },
+      confirm: { type: "boolean" },
+    },
+    required: ["issueId", "statusId"],
     additionalProperties: false,
   },
 } as const;
