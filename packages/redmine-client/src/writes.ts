@@ -7,7 +7,7 @@ import type {
   UpdateIssueResult,
   UpdateStatusResult,
 } from "./types.js";
-import { formatNotesForRedmine } from "./textile.js";
+import { formatDescriptionForRedmine, formatNotesForRedmine } from "./textile.js";
 
 type RawIssue = {
   issue: {
@@ -35,7 +35,9 @@ function applyOptionalIssueFields(
   },
   opts: { includeWatchersEmpty?: boolean } = {}
 ): void {
-  if (input.description !== undefined) issue.description = input.description;
+  if (input.description !== undefined) {
+    issue.description = formatDescriptionForRedmine(input.description);
+  }
   if (input.trackerId !== undefined) issue.tracker_id = input.trackerId;
   if (input.statusId !== undefined) issue.status_id = input.statusId;
   if (input.priorityId !== undefined) issue.priority_id = input.priorityId;

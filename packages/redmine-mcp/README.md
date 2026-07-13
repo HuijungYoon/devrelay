@@ -8,7 +8,7 @@ Cursor · Claude Code · Codex용 **Redmine MCP 서버**입니다.
 ## 빠른 시작
 
 ```bash
-npx -y redmine-devrelay@0.3.1
+npx -y redmine-devrelay@0.3.2
 ```
 
 | 환경변수          | 설명               |
@@ -18,8 +18,14 @@ npx -y redmine-devrelay@0.3.1
 
 ## 쓰기 규칙
 
-**미리보기 → 확인 → `confirm=true`.** 쓰기 도구는 dry-run이 기본입니다.  
-코멘트/`notes`는 Textile 줄바꿈을 위해 `\n` → `<br />` 로 자동 변환합니다.
+**미리보기 → 확인 → `confirm=true`.** 쓰기 도구는 dry-run이 기본입니다.
+
+이 Redmine은 **HTML 본문**을 씁니다.
+
+| 필드 | 자동 변환 |
+| --- | --- |
+| `description` | 일반 텍스트 줄 → `<p>…</p>` (이미 HTML이면 그대로) |
+| `notes` / 댓글 | 줄바꿈 → `<br />` |
 
 ## 조회 API
 

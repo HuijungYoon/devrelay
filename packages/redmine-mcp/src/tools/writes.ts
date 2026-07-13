@@ -1,5 +1,9 @@
 import type { RedmineClient, RedmineUser } from "redmine-devrelay-client";
-import { RedmineError, matchMemberByName } from "redmine-devrelay-client";
+import {
+  RedmineError,
+  formatDescriptionForRedmine,
+  matchMemberByName,
+} from "redmine-devrelay-client";
 import type {
   AddCommentInput,
   CreateIssueInput,
@@ -183,7 +187,7 @@ export async function handleCreateIssue(
     projectId: input.projectId,
     subject: input.subject,
     ...(input.description !== undefined
-      ? { description: input.description }
+      ? { description: formatDescriptionForRedmine(input.description) }
       : {}),
     ...(input.trackerId !== undefined ? { trackerId: input.trackerId } : {}),
     ...(input.statusId !== undefined ? { statusId: input.statusId } : {}),
@@ -291,7 +295,11 @@ export async function handleUpdateIssue(
     push("subject", current.subject, input.subject);
   }
   if (input.description !== undefined) {
-    push("description", current.description, input.description);
+    push(
+      "description",
+      current.description,
+      formatDescriptionForRedmine(input.description)
+    );
   }
   if (input.trackerId !== undefined) {
     push("trackerId", current.tracker?.id ?? null, input.trackerId);

@@ -30,14 +30,14 @@ describe("write methods", () => {
     const result = await client.createIssue({
       projectId: 1,
       subject: "Bug",
-      description: "d",
+      description: "line1\n\nline2",
       assignedTo: "me",
     });
     expect(postJson).toHaveBeenCalledWith("/issues.json", {
       issue: {
         project_id: 1,
         subject: "Bug",
-        description: "d",
+        description: "<p>line1</p>\n<p>line2</p>",
         assigned_to_id: "me",
       },
     });
