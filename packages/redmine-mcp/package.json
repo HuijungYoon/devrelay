@@ -1,15 +1,25 @@
 {
   "name": "redmine-devrelay",
-  "version": "0.2.0",
-  "description": "Read-only Redmine MCP server (DevRelay) ??test connection, list projects, search/get issues",
+  "version": "0.2.2",
+  "description": "Redmine MCP server for Cursor/Claude/Codex — read issues and create/comment/update with confirm gate (DevRelay)",
   "type": "module",
   "bin": {
     "redmine-devrelay": "./dist/index.js"
   },
   "main": "./dist/index.js",
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HuijungYoon/devrelay.git",
+    "directory": "packages/redmine-mcp"
+  },
+  "homepage": "https://github.com/HuijungYoon/devrelay#readme",
+  "bugs": {
+    "url": "https://github.com/HuijungYoon/devrelay/issues"
+  },
   "license": "MIT",
   "engines": {
     "node": ">=20"
