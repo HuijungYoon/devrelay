@@ -4,7 +4,7 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import { RedmineClient, RedmineError } from "@m2i/redmine-client";
+import { RedmineClient, RedmineError } from "redmine-devrelay-client";
 import { toMcpError } from "./errors.js";
 import { logAudit, logInfo } from "./logging.js";
 import { handleTestConnection } from "./tools/connection.js";

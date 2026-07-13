@@ -1,6 +1,7 @@
 {
-  "name": "@m2i/redmine-client",
+  "name": "redmine-devrelay-client",
   "version": "0.1.0",
+  "description": "Redmine REST client used by redmine-devrelay MCP",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -13,10 +14,15 @@
   "files": [
     "dist"
   ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",
-    "lint": "tsc -p tsconfig.json --noEmit"
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "prepublishOnly": "pnpm run build"
   },
   "devDependencies": {
     "@types/node": "22.13.10",

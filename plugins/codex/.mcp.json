@@ -1,7 +1,7 @@
 ﻿{
   "redmine": {
     "command": "npx",
-    "args": ["-y", "@m2i/redmine-mcp@0.1.0"],
-    "env_vars": ["REDMINE_URL", "REDMINE_API_KEY", "REDMINE_CA_CERT_PATH"]
+    "args": ["-y", "redmine-devrelay@0.1.0"],
+    "env_vars": ["REDMINE_URL", "REDMINE_API_KEY", "REDMINE_ALLOWED_HOSTS", "REDMINE_CA_CERT_PATH"]
   }
 }

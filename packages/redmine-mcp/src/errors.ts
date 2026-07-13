@@ -1,4 +1,4 @@
-import { RedmineError } from "@m2i/redmine-client";
+import { RedmineError } from "redmine-devrelay-client";
 
 export type McpErrorPayload = {
   code: string;

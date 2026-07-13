@@ -1,4 +1,4 @@
-import type { RedmineClient } from "@m2i/redmine-client";
+import type { RedmineClient } from "redmine-devrelay-client";
 
 export async function handleTestConnection(client: RedmineClient) {
   const user = await client.getCurrentUser();

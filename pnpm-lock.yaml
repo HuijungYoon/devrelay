@@ -26,12 +26,12 @@ importers:
 
   packages/redmine-mcp:
     dependencies:
-      '@m2i/redmine-client':
-        specifier: workspace:*
-        version: link:../redmine-client
       '@modelcontextprotocol/sdk':
         specifier: 1.12.1
         version: 1.12.1
+      redmine-devrelay-client:
+        specifier: workspace:*
+        version: link:../redmine-client
       zod:
         specifier: 3.25.28
         version: 3.25.28

@@ -2,8 +2,9 @@
 
 Monorepo for Redmine MCP Phase 1 (read-only):
 
-- `@m2i/redmine-client` — Redmine REST client
-- `@m2i/redmine-mcp` — STDIO MCP server (4 read tools)
+- `redmine-devrelay-client` — Redmine REST client
+- `redmine-devrelay` — STDIO MCP server (4 read tools)
+- `plugins/cursor` — Cursor Marketplace plugin (`/add-plugin redmine-devrelay`)
 - `plugins/claude-code` — Claude plugin + `/redmine:my-issues`, `/redmine:issue`
 - `plugins/codex` — Codex plugin + matching skills
 
@@ -11,11 +12,15 @@ Monorepo for Redmine MCP Phase 1 (read-only):
 
 ```bash
 pnpm install
-pnpm --filter @m2i/redmine-client build
-pnpm --filter @m2i/redmine-mcp build
+pnpm --filter redmine-devrelay-client build
+pnpm --filter redmine-devrelay build
 ```
 
-Copy `.env.example` and set `REDMINE_URL` / `REDMINE_API_KEY`.
+Copy `.env.example` and set `REDMINE_URL` / `REDMINE_API_KEY` / `REDMINE_ALLOWED_HOSTS`.
+
+Published npm: `npx -y redmine-devrelay@0.1.0`
+
+Cursor plugin: `plugins/cursor` — submit at https://cursor.com/marketplace/publish then `/add-plugin redmine-devrelay`
 
 Docs: `docs/installation.md`, `docs/security.md`, `docs/troubleshooting.md`, `docs/development.md`.
 
