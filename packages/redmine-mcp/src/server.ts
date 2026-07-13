@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -11,16 +12,26 @@ import { handleTestConnection } from "./tools/connection.js";
 import { handleGetIssue, handleSearchIssues } from "./tools/issues.js";
 import { handleListProjects } from "./tools/projects.js";
 import {
+  handleAddComment,
+  handleCreateIssue,
+  handleUpdateStatus,
+} from "./tools/writes.js";
+import {
+  safeParseAddComment,
   safeParseConnection,
+  safeParseCreateIssue,
   safeParseGetIssue,
   safeParseListProjects,
   safeParseSearch,
+  safeParseUpdateStatus,
   toolJsonSchemas,
 } from "./tools/schemas.js";
 
 const INSTRUCTIONS = `Redmine read tools may be used without write confirmation.
+Write tools (redmine_create_issue, redmine_add_comment, redmine_update_status) default to dry-run.
+Only pass confirm=true after the user explicitly approves the dry-run preview.
 Do not print API keys or credentials.
-Phase 1 has no write tools; do not invent write operations.
+Do not invent write operations beyond the three write tools.
 Prefer redmine_search_issues with assignedTo=me for "my open issues".`;
 
 const TOOLS = [
@@ -46,6 +57,24 @@ const TOOLS = [
       "Get a Redmine issue by id, optionally including journals and related data.",
     inputSchema: toolJsonSchemas.redmine_get_issue,
   },
+  {
+    name: "redmine_create_issue",
+    description:
+      "Create a Redmine issue. Defaults to dry-run; set confirm=true to apply. Requires projectId.",
+    inputSchema: toolJsonSchemas.redmine_create_issue,
+  },
+  {
+    name: "redmine_add_comment",
+    description:
+      "Add a comment (notes) to an issue. Defaults to dry-run; set confirm=true to apply.",
+    inputSchema: toolJsonSchemas.redmine_add_comment,
+  },
+  {
+    name: "redmine_update_status",
+    description:
+      "Update issue status by statusId. Defaults to dry-run; set confirm=true to apply.",
+    inputSchema: toolJsonSchemas.redmine_update_status,
+  },
 ] as const;
 
 function hostFromUrl(url: string): string {
@@ -64,11 +93,23 @@ function validationError(message: string): RedmineError {
   });
 }
 
+function dryRunFromResult(result: unknown): boolean | undefined {
+  if (
+    result &&
+    typeof result === "object" &&
+    "dryRun" in result &&
+    typeof (result as { dryRun: unknown }).dryRun === "boolean"
+  ) {
+    return (result as { dryRun: boolean }).dryRun;
+  }
+  return undefined;
+}
+
 export async function startServer(
   client: RedmineClient = RedmineClient.fromEnv()
 ): Promise<Server> {
   const server = new Server(
-    { name: "redmine", version: "0.1.0" },
+    { name: "redmine", version: "0.2.0" },
     { capabilities: { tools: {} }, instructions: INSTRUCTIONS }
   );
 
@@ -112,6 +153,24 @@ export async function startServer(
           result = await handleGetIssue(client, parsed.data);
           break;
         }
+        case "redmine_create_issue": {
+          const parsed = safeParseCreateIssue(req.params.arguments);
+          if (!parsed.success) throw validationError(parsed.error.message);
+          result = await handleCreateIssue(client, parsed.data);
+          break;
+        }
+        case "redmine_add_comment": {
+          const parsed = safeParseAddComment(req.params.arguments);
+          if (!parsed.success) throw validationError(parsed.error.message);
+          result = await handleAddComment(client, parsed.data);
+          break;
+        }
+        case "redmine_update_status": {
+          const parsed = safeParseUpdateStatus(req.params.arguments);
+          if (!parsed.success) throw validationError(parsed.error.message);
+          result = await handleUpdateStatus(client, parsed.data);
+          break;
+        }
         default:
           throw validationError(`Unknown tool: ${toolName}`);
       }
@@ -121,6 +180,7 @@ export async function startServer(
         host,
         ok: true,
         durationMs: Date.now() - started,
+        dryRun: dryRunFromResult(result),
       });
 
       return {

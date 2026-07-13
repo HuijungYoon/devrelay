@@ -13,6 +13,7 @@ export function logAudit(entry: {
   httpStatus?: number;
   durationMs: number;
   errorCode?: string;
+  dryRun?: boolean;
 }): void {
   console.error(
     JSON.stringify({

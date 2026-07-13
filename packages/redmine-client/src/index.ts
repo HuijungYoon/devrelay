@@ -4,4 +4,9 @@ export { maskSecret } from "./mask.js";
 export { RedmineHttp, type RedmineHttpOptions } from "./http.js";
 export { RedmineClient } from "./client.js";
 export { buildIssueQuery } from "./issues.js";
+export {
+  addComment,
+  createIssue,
+  updateIssueStatus,
+} from "./writes.js";
 export type * from "./types.js";

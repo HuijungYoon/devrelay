@@ -53,4 +53,36 @@ describe("RedmineHttp", () => {
     expect(data.user.id).toBe(1);
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
+
+  it("postJson sends JSON body with Content-Type and does not retry 503", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(new Response("busy", { status: 503 }));
+    vi.stubGlobal("fetch", fetchMock);
+    const http = new RedmineHttp(baseConfig, { retryBackoffMs: 1 });
+    await expect(
+      http.postJson("/issues.json", { issue: { subject: "x", project_id: 1 } })
+    ).rejects.toMatchObject({ code: "REDMINE_UNKNOWN_ERROR", httpStatus: 503 });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [, init] = fetchMock.mock.calls[0];
+    expect(init.method).toBe("POST");
+    expect(init.headers["Content-Type"]).toBe("application/json");
+    expect(JSON.parse(init.body)).toEqual({
+      issue: { subject: "x", project_id: 1 },
+    });
+  });
+
+  it("putJson uses PUT and returns JSON on 200", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ issue: { id: 9 } }), { status: 200 })
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    const http = new RedmineHttp(baseConfig);
+    const data = await http.putJson<{ issue: { id: number } }>(
+      "/issues/9.json",
+      { issue: { notes: "hi" } }
+    );
+    expect(data.issue.id).toBe(9);
+    expect(fetchMock.mock.calls[0][1].method).toBe("PUT");
+  });
 });

@@ -2,6 +2,9 @@ import type { RedmineConfig } from "./config.js";
 import { loadConfig } from "./config.js";
 import { RedmineHttp } from "./http.js";
 import type {
+  AddCommentResult,
+  CreateIssueInput,
+  CreateIssueResult,
   IssueInclude,
   ListProjectsResult,
   NormalizedIssueDetail,
@@ -9,8 +12,14 @@ import type {
   RedmineUser,
   SearchIssuesInput,
   SearchIssuesResult,
+  UpdateStatusResult,
 } from "./types.js";
 import { getIssue, searchIssues } from "./issues.js";
+import {
+  addComment,
+  createIssue,
+  updateIssueStatus,
+} from "./writes.js";
 
 type RawUser = {
   user: {
@@ -127,5 +136,21 @@ export class RedmineClient {
     opts: { include?: IssueInclude[] } = {}
   ): Promise<NormalizedIssueDetail> {
     return getIssue(this.http, issueId, opts);
+  }
+
+  createIssue(input: CreateIssueInput): Promise<CreateIssueResult> {
+    return createIssue(this.http, input);
+  }
+
+  addComment(issueId: number, notes: string): Promise<AddCommentResult> {
+    return addComment(this.http, issueId, notes);
+  }
+
+  updateIssueStatus(
+    issueId: number,
+    statusId: number,
+    notes?: string
+  ): Promise<UpdateStatusResult> {
+    return updateIssueStatus(this.http, issueId, statusId, notes);
   }
 }

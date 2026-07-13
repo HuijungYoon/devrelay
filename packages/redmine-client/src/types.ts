@@ -85,6 +85,32 @@ export type SearchIssuesInput = {
   offset?: number;
 };
 
+export type CreateIssueInput = {
+  projectId: number;
+  subject: string;
+  description?: string;
+  trackerId?: number;
+  priorityId?: number;
+  assignedTo?: "me" | number;
+};
+
+export type CreateIssueResult = {
+  id: number;
+  subject: string;
+  project: { id: number; name: string } | null;
+  status: { id: number; name: string } | null;
+};
+
+export type AddCommentResult = {
+  issueId: number;
+  updated: true;
+};
+
+export type UpdateStatusResult = {
+  issueId: number;
+  status: { id: number; name: string } | null;
+};
+
 export type SearchIssuesResult = {
   issues: NormalizedIssueSummary[];
   totalCount: number;
