@@ -7,6 +7,7 @@ import type {
   UpdateIssueResult,
   UpdateStatusResult,
 } from "./types.js";
+import { formatNotesForRedmine } from "./textile.js";
 
 type RawIssue = {
   issue: {
@@ -50,7 +51,7 @@ function applyOptionalIssueFields(
       issue.watcher_user_ids = input.watcherUserIds;
     }
   }
-  if (input.notes !== undefined) issue.notes = input.notes;
+  if (input.notes !== undefined) issue.notes = formatNotesForRedmine(input.notes);
 }
 
 export async function createIssue(
@@ -98,7 +99,9 @@ export async function addComment(
   issueId: number,
   notes: string
 ): Promise<AddCommentResult> {
-  await http.putJson(`/issues/${issueId}.json`, { issue: { notes } });
+  await http.putJson(`/issues/${issueId}.json`, {
+    issue: { notes: formatNotesForRedmine(notes) },
+  });
   return { issueId, updated: true };
 }
 
@@ -109,7 +112,7 @@ export async function updateIssueStatus(
   notes?: string
 ): Promise<UpdateStatusResult> {
   const issue: Record<string, unknown> = { status_id: statusId };
-  if (notes !== undefined) issue.notes = notes;
+  if (notes !== undefined) issue.notes = formatNotesForRedmine(notes);
   const data = await http.putJson<RawIssue>(`/issues/${issueId}.json`, {
     issue,
   });

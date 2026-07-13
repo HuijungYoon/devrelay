@@ -126,9 +126,9 @@ describe("write methods", () => {
     const putJson = vi.fn().mockResolvedValue({});
     const http = { postJson: vi.fn(), putJson } as unknown as RedmineHttp;
     const client = new RedmineClient(http, config);
-    await client.addComment(7, "hello");
+    await client.addComment(7, "hello\nworld");
     expect(putJson).toHaveBeenCalledWith("/issues/7.json", {
-      issue: { notes: "hello" },
+      issue: { notes: "hello<br />\nworld<br />" },
     });
   });
 

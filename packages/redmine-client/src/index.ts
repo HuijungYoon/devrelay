@@ -12,4 +12,5 @@ export {
 } from "./writes.js";
 export { searchUsers, normalizeListedUser } from "./users.js";
 export { listProjectMembers, matchMemberByName } from "./memberships.js";
+export { formatNotesForRedmine } from "./textile.js";
 export type * from "./types.js";
