@@ -117,7 +117,7 @@ describe("write methods", () => {
         done_ratio: 20,
         assigned_to_id: "me",
         watcher_user_ids: [99],
-        notes: "progress",
+        notes: "progress<br />",
       },
     });
   });
@@ -140,7 +140,7 @@ describe("write methods", () => {
     const client = new RedmineClient(http, config);
     const result = await client.updateIssueStatus(7, 4, "done");
     expect(putJson).toHaveBeenCalledWith("/issues/7.json", {
-      issue: { status_id: 4, notes: "done" },
+      issue: { status_id: 4, notes: "done<br />" },
     });
     expect(result.status?.id).toBe(4);
   });
