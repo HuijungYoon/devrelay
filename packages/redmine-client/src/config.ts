@@ -90,7 +90,11 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): RedmineConfig 
     .map((h) => h.trim().toLowerCase())
     .filter(Boolean);
 
-  if (allowedHosts?.length && !allowedHosts.includes(host)) {
+  if (
+    allowedHosts?.length &&
+    !allowedHosts.includes(host) &&
+    !isPrivateIpv4(host)
+  ) {
     throw new RedmineError({
       code: "REDMINE_VALIDATION_ERROR",
       message: `Host ${host} is not in REDMINE_ALLOWED_HOSTS`,
@@ -100,17 +104,18 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): RedmineConfig 
 
   const isInsecureHttpAllowed =
     parsed.protocol === "http:" &&
-    !!allowedHosts?.includes(host) &&
-    (LOCAL_HTTP_HOSTS.has(host) || isPrivateIpv4(host));
+    (isPrivateIpv4(host) ||
+      (LOCAL_HTTP_HOSTS.has(host) && !!allowedHosts?.includes(host)));
 
   if (parsed.protocol !== "https:" && !isInsecureHttpAllowed) {
     throw new RedmineError({
       code: "REDMINE_VALIDATION_ERROR",
       message:
-        "REDMINE_URL must use https (http only for allowlisted local/private hosts)",
+        "REDMINE_URL must use https (http only for private IPs or allowlisted local hosts)",
       check: [
         "Use https://...",
-        "Or allowlist localhost/redmine/RFC1918 hosts for local Redmine",
+        "Or use an RFC1918 private IP over http",
+        "Or allowlist localhost/redmine for Docker tests",
       ],
     });
   }
