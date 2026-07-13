@@ -1,6 +1,6 @@
 ﻿# Codex — Redmine plugin (Phase 1)
 
-Read-only Redmine access via `@m2i/redmine-mcp@0.1.0`.
+Read-only Redmine access via `redmine-mcp@0.1.0`.
 
 ## Env
 

@@ -38,9 +38,7 @@ export REDMINE_URL=http://localhost:3000
 export REDMINE_API_KEY=<your-key>
 export REDMINE_ALLOWED_HOSTS=localhost
 export REDMINE_INTEGRATION=1
-pnpm --filter redmine-client exec vitest run tests/integration
-# main에 아직 @m2i 패키지명이면:
-# pnpm --filter @m2i/redmine-client exec vitest run tests/integration
+pnpm --filter redmine-devrelay-client exec vitest run tests/integration
 ```
 
 Without `REDMINE_INTEGRATION=1`, integration tests are skipped.

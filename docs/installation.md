@@ -45,6 +45,11 @@ Slash commands:
 
 Load `plugins/codex` per Codex plugin docs. Skills: `my-issues`, `issue`.
 
-## 7. Connection check
+## 7. Cursor
+
+After Marketplace listing: `/add-plugin redmine-devrelay`.  
+See `plugins/cursor/README.md`.
+
+## 8. Connection check
 
 Ask the agent to call `redmine_test_connection`, or use MCP Inspector.
