@@ -62,6 +62,42 @@ export class RedmineHttp {
     throw this.mapNetworkError(lastError);
   }
 
+  async postJson<T>(path: string, body: unknown): Promise<T | undefined> {
+    return this.sendJson<T>("POST", path, body);
+  }
+
+  async putJson<T>(path: string, body: unknown): Promise<T | undefined> {
+    return this.sendJson<T>("PUT", path, body);
+  }
+
+  private async sendJson<T>(
+    method: "POST" | "PUT",
+    path: string,
+    body: unknown
+  ): Promise<T | undefined> {
+    const url = this.buildUrl(path);
+    try {
+      const response = await this.request(
+        url,
+        method,
+        JSON.stringify(body)
+      );
+      if (!response.ok) {
+        const bodyText = await response.text();
+        this.mapStatus(response.status, bodyText);
+      }
+      if (response.status === 204) {
+        return undefined;
+      }
+      return (await response.json()) as T;
+    } catch (err) {
+      if (err instanceof RedmineError) {
+        throw this.maskError(err);
+      }
+      throw this.mapNetworkError(err);
+    }
+  }
+
   private buildUrl(
     path: string,
     query?: Record<string, string | number | undefined>
@@ -76,7 +112,11 @@ export class RedmineHttp {
     return url.toString();
   }
 
-  private async request(url: string, body?: string): Promise<Response> {
+  private async request(
+    url: string,
+    method = "GET",
+    body?: string
+  ): Promise<Response> {
     const headers: Record<string, string> = {
       Accept: "application/json",
       "User-Agent": this.config.userAgent,
@@ -87,10 +127,13 @@ export class RedmineHttp {
     }
 
     const init: RequestInit & { dispatcher?: Dispatcher } = {
-      method: "GET",
+      method,
       headers,
       signal: AbortSignal.timeout(this.config.requestTimeoutMs),
     };
+    if (body !== undefined) {
+      init.body = body;
+    }
     if (this.dispatcher) {
       init.dispatcher = this.dispatcher;
     }
