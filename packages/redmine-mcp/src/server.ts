@@ -60,7 +60,7 @@ const TOOLS = [
   {
     name: "redmine_create_issue",
     description:
-      "Create a Redmine issue. Defaults to dry-run; set confirm=true to apply. Requires projectId.",
+      "Create a Redmine issue. Defaults to dry-run; set confirm=true to apply. Requires projectId. Optional assignedTo: \"me\" or user id (assignee).",
     inputSchema: toolJsonSchemas.redmine_create_issue,
   },
   {

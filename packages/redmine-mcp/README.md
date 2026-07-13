@@ -9,7 +9,7 @@ Cursor · Claude Code · Codex용 **Redmine MCP 서버**입니다.
 ## 빠른 시작
 
 ```bash
-npx -y redmine-devrelay@0.2.3
+npx -y redmine-devrelay@0.2.4
 ```
 
 환경변수:
