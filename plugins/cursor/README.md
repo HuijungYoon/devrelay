@@ -9,6 +9,7 @@ Install target for `/add-plugin redmine-devrelay` after Marketplace listing.
 
 | Slash | 동작 |
 | --- | --- |
+| `/help` | 슬래시 명령 목록·간단 설명 |
 | `/test-connection` | Redmine 연결·현재 사용자 확인 |
 | `/list-projects` | 프로젝트 목록 (검색어 가능) |
 | `/my-issues` | 내게 할당된 열린 이슈 |
