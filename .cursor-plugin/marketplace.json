@@ -5,14 +5,14 @@
     "email": "hjyoon@mxon.co.kr"
   },
   "metadata": {
-    "description": "DevRelay Cursor plugins — Redmine MCP integration",
+    "description": "DevRelay plugins for Cursor — Redmine read-only MCP and issue skills",
     "version": "0.1.0"
   },
   "plugins": [
     {
       "name": "redmine-devrelay",
       "source": "./plugins/cursor",
-      "description": "Read-only Redmine MCP with my-issues and issue skills",
+      "description": "Connect Cursor to Redmine (read-only): test connection, list projects, search my open issues, and view issue detail with journals.",
       "version": "0.1.0",
       "keywords": ["redmine", "mcp", "issues"],
       "category": "developer-tools",
