@@ -17,7 +17,8 @@ describe("loadConfig", () => {
   it("rejects non-https in production mode", () => {
     process.env.REDMINE_URL = "http://evil.example.com";
     process.env.REDMINE_API_KEY = "k";
-    expect(() => loadConfig()).toThrow(/https/i);
+    delete process.env.REDMINE_ALLOWED_HOSTS;
+    expect(() => loadConfig()).toThrow(/https|ALLOWED_HOSTS/i);
   });
 
   it("allows http localhost when host is allowlisted", () => {
@@ -26,6 +27,21 @@ describe("loadConfig", () => {
     process.env.REDMINE_ALLOWED_HOSTS = "localhost";
     const cfg = loadConfig();
     expect(cfg.baseUrl).toBe("http://localhost:3000");
+  });
+
+  it("allows http private IP when host is allowlisted", () => {
+    process.env.REDMINE_URL = "http://192.168.1.20/redmine";
+    process.env.REDMINE_API_KEY = "k";
+    process.env.REDMINE_ALLOWED_HOSTS = "192.168.1.20";
+    const cfg = loadConfig();
+    expect(cfg.baseUrl).toBe("http://192.168.1.20/redmine");
+  });
+
+  it("rejects http public host even when allowlisted", () => {
+    process.env.REDMINE_URL = "http://evil.example.com";
+    process.env.REDMINE_API_KEY = "k";
+    process.env.REDMINE_ALLOWED_HOSTS = "evil.example.com";
+    expect(() => loadConfig()).toThrow(/https/i);
   });
 
   it("rejects metadata IP", () => {
