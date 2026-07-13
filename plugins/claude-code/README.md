@@ -38,6 +38,7 @@ claude --plugin-dir ./plugins/claude-code
 
 Slash commands:
 
+- `/redmine:help` — 명령 목록·간단 설명
 - `/redmine:test-connection` — 연결 확인
 - `/redmine:list-projects` — 프로젝트 목록
 - `/redmine:my-issues` — 내 열린 이슈
