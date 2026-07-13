@@ -5,8 +5,14 @@ Install target for `/add-plugin redmine-devrelay` after Marketplace listing.
 ## Components
 
 - **MCP:** `npx -y redmine-devrelay@0.1.0`
-- **Skills:** `my-issues`, `issue`
-- **Commands:** `/my-issues`, `/issue`
+- **Skills / slash commands:**
+
+| Slash | 동작 |
+| --- | --- |
+| `/test-connection` | Redmine 연결·현재 사용자 확인 |
+| `/list-projects` | 프로젝트 목록 (검색어 가능) |
+| `/my-issues` | 내게 할당된 열린 이슈 |
+| `/issue` | 이슈 상세 + journals (예: `/issue 23840`) |
 
 ## Required env (set in Cursor MCP settings after install)
 

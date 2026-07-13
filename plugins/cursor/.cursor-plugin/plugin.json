@@ -2,7 +2,7 @@
   "name": "redmine-devrelay",
   "displayName": "Redmine DevRelay",
   "version": "0.1.0",
-  "description": "Read-only Redmine MCP: test connection, list projects, search and view issues assigned to you.",
+  "description": "Connect Cursor to your Redmine with a read-only MCP server. Slash commands: /test-connection, /list-projects, /my-issues, /issue — without write access.",
   "author": {
     "name": "M2I / markyoon",
     "email": "hjyoon@mxon.co.kr"
@@ -23,7 +23,7 @@
     "mcp",
     "issues"
   ],
-  "logo": "assets/logo.svg",
+  "logo": "https://raw.githubusercontent.com/HuijungYoon/devrelay/main/plugins/cursor/assets/logo.svg",
   "skills": "./skills/",
   "commands": "./commands/",
   "mcpServers": "mcp.json"

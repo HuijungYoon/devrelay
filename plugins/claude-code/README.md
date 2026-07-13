@@ -38,5 +38,7 @@ claude --plugin-dir ./plugins/claude-code
 
 Slash commands:
 
-- `/redmine:my-issues`
-- `/redmine:issue` (pass an issue id)
+- `/redmine:test-connection` — 연결 확인
+- `/redmine:list-projects` — 프로젝트 목록
+- `/redmine:my-issues` — 내 열린 이슈
+- `/redmine:issue` — 이슈 상세 (이슈 id 전달)
