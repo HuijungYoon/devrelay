@@ -102,7 +102,9 @@ export class RedmineHttp {
     path: string,
     query?: Record<string, string | number | undefined>
   ): string {
-    const url = new URL(path, `${this.config.baseUrl}/`);
+    // Leading "/" drops baseUrl path segments (e.g. /redmine).
+    const relativePath = path.replace(/^\//, "");
+    const url = new URL(relativePath, `${this.config.baseUrl}/`);
     if (query) {
       for (const [key, value] of Object.entries(query)) {
         if (value === undefined) continue;

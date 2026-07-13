@@ -85,4 +85,19 @@ describe("RedmineHttp", () => {
     expect(data.issue.id).toBe(9);
     expect(fetchMock.mock.calls[0][1].method).toBe("PUT");
   });
+
+  it("preserves baseUrl path prefix such as /redmine", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ ok: true }), { status: 200 })
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    const http = new RedmineHttp({
+      ...baseConfig,
+      baseUrl: "http://192.168.1.20/redmine",
+    });
+    await http.getJson("/users/current.json");
+    expect(fetchMock.mock.calls[0][0]).toBe(
+      "http://192.168.1.20/redmine/users/current.json"
+    );
+  });
 });

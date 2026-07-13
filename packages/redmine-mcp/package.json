@@ -1,6 +1,6 @@
 {
   "name": "redmine-devrelay",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Redmine MCP server for Cursor/Claude/Codex — read issues and create/comment/update with confirm gate (DevRelay)",
   "type": "module",
   "bin": {
