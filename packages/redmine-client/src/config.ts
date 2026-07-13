@@ -15,6 +15,21 @@ export type RedmineConfig = {
 
 const FORBIDDEN_HOSTS = new Set(["169.254.169.254", "metadata.google.internal"]);
 
+/** Loopback / compose service names allowed for local Docker http. */
+const LOCAL_HTTP_HOSTS = new Set(["localhost", "127.0.0.1", "redmine"]);
+
+function isPrivateIpv4(host: string): boolean {
+  const m = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(host);
+  if (!m) return false;
+  const octets = m.slice(1).map(Number);
+  if (octets.some((n) => n > 255)) return false;
+  const [a, b] = octets;
+  if (a === 10) return true;
+  if (a === 192 && b === 168) return true;
+  if (a === 172 && b >= 16 && b <= 31) return true;
+  return false;
+}
+
 function parseIntEnv(
   env: NodeJS.ProcessEnv,
   name: string,
@@ -83,19 +98,19 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): RedmineConfig 
     });
   }
 
-  const isLocalHttp =
+  const isInsecureHttpAllowed =
     parsed.protocol === "http:" &&
-    (host === "localhost" || host === "127.0.0.1" || host === "redmine") &&
-    !!allowedHosts?.includes(host);
+    !!allowedHosts?.includes(host) &&
+    (LOCAL_HTTP_HOSTS.has(host) || isPrivateIpv4(host));
 
-  if (parsed.protocol !== "https:" && !isLocalHttp) {
+  if (parsed.protocol !== "https:" && !isInsecureHttpAllowed) {
     throw new RedmineError({
       code: "REDMINE_VALIDATION_ERROR",
       message:
-        "REDMINE_URL must use https (http only for allowlisted local Docker hosts)",
+        "REDMINE_URL must use https (http only for allowlisted local/private hosts)",
       check: [
         "Use https://...",
-        "Or allowlist localhost/redmine for Docker tests",
+        "Or allowlist localhost/redmine/RFC1918 hosts for local Redmine",
       ],
     });
   }
