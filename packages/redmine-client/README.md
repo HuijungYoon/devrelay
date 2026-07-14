@@ -2,14 +2,23 @@
 
 [redmine-devrelay](https://www.npmjs.com/package/redmine-devrelay) MCP 서버가 사용하는 Redmine REST 클라이언트입니다.
 
+- **버전:** `0.3.2` (MCP 서버와 맞춤)
 - **GitHub:** https://github.com/HuijungYoon/devrelay
 - **MCP 서버:** [redmine-devrelay](https://www.npmjs.com/package/redmine-devrelay)
 
-지원: 이슈 조회/생성/댓글/상태, **사용자 검색(`searchUsers`)**, 사설 IP HTTP 등.
-
 ```bash
-npm install redmine-devrelay-client
+npm install redmine-devrelay-client@0.3.2
 ```
+
+## 지원 기능
+
+- 이슈 조회 / 생성 / 수정 / 댓글 / 상태 변경
+- 프로젝트·멤버 목록, 사용자 검색 (`searchUsers`)
+- 담당자·관리자(`watchers`) 이름/id 해석
+- 사설 IPv4 HTTP, `/redmine` 등 base path 유지
+- HTML 본문 포맷
+  - `formatDescriptionForRedmine` — 평문 줄 → `<p>…</p>`
+  - `formatNotesForRedmine` — `\n` → `<br />`
 
 ## License
 

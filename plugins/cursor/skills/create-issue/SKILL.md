@@ -8,7 +8,7 @@ description: Create a Redmine issue after dry-run confirmation
 **미리보기 → 확인 → 적용.** `confirm=true`는 사용자 승인 후에만.
 
 1. **프로젝트** (필수) — 없으면 `redmine_list_projects`
-2. **subject** (+ description)
+2. **subject** (+ description) — description은 **일반 텍스트 줄바꿈**으로 작성. 클라이언트가 `<p>…</p>`로 변환함 (HTML 직접 쓰지 않아도 됨)
 3. **담당자** `assignedTo` (보통 `"me"`)
 4. **일감관리자** `watchers` — 필드에 누구든 (멤버 목록). 미지정이면 생략
 5. **유형·상태·우선순위·시작일·진척도** — `trackerId` / `statusId` / `priorityId` / `startDate` / `doneRatio` (모르면 id 확인 후). dry-run `wouldApply`에 **반드시** 포함해 보여 준다

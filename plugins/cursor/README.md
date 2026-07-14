@@ -2,9 +2,11 @@
 
 Install target for `/add-plugin redmine-devrelay` after Marketplace listing.
 
+**MCP 패키지:** `redmine-devrelay@0.3.2` (조회 + 쓰기, dry-run 확인 게이트)
+
 ## Components
 
-- **MCP:** `npx -y redmine-devrelay@0.1.0`
+- **MCP:** `npx -y redmine-devrelay@0.3.2`
 - **Skills / slash commands:**
 
 | Slash | 동작 |
@@ -14,19 +16,22 @@ Install target for `/add-plugin redmine-devrelay` after Marketplace listing.
 | `/list-projects` | 프로젝트 목록 (검색어 가능) |
 | `/my-issues` | 내게 할당된 열린 이슈 |
 | `/issue` | 이슈 상세 + journals (예: `/issue 23840`) |
-| `/create-issue` | 이슈 생성 (프로젝트·담당자 확인, dry-run 후 확인) |
+| `/create-issue` | 이슈 생성 (프로젝트·담당자·관리자, dry-run 후 확인) |
+| `/update-issue` | 이슈 수정 (이전→이후 표, dry-run 후 확인) |
 | `/add-comment` | 댓글 추가 (dry-run 후 확인) |
-| `/update-status` | 상태 변경 statusId (dry-run 후 확인) |
+| `/update-status` | 상태 변경 `statusId` (dry-run 후 확인) |
+
+description/댓글은 **평문 줄바꿈**으로 작성하면 됩니다 (`<p>` / `<br />` 자동).
 
 ## Required env (set in Cursor MCP settings after install)
 
 ```text
 REDMINE_URL=https://your-redmine.example.com
 REDMINE_API_KEY=...
-REDMINE_ALLOWED_HOSTS=your-redmine.example.com
 ```
 
-For private LAN HTTP (e.g. `http://192.168.1.20/redmine`), set `REDMINE_ALLOWED_HOSTS` to that host IP.
+선택: `REDMINE_ALLOWED_HOSTS`, `REDMINE_CA_CERT_PATH`  
+사설망 HTTP 예: `REDMINE_URL=http://192.168.1.20/redmine`
 
 ## Local test (before Marketplace approval)
 
@@ -36,7 +41,7 @@ Cursor → Settings → Plugins / Customize, or clone this repo and point a team
 .cursor-plugin/marketplace.json
 ```
 
-Plugin path: `plugins/cursor`
+Plugin path: `plugins/cursor` · `mcp.json`은 `redmine-devrelay@0.3.2`를 가리킵니다.
 
 ## Publish to Cursor Marketplace
 
