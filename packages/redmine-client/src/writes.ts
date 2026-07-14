@@ -1,6 +1,8 @@
 import type { RedmineHttp } from "./http.js";
 import type {
   AddCommentResult,
+  AddIssueAttachmentsInput,
+  AddIssueAttachmentsResult,
   CreateIssueInput,
   CreateIssueResult,
   UpdateIssueInput,
@@ -65,6 +67,13 @@ export async function createIssue(
     subject: input.subject,
   };
   applyOptionalIssueFields(issue, input, { includeWatchersEmpty: false });
+  if (input.uploads?.length) {
+    issue.uploads = input.uploads.map((u) => ({
+      token: u.token,
+      filename: u.filename,
+      ...(u.description !== undefined ? { description: u.description } : {}),
+    }));
+  }
 
   const data = await http.postJson<RawIssue>("/issues.json", { issue });
   if (!data?.issue) {
@@ -94,6 +103,22 @@ export async function updateIssue(
     subject: data?.issue?.subject ?? input.subject,
     status: data?.issue?.status ?? null,
   };
+}
+
+export async function addIssueAttachments(
+  http: RedmineHttp,
+  input: AddIssueAttachmentsInput
+): Promise<AddIssueAttachmentsResult> {
+  await http.putJson(`/issues/${input.issueId}.json`, {
+    issue: {
+      uploads: input.uploads.map((u) => ({
+        token: u.token,
+        filename: u.filename,
+        ...(u.description !== undefined ? { description: u.description } : {}),
+      })),
+    },
+  });
+  return { issueId: input.issueId, uploadedCount: input.uploads.length };
 }
 
 export async function addComment(

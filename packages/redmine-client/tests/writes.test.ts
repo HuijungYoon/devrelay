@@ -99,6 +99,37 @@ describe("write methods", () => {
     });
   });
 
+  it("createIssue includes uploads tokens", async () => {
+    const postJson = vi.fn().mockResolvedValue({
+      issue: { id: 1, subject: "S", project: null, status: null },
+    });
+    const http = { postJson, putJson: vi.fn() } as unknown as RedmineHttp;
+    const client = new RedmineClient(http, config);
+    await client.createIssue({
+      projectId: 1,
+      subject: "S",
+      uploads: [{ token: "t1", filename: "a.txt", description: "d" }],
+    });
+    expect(postJson).toHaveBeenCalledWith("/issues.json", {
+      issue: expect.objectContaining({
+        uploads: [{ token: "t1", filename: "a.txt", description: "d" }],
+      }),
+    });
+  });
+
+  it("addIssueAttachments PUTs uploads", async () => {
+    const putJson = vi.fn().mockResolvedValue(undefined);
+    const http = { postJson: vi.fn(), putJson } as unknown as RedmineHttp;
+    const client = new RedmineClient(http, config);
+    await client.addIssueAttachments({
+      issueId: 7,
+      uploads: [{ token: "t2", filename: "b.png" }],
+    });
+    expect(putJson).toHaveBeenCalledWith("/issues/7.json", {
+      issue: { uploads: [{ token: "t2", filename: "b.png" }] },
+    });
+  });
+
   it("updateIssue PUTs only provided fields and watcher_user_ids", async () => {
     const putJson = vi.fn().mockResolvedValue({
       issue: { id: 7, subject: "X", status: { id: 2, name: "WIP" } },

@@ -3,6 +3,10 @@ import { loadConfig } from "./config.js";
 import { RedmineHttp } from "./http.js";
 import type {
   AddCommentResult,
+  AddIssueAttachmentsInput,
+  AddIssueAttachmentsResult,
+  AttachmentInput,
+  AttachmentPreview,
   CreateIssueInput,
   CreateIssueResult,
   IssueInclude,
@@ -17,12 +21,19 @@ import type {
   UpdateIssueInput,
   UpdateIssueResult,
   UpdateStatusResult,
+  UploadedAttachment,
 } from "./types.js";
 import { getIssue, searchIssues } from "./issues.js";
 import { listProjectMembers } from "./memberships.js";
 import { searchUsers } from "./users.js";
 import {
+  inspectAttachments,
+  uploadAttachments,
+  uploadFile,
+} from "./attachments.js";
+import {
   addComment,
+  addIssueAttachments,
   createIssue,
   updateIssue,
   updateIssueStatus,
@@ -166,6 +177,24 @@ export class RedmineClient {
 
   updateIssue(input: UpdateIssueInput): Promise<UpdateIssueResult> {
     return updateIssue(this.http, input);
+  }
+
+  inspectAttachments(inputs: AttachmentInput[]): AttachmentPreview[] {
+    return inspectAttachments(inputs);
+  }
+
+  uploadFile(input: AttachmentInput): Promise<UploadedAttachment> {
+    return uploadFile(this.http, input);
+  }
+
+  uploadAttachments(inputs: AttachmentInput[]): Promise<UploadedAttachment[]> {
+    return uploadAttachments(this.http, inputs);
+  }
+
+  addIssueAttachments(
+    input: AddIssueAttachmentsInput
+  ): Promise<AddIssueAttachmentsResult> {
+    return addIssueAttachments(this.http, input);
   }
 
   addComment(issueId: number, notes: string): Promise<AddCommentResult> {

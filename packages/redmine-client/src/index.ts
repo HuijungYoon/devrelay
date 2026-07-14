@@ -6,11 +6,21 @@ export { RedmineClient } from "./client.js";
 export { buildIssueQuery } from "./issues.js";
 export {
   addComment,
+  addIssueAttachments,
   createIssue,
   updateIssue,
   updateIssueStatus,
 } from "./writes.js";
 export { searchUsers, normalizeListedUser } from "./users.js";
 export { listProjectMembers, matchMemberByName } from "./memberships.js";
+export {
+  inspectAttachments,
+  uploadAttachments,
+  uploadFile,
+} from "./attachments.js";
+export {
+  ATTACHMENT_MAX_BYTES,
+  ATTACHMENT_MAX_FILES,
+} from "./types.js";
 export { formatNotesForRedmine, formatDescriptionForRedmine } from "./textile.js";
 export type * from "./types.js";

@@ -85,6 +85,35 @@ export type SearchIssuesInput = {
   offset?: number;
 };
 
+export type AttachmentInput = {
+  path: string;
+  filename?: string;
+  description?: string;
+};
+
+export type AttachmentPreview = {
+  path: string;
+  filename: string;
+  sizeBytes: number;
+  description?: string;
+};
+
+export type UploadedAttachment = {
+  token: string;
+  filename: string;
+  description?: string;
+  sizeBytes: number;
+};
+
+export type IssueUploadToken = {
+  token: string;
+  filename: string;
+  description?: string;
+};
+
+export const ATTACHMENT_MAX_FILES = 5;
+export const ATTACHMENT_MAX_BYTES = 10 * 1024 * 1024;
+
 export type CreateIssueInput = {
   projectId: number;
   subject: string;
@@ -100,6 +129,18 @@ export type CreateIssueInput = {
   assignedTo?: "me" | number;
   /** 일감관리자 — Redmine watcher_user_ids */
   watcherUserIds?: number[];
+  /** Pre-uploaded Redmine upload tokens */
+  uploads?: IssueUploadToken[];
+};
+
+export type AddIssueAttachmentsInput = {
+  issueId: number;
+  uploads: IssueUploadToken[];
+};
+
+export type AddIssueAttachmentsResult = {
+  issueId: number;
+  uploadedCount: number;
 };
 
 export type UpdateIssueInput = {
