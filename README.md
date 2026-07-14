@@ -4,15 +4,22 @@ Codex · Claude Code · Cursor에서 **자연어와 슬래시 명령**으로 Red
 
 에이전트는 Redmine REST를 직접 호출하지 않고, 공통 MCP 서버 [`redmine-devrelay`](https://www.npmjs.com/package/redmine-devrelay)를 통합니다. 쓰기 API는 **미리보기(dry-run) → 사용자 확인 → `confirm=true`** 게이트를 강제합니다.
 
-**현재 배포 버전: `0.3.3`** (`redmine-devrelay` / `redmine-devrelay-client`)
+**현재 배포 버전: `0.4.0`** (`redmine-devrelay` / `redmine-devrelay-client`)
 
-## 현재까지 (Phase 1–3)
+## 현재까지 (Phase 1–4)
 
 | Phase | 내용 | 버전 |
 | --- | --- | --- |
 | 1 | 연결·프로젝트·이슈 조회 | 0.1.x |
 | 2 | 이슈 생성 / 댓글 / 상태 변경 (+ 담당자·관리자) | 0.2.x |
-| 3 | `update_issue`, 생성 필드 확장, HTML 본문 줄바꿈 | **0.3.0–0.3.3** |
+| 3 | `update_issue`, 생성 필드 확장, HTML 본문 줄바꿈 | 0.3.x |
+| 4 | 이슈 **첨부파일** (create + `add_attachment`) | **0.4.0** |
+
+### 0.4.x 하이라이트
+
+- `attachments: [{ path, filename?, description? }]` on create
+- `redmine_add_attachment` — 기존 이슈에 로컬 파일 첨부
+- dry-run은 경로·파일명·크기만; `confirm=true`에서만 업로드
 
 ### 0.3.x 하이라이트
 
@@ -24,7 +31,7 @@ Codex · Claude Code · Cursor에서 **자연어와 슬래시 명령**으로 Red
   - description: 평문 줄 → `<p>…</p>`
   - notes/댓글: `\n` → `<br />`
 
-아직 없는 것: 첨부파일, 커스텀 필드, tracker/status 이름 해석, 일괄 수정.
+아직 없는 것: 커스텀 필드, tracker/status 이름 해석, 일괄 수정.
 
 ## 무엇을 할 수 있나요?
 
@@ -46,6 +53,7 @@ Codex · Claude Code · Cursor에서 **자연어와 슬래시 명령**으로 Red
 | `/create-issue` | 이슈 생성 (dry-run → 확인) |
 | `/update-issue` | 이슈 수정 (dry-run → 확인) |
 | `/add-comment` | 댓글 (dry-run → 확인) |
+| `/add-attachment` | 파일 첨부 (dry-run → 확인) |
 | `/update-status` | 상태만 변경 (dry-run → 확인) |
 
 ## 구성
@@ -54,10 +62,10 @@ Codex · Claude Code · Cursor에서 **자연어와 슬래시 명령**으로 Red
 Claude Code / Codex / Cursor  (플러그인 + 스킬)
         │ MCP STDIO
         ▼
-   redmine-devrelay@0.3.3   (도구 스키마, STDIO, npm)
+   redmine-devrelay@0.4.0   (도구 스키마, STDIO, npm)
         │
         ▼
-   redmine-devrelay-client@0.3.3  (REST, 인증, HTML 포맷, 쓰기)
+   redmine-devrelay-client@0.4.0  (REST, 인증, HTML 포맷, 쓰기)
         │ HTTPS 또는 사설 IP HTTP
         ▼
    Redmine REST API
@@ -65,8 +73,8 @@ Claude Code / Codex / Cursor  (플러그인 + 스킬)
 
 | 경로 | 역할 |
 | --- | --- |
-| `packages/redmine-client` | npm: `redmine-devrelay-client@0.3.3` |
-| `packages/redmine-mcp` | npm: `redmine-devrelay@0.3.3` |
+| `packages/redmine-client` | npm: `redmine-devrelay-client@0.4.0` |
+| `packages/redmine-mcp` | npm: `redmine-devrelay@0.4.0` |
 | `plugins/cursor` | Cursor 플러그인 |
 | `plugins/claude-code` | Claude Code 플러그인 + 스킬 |
 | `plugins/codex` | Codex 플러그인 + 스킬 |
@@ -88,9 +96,10 @@ Claude Code / Codex / Cursor  (플러그인 + 스킬)
 
 | 도구 | 설명 |
 | --- | --- |
-| `redmine_create_issue` | 생성 · `wouldApply` 미리보기 |
+| `redmine_create_issue` | 생성 · `wouldApply` 미리보기 (선택 `attachments`) |
 | `redmine_update_issue` | 수정 · `changes[]` 이전→이후 |
 | `redmine_add_comment` | 댓글 (`\n` → `<br />`) |
+| `redmine_add_attachment` | 기존 이슈에 로컬 파일 첨부 |
 | `redmine_update_status` | `statusId`만 변경 |
 
 자세한 필드·HTML 규칙은 [`packages/redmine-mcp/README.md`](packages/redmine-mcp/README.md) 참고.
@@ -108,7 +117,7 @@ Claude Code / Codex / Cursor  (플러그인 + 스킬)
 ### 1. npm으로 실행 (권장)
 
 ```bash
-npx -y redmine-devrelay@0.3.3
+npx -y redmine-devrelay@0.4.0
 ```
 
 로컬 빌드:
@@ -151,11 +160,11 @@ export REDMINE_API_KEY=your-api-key
 /add-plugin redmine-devrelay
 ```
 
-또는 `plugins/cursor/mcp.json` / MCP 설정에서 `npx -y redmine-devrelay@0.3.3` 연결 후 `REDMINE_URL` / `REDMINE_API_KEY` 설정.
+또는 `plugins/cursor/mcp.json` / MCP 설정에서 `npx -y redmine-devrelay@0.4.0` 연결 후 `REDMINE_URL` / `REDMINE_API_KEY` 설정.
 
 ### 4. Claude Code
 
-`plugins/claude-code/.mcp.json`은 `redmine-devrelay@0.3.3`를 사용합니다.
+`plugins/claude-code/.mcp.json`은 `redmine-devrelay@0.4.0`를 사용합니다.
 
 ```bash
 claude --plugin-dir ./plugins/claude-code
@@ -184,8 +193,8 @@ npx @modelcontextprotocol/inspector node packages/redmine-mcp/dist/index.js
 ## 저장소 구조
 
 ```
-packages/redmine-client/   # npm: redmine-devrelay-client@0.3.3
-packages/redmine-mcp/      # npm: redmine-devrelay@0.3.3
+packages/redmine-client/   # npm: redmine-devrelay-client@0.4.0
+packages/redmine-mcp/      # npm: redmine-devrelay@0.4.0
 plugins/cursor|claude-code|codex/
 docker/redmine/            # 통합 테스트용 Redmine
 docs/superpowers/          # Phase 설계·구현 계획
@@ -206,4 +215,4 @@ docs/superpowers/          # Phase 설계·구현 계획
 
 ## 라이선스 / 배포
 
-MIT · npm: [`redmine-devrelay@0.3.3`](https://www.npmjs.com/package/redmine-devrelay), [`redmine-devrelay-client@0.3.3`](https://www.npmjs.com/package/redmine-devrelay-client)
+MIT · npm: [`redmine-devrelay@0.4.0`](https://www.npmjs.com/package/redmine-devrelay), [`redmine-devrelay-client@0.4.0`](https://www.npmjs.com/package/redmine-devrelay-client)

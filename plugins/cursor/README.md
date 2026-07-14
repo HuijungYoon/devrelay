@@ -2,11 +2,11 @@
 
 Install target for `/add-plugin redmine-devrelay` after Marketplace listing.
 
-**MCP 패키지:** `redmine-devrelay@0.3.3` (조회 + 쓰기, dry-run 확인 게이트)
+**MCP 패키지:** `redmine-devrelay@0.4.0` (조회 + 쓰기, dry-run 확인 게이트)
 
 ## Components
 
-- **MCP:** `npx -y redmine-devrelay@0.3.3`
+- **MCP:** `npx -y redmine-devrelay@0.4.0`
 - **Skills / slash commands:**
 
 | Slash | 동작 |
@@ -16,9 +16,10 @@ Install target for `/add-plugin redmine-devrelay` after Marketplace listing.
 | `/list-projects` | 프로젝트 목록 (검색어 가능) |
 | `/my-issues` | 내게 할당된 열린 이슈 |
 | `/issue` | 이슈 상세 + journals (예: `/issue 23840`) |
-| `/create-issue` | 이슈 생성 (프로젝트·담당자·관리자, dry-run 후 확인) |
+| `/create-issue` | 이슈 생성 (프로젝트·담당자·관리자·첨부, dry-run 후 확인) |
 | `/update-issue` | 이슈 수정 (이전→이후 표, dry-run 후 확인) |
 | `/add-comment` | 댓글 추가 (dry-run 후 확인) |
+| `/add-attachment` | 파일 첨부 (dry-run 후 확인) |
 | `/update-status` | 상태 변경 `statusId` (dry-run 후 확인) |
 
 description/댓글은 **평문 줄바꿈**으로 작성하면 됩니다 (`<p>` / `<br />` 자동).
@@ -41,7 +42,7 @@ Cursor → Settings → Plugins / Customize, or clone this repo and point a team
 .cursor-plugin/marketplace.json
 ```
 
-Plugin path: `plugins/cursor` · `mcp.json`은 `redmine-devrelay@0.3.3`를 가리킵니다.
+Plugin path: `plugins/cursor` · `mcp.json`은 `redmine-devrelay@0.4.0`를 가리킵니다.
 
 ## Publish to Cursor Marketplace
 
