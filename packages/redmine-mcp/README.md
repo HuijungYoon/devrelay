@@ -2,14 +2,14 @@
 
 Cursor · Claude Code · Codex용 **Redmine MCP 서버**입니다.
 
-- **버전:** `0.3.2`
+- **버전:** `0.3.3`
 - **GitHub:** https://github.com/HuijungYoon/devrelay
 - **Client:** [redmine-devrelay-client](https://www.npmjs.com/package/redmine-devrelay-client) (동일 버전)
 
 ## 빠른 시작
 
 ```bash
-npx -y redmine-devrelay@0.3.2
+npx -y redmine-devrelay@0.3.3
 ```
 
 | 환경변수 | 설명 |
@@ -67,7 +67,8 @@ npx -y redmine-devrelay@0.3.2
 
 | 버전 | 내용 |
 | --- | --- |
-| **0.3.2** | description 평문 → `<p>` HTML 자동 변환 |
+| **0.3.3** | npm README·플러그인 핀·설치 문서 동기화 |
+| 0.3.2 | description 평문 → `<p>` HTML 자동 변환 |
 | 0.3.1 | notes `\n` → `<br />` |
 | 0.3.0 | `update_issue`, create 필드·미리보기 확장 |
 | 0.2.x | create / comment / status, 멤버·watchers, 사설 HTTP |

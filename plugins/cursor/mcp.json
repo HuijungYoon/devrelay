@@ -2,7 +2,7 @@
   "mcpServers": {
     "redmine": {
       "command": "npx",
-      "args": ["-y", "redmine-devrelay@0.3.2"],
+      "args": ["-y", "redmine-devrelay@0.3.3"],
       "env": {
         "REDMINE_URL": "${REDMINE_URL}",
         "REDMINE_API_KEY": "${REDMINE_API_KEY}",
