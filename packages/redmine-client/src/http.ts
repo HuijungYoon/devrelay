@@ -70,6 +70,31 @@ export class RedmineHttp {
     return this.sendJson<T>("PUT", path, body);
   }
 
+  async postBinary<T>(
+    path: string,
+    body: Buffer | Uint8Array,
+    headers: Record<string, string>,
+    query?: Record<string, string | number | undefined>
+  ): Promise<T> {
+    const url = this.buildUrl(path, query);
+    try {
+      const response = await this.request(url, "POST", body, headers);
+      const bodyText = await response.text();
+      if (!response.ok) {
+        this.mapStatus(response.status, bodyText, path);
+      }
+      if (response.status === 204 || !bodyText.trim()) {
+        return undefined as T;
+      }
+      return JSON.parse(bodyText) as T;
+    } catch (err) {
+      if (err instanceof RedmineError) {
+        throw this.maskError(err);
+      }
+      throw this.mapNetworkError(err);
+    }
+  }
+
   private async sendJson<T>(
     method: "POST" | "PUT",
     path: string,
@@ -82,14 +107,14 @@ export class RedmineHttp {
         method,
         JSON.stringify(body)
       );
+      const bodyText = await response.text();
       if (!response.ok) {
-        const bodyText = await response.text();
         this.mapStatus(response.status, bodyText, path);
       }
-      if (response.status === 204) {
+      if (response.status === 204 || !bodyText.trim()) {
         return undefined;
       }
-      return (await response.json()) as T;
+      return JSON.parse(bodyText) as T;
     } catch (err) {
       if (err instanceof RedmineError) {
         throw this.maskError(err);
@@ -117,14 +142,16 @@ export class RedmineHttp {
   private async request(
     url: string,
     method = "GET",
-    body?: string
+    body?: BodyInit,
+    extraHeaders?: Record<string, string>
   ): Promise<Response> {
     const headers: Record<string, string> = {
       Accept: "application/json",
       "User-Agent": this.config.userAgent,
       "X-Redmine-API-Key": this.config.apiKey,
+      ...extraHeaders,
     };
-    if (body !== undefined) {
+    if (body !== undefined && !headers["Content-Type"]) {
       headers["Content-Type"] = "application/json";
     }
 

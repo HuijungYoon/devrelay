@@ -86,6 +86,44 @@ describe("RedmineHttp", () => {
     expect(fetchMock.mock.calls[0][1].method).toBe("PUT");
   });
 
+  it("putJson returns undefined on empty 200 body", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(new Response("", { status: 200 }))
+    );
+    const http = new RedmineHttp(baseConfig);
+    await expect(
+      http.putJson("/issues/1.json", { issue: {} })
+    ).resolves.toBeUndefined();
+  });
+
+  it("postBinary sends binary body with custom Content-Type and parses JSON response", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ upload: { token: "abc123" } }), {
+        status: 201,
+      })
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    const http = new RedmineHttp(baseConfig);
+    const body = Buffer.from("file bytes");
+    const data = await http.postBinary<{ upload: { token: string } }>(
+      "/uploads.json",
+      body,
+      { "Content-Type": "application/octet-stream" },
+      { filename: "doc.pdf" }
+    );
+    expect(data.upload.token).toBe("abc123");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe(
+      "https://redmine.example.com/uploads.json?filename=doc.pdf"
+    );
+    expect(init.method).toBe("POST");
+    expect(init.headers["Content-Type"]).toBe("application/octet-stream");
+    expect(init.headers["Content-Type"]).not.toBe("application/json");
+    expect(init.body).toBe(body);
+  });
+
   it("preserves baseUrl path prefix such as /redmine", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ ok: true }), { status: 200 })
