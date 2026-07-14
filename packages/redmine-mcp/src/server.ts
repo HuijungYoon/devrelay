@@ -12,6 +12,7 @@ import { handleTestConnection } from "./tools/connection.js";
 import { handleGetIssue, handleSearchIssues } from "./tools/issues.js";
 import { handleListProjects } from "./tools/projects.js";
 import {
+  handleAddAttachment,
   handleAddComment,
   handleCreateIssue,
   handleUpdateIssue,
@@ -20,6 +21,7 @@ import {
 import { handleSearchUsers } from "./tools/users.js";
 import { handleListProjectMembers } from "./tools/members.js";
 import {
+  safeParseAddAttachment,
   safeParseAddComment,
   safeParseConnection,
   safeParseCreateIssue,
@@ -36,8 +38,9 @@ import {
 const INSTRUCTIONS = `Redmine read tools may be used without write confirmation.
 ALL write tools default to dry-run. Flow: preview → ask user → confirm=true only after approval.
 Never call Redmine REST directly for fields that have MCP tools.
-redmine_create_issue: project first; assignedTo=담당자; watchers=일감관리자; include tracker/status/priority/startDate/doneRatio in preview when set.
+redmine_create_issue: project first; assignedTo=담당자; watchers=일감관리자; optional attachments[{path,filename?,description?}]; include tracker/status/priority/startDate/doneRatio in preview when set.
 redmine_update_issue: multi-field update with before→after changes; prefer this for bundled edits.
+redmine_add_attachment: attach local files to an existing issue (upload only after confirm).
 redmine_update_status: still valid for status-only.
 Do not print API keys or credentials.
 Prefer redmine_search_issues with assignedTo=me for "my open issues".`;
@@ -80,7 +83,7 @@ const TOOLS = [
   {
     name: "redmine_create_issue",
     description:
-      'Create issue. projectId+subject required. Optional: tracker/status/priority/startDate/doneRatio, assignedTo(담당자), watchers(일감관리자). Dry-run default; confirm=true to apply.',
+      'Create issue. projectId+subject required. Optional: tracker/status/priority/startDate/doneRatio, assignedTo(담당자), watchers(일감관리자), attachments[{path}]. Dry-run default; confirm=true to apply.',
     inputSchema: toolJsonSchemas.redmine_create_issue,
   },
   {
@@ -94,6 +97,12 @@ const TOOLS = [
     description:
       "Add a comment (notes) to an issue. Defaults to dry-run; set confirm=true to apply.",
     inputSchema: toolJsonSchemas.redmine_add_comment,
+  },
+  {
+    name: "redmine_add_attachment",
+    description:
+      "Attach local files to an existing issue. attachments: [{path, filename?, description?}]. Dry-run default; confirm=true uploads then attaches.",
+    inputSchema: toolJsonSchemas.redmine_add_attachment,
   },
   {
     name: "redmine_update_status",
@@ -207,6 +216,12 @@ export async function startServer(
           const parsed = safeParseAddComment(req.params.arguments);
           if (!parsed.success) throw validationError(parsed.error.message);
           result = await handleAddComment(client, parsed.data);
+          break;
+        }
+        case "redmine_add_attachment": {
+          const parsed = safeParseAddAttachment(req.params.arguments);
+          if (!parsed.success) throw validationError(parsed.error.message);
+          result = await handleAddAttachment(client, parsed.data);
           break;
         }
         case "redmine_update_status": {

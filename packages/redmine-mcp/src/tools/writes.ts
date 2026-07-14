@@ -5,11 +5,25 @@ import {
   matchMemberByName,
 } from "redmine-devrelay-client";
 import type {
+  AddAttachmentInput,
   AddCommentInput,
   CreateIssueInput,
   UpdateIssueInput,
   UpdateStatusInput,
 } from "./schemas.js";
+
+function attachmentWouldApply(
+  client: RedmineClient,
+  attachments: CreateIssueInput["attachments"]
+) {
+  if (!attachments?.length) return undefined;
+  return client.inspectAttachments(attachments).map((a) => ({
+    path: a.path,
+    filename: a.filename,
+    sizeBytes: a.sizeBytes,
+    ...(a.description !== undefined ? { description: a.description } : {}),
+  }));
+}
 
 function compact(s: string): string {
   return s.toLowerCase().replace(/\s+/g, "");
@@ -210,10 +224,17 @@ export async function handleCreateIssue(
           watcherLabels: watchers.watcherLabels,
         }
       : {}),
+    ...(input.attachments?.length
+      ? { attachments: attachmentWouldApply(client, input.attachments) }
+      : {}),
   };
   if (!input.confirm) {
     return { dryRun: true as const, wouldApply };
   }
+
+  const uploads = input.attachments?.length
+    ? await client.uploadAttachments(input.attachments)
+    : undefined;
 
   const createInput = {
     projectId: wouldApply.projectId,
@@ -247,6 +268,17 @@ export async function handleCreateIssue(
       : {}),
     ...(wouldApply.watcherUserIds !== undefined
       ? { watcherUserIds: wouldApply.watcherUserIds }
+      : {}),
+    ...(uploads
+      ? {
+          uploads: uploads.map((u) => ({
+            token: u.token,
+            filename: u.filename,
+            ...(u.description !== undefined
+              ? { description: u.description }
+              : {}),
+          })),
+        }
       : {}),
   };
   const result = await client.createIssue(createInput);
@@ -377,6 +409,27 @@ export async function handleAddComment(
     return { dryRun: true as const, wouldApply };
   }
   const result = await client.addComment(input.issueId, input.notes);
+  return { dryRun: false as const, result };
+}
+
+export async function handleAddAttachment(
+  client: RedmineClient,
+  input: AddAttachmentInput
+) {
+  const attachments = attachmentWouldApply(client, input.attachments);
+  const wouldApply = { issueId: input.issueId, attachments };
+  if (!input.confirm) {
+    return { dryRun: true as const, wouldApply };
+  }
+  const uploads = await client.uploadAttachments(input.attachments);
+  const result = await client.addIssueAttachments({
+    issueId: input.issueId,
+    uploads: uploads.map((u) => ({
+      token: u.token,
+      filename: u.filename,
+      ...(u.description !== undefined ? { description: u.description } : {}),
+    })),
+  });
   return { dryRun: false as const, result };
 }
 

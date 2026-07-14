@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import {
+  handleAddAttachment,
   handleAddComment,
   handleCreateIssue,
   handleUpdateIssue,
@@ -180,6 +181,70 @@ describe("write handlers confirm gate", () => {
       { issueId: 1, statusId: 4, confirm: true }
     );
     expect(updateIssueStatus).toHaveBeenCalledWith(1, 4, undefined);
+    expect(result.dryRun).toBe(false);
+  });
+
+  it("createIssue dry-run includes attachment sizes and does not upload", async () => {
+    const inspectAttachments = vi.fn().mockReturnValue([
+      {
+        path: "C:/tmp/a.png",
+        filename: "a.png",
+        sizeBytes: 12,
+      },
+    ]);
+    const uploadAttachments = vi.fn();
+    const createIssue = vi.fn();
+    const result = await handleCreateIssue(
+      {
+        createIssue,
+        inspectAttachments,
+        uploadAttachments,
+        listProjectMembers: vi.fn(),
+        searchUsers: vi.fn(),
+        getCurrentUser: vi.fn(),
+      } as never,
+      {
+        projectId: 1,
+        subject: "S",
+        attachments: [{ path: "C:/tmp/a.png" }],
+        confirm: false,
+      }
+    );
+    expect(uploadAttachments).not.toHaveBeenCalled();
+    expect(createIssue).not.toHaveBeenCalled();
+    expect(result.wouldApply).toMatchObject({
+      attachments: [{ filename: "a.png", sizeBytes: 12 }],
+    });
+  });
+
+  it("addAttachment confirm uploads then addIssueAttachments", async () => {
+    const inspectAttachments = vi.fn().mockReturnValue([
+      { path: "./a.txt", filename: "a.txt", sizeBytes: 3 },
+    ]);
+    const uploadAttachments = vi.fn().mockResolvedValue([
+      { token: "tok", filename: "a.txt", sizeBytes: 3 },
+    ]);
+    const addIssueAttachments = vi.fn().mockResolvedValue({
+      issueId: 7,
+      uploadedCount: 1,
+    });
+    const result = await handleAddAttachment(
+      {
+        inspectAttachments,
+        uploadAttachments,
+        addIssueAttachments,
+      } as never,
+      {
+        issueId: 7,
+        attachments: [{ path: "./a.txt" }],
+        confirm: true,
+      }
+    );
+    expect(uploadAttachments).toHaveBeenCalled();
+    expect(addIssueAttachments).toHaveBeenCalledWith({
+      issueId: 7,
+      uploads: [{ token: "tok", filename: "a.txt" }],
+    });
     expect(result.dryRun).toBe(false);
   });
 });

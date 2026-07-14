@@ -76,6 +76,20 @@ const ymd = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const doneRatio = z.number().int().min(0).max(100);
 const userRef = z.union([z.literal("me"), positiveInt, z.string().min(1)]);
 
+export const attachmentInputSchema = z
+  .object({
+    path: z.string().min(1),
+    filename: z.string().min(1).optional(),
+    description: z.string().optional(),
+  })
+  .strict();
+
+const attachmentsField = z
+  .array(attachmentInputSchema)
+  .min(1)
+  .max(5)
+  .optional();
+
 export const createIssueInputSchema = z
   .object({
     projectId: positiveInt,
@@ -90,6 +104,7 @@ export const createIssueInputSchema = z
     estimatedHours: z.number().positive().optional(),
     assignedTo: userRef.optional(),
     watchers: z.array(userRef).optional(),
+    attachments: attachmentsField,
     confirm: z.boolean().optional(),
   })
   .strict();
@@ -151,6 +166,14 @@ export const addCommentInputSchema = z
   })
   .strict();
 
+export const addAttachmentInputSchema = z
+  .object({
+    issueId: positiveInt,
+    attachments: z.array(attachmentInputSchema).min(1).max(5),
+    confirm: z.boolean().optional(),
+  })
+  .strict();
+
 export const updateStatusInputSchema = z
   .object({
     issueId: positiveInt,
@@ -171,6 +194,7 @@ export type ListProjectMembersInput = z.infer<
   typeof listProjectMembersInputSchema
 >;
 export type AddCommentInput = z.infer<typeof addCommentInputSchema>;
+export type AddAttachmentInput = z.infer<typeof addAttachmentInputSchema>;
 export type UpdateStatusInput = z.infer<typeof updateStatusInputSchema>;
 
 export function safeParseConnection(input: unknown) {
@@ -207,6 +231,10 @@ export function safeParseListProjectMembers(input: unknown) {
 
 export function safeParseAddComment(input: unknown) {
   return addCommentInputSchema.safeParse(input ?? {});
+}
+
+export function safeParseAddAttachment(input: unknown) {
+  return addAttachmentInputSchema.safeParse(input ?? {});
 }
 
 export function safeParseUpdateStatus(input: unknown) {
@@ -368,6 +396,23 @@ export const toolJsonSchemas = {
           ],
         },
       },
+      attachments: {
+        description:
+          "Local files to upload: [{ path, filename?, description? }], max 5, 10MiB each",
+        type: "array",
+        minItems: 1,
+        maxItems: 5,
+        items: {
+          type: "object",
+          properties: {
+            path: { type: "string", minLength: 1 },
+            filename: { type: "string", minLength: 1 },
+            description: { type: "string" },
+          },
+          required: ["path"],
+          additionalProperties: false,
+        },
+      },
       confirm: {
         type: "boolean",
         description: "false/omit = dry-run preview; true = create",
@@ -479,6 +524,35 @@ export const toolJsonSchemas = {
       confirm: { type: "boolean" },
     },
     required: ["issueId", "notes"],
+    additionalProperties: false,
+  },
+  redmine_add_attachment: {
+    type: "object",
+    properties: {
+      issueId: { type: "integer", minimum: 1 },
+      attachments: {
+        description:
+          "Local files to upload: [{ path, filename?, description? }], max 5, 10MiB each",
+        type: "array",
+        minItems: 1,
+        maxItems: 5,
+        items: {
+          type: "object",
+          properties: {
+            path: { type: "string", minLength: 1 },
+            filename: { type: "string", minLength: 1 },
+            description: { type: "string" },
+          },
+          required: ["path"],
+          additionalProperties: false,
+        },
+      },
+      confirm: {
+        type: "boolean",
+        description: "false/omit = dry-run preview; true = upload and attach",
+      },
+    },
+    required: ["issueId", "attachments"],
     additionalProperties: false,
   },
   redmine_update_status: {

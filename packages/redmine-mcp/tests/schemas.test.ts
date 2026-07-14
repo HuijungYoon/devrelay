@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  safeParseAddAttachment,
   safeParseAddComment,
   safeParseConnection,
   safeParseCreateIssue,
@@ -86,6 +87,26 @@ describe("tool schemas", () => {
     expect(safeParseUpdateStatus({ issueId: 1 }).success).toBe(false);
     expect(
       safeParseUpdateStatus({ issueId: 1, statusId: 4 }).success
+    ).toBe(true);
+  });
+
+  it("createIssue accepts attachments", () => {
+    expect(
+      safeParseCreateIssue({
+        projectId: 1,
+        subject: "S",
+        attachments: [{ path: "C:/tmp/a.png", filename: "a.png" }],
+      }).success
+    ).toBe(true);
+  });
+
+  it("addAttachment requires attachments", () => {
+    expect(safeParseAddAttachment({ issueId: 1 }).success).toBe(false);
+    expect(
+      safeParseAddAttachment({
+        issueId: 1,
+        attachments: [{ path: "./a.txt" }],
+      }).success
     ).toBe(true);
   });
 });
