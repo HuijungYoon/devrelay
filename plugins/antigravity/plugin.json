@@ -1,0 +1,5 @@
+{
+  "$schema": "https://antigravity.google/schemas/v1/plugin.json",
+  "name": "redmine-devrelay",
+  "description": "Redmine read/write via redmine-devrelay MCP (dry-run confirm gate) and /redmine: slash skills."
+}
