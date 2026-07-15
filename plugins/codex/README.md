@@ -1,6 +1,6 @@
-﻿# Codex — Redmine plugin
+# Codex — Redmine plugin
 
-Redmine 조회·쓰기 via `redmine-devrelay@0.4.0` (dry-run → 확인 후 적용).
+Redmine 조회·쓰기 via `redmine-devrelay@0.4.1` (dry-run → 확인 후 적용).
 
 ## Env
 
@@ -9,7 +9,7 @@ export REDMINE_URL=https://redmine.example.com
 export REDMINE_API_KEY=...
 ```
 
-`.mcp.json`은 `npx -y redmine-devrelay@0.4.0`를 사용합니다.
+`.mcp.json`은 `npx -y redmine-devrelay@0.4.1`를 사용합니다.
 
 ## Recommended approval policy
 
