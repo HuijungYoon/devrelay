@@ -22,7 +22,7 @@ export REDMINE_ALLOWED_HOSTS=redmine.example.com
 export REDMINE_CA_CERT_PATH=/path/to/company-ca.pem
 ```
 
-사설망 HTTP 예: `REDMINE_URL=http://192.168.1.20/redmine` (RFC1918 IP는 allowlist 없이 HTTP 허용).
+사설망 HTTP 예: `REDMINE_URL=http://192.168.10.50/redmine` (RFC1918 IP는 allowlist 없이 HTTP 허용).
 
 ## 4. Install MCP package (npm)
 

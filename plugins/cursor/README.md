@@ -32,7 +32,7 @@ REDMINE_API_KEY=...
 ```
 
 선택: `REDMINE_ALLOWED_HOSTS`, `REDMINE_CA_CERT_PATH`  
-사설망 HTTP 예: `REDMINE_URL=http://192.168.1.20/redmine`
+사설망 HTTP 예: `REDMINE_URL=http://192.168.10.50/redmine`
 
 ## Local test (before Marketplace approval)
 

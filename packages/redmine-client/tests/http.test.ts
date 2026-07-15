@@ -131,11 +131,11 @@ describe("RedmineHttp", () => {
     vi.stubGlobal("fetch", fetchMock);
     const http = new RedmineHttp({
       ...baseConfig,
-      baseUrl: "http://192.168.1.20/redmine",
+      baseUrl: "http://192.168.10.50/redmine",
     });
     await http.getJson("/users/current.json");
     expect(fetchMock.mock.calls[0][0]).toBe(
-      "http://192.168.1.20/redmine/users/current.json"
+      "http://192.168.10.50/redmine/users/current.json"
     );
   });
 });

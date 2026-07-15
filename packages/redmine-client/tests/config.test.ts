@@ -30,11 +30,11 @@ describe("loadConfig", () => {
   });
 
   it("allows http private IP without allowlist", () => {
-    process.env.REDMINE_URL = "http://192.168.1.20/redmine";
+    process.env.REDMINE_URL = "http://192.168.10.50/redmine";
     process.env.REDMINE_API_KEY = "k";
     delete process.env.REDMINE_ALLOWED_HOSTS;
     const cfg = loadConfig();
-    expect(cfg.baseUrl).toBe("http://192.168.1.20/redmine");
+    expect(cfg.baseUrl).toBe("http://192.168.10.50/redmine");
   });
 
   it("allows http private IP even when allowlist omits it", () => {

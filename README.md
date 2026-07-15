@@ -152,7 +152,7 @@ export REDMINE_API_KEY=your-api-key
 | `REDMINE_ALLOWED_HOSTS` | 호스트 allowlist (비어 있으면 생략 가능). 사설 IPv4는 별도 허용 |
 | `REDMINE_CA_CERT_PATH` | 사설 CA PEM |
 
-사설망 예: `REDMINE_URL=http://192.168.1.20/redmine`  
+사설망 예: `REDMINE_URL=http://192.168.10.50/redmine`  
 로컬 Docker: `http://localhost:3000` + `REDMINE_ALLOWED_HOSTS=localhost` (`docker/redmine/README.md`)
 
 ### 3. Cursor
