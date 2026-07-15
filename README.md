@@ -1,6 +1,6 @@
 ﻿# DevRelay / redmine-devrelay
 
-Codex · Claude Code · Cursor에서 **자연어와 슬래시 명령**으로 Redmine 이슈를 조회·생성·수정할 수 있게 해주는 MCP 연동 프로젝트입니다.
+Codex · Claude Code · Cursor · Antigravity에서 **자연어와 슬래시 명령**으로 Redmine 이슈를 조회·생성·수정할 수 있게 해주는 MCP 연동 프로젝트입니다.
 
 에이전트는 Redmine REST를 직접 호출하지 않고, 공통 MCP 서버 [`redmine-devrelay`](https://www.npmjs.com/package/redmine-devrelay)를 통합니다. 쓰기 API는 **미리보기(dry-run) → 사용자 확인 → `confirm=true`** 게이트를 강제합니다.
 
@@ -59,7 +59,7 @@ Codex · Claude Code · Cursor에서 **자연어와 슬래시 명령**으로 Red
 ## 구성
 
 ```
-Claude Code / Codex / Cursor  (플러그인 + 스킬)
+Claude Code / Codex / Cursor / Antigravity  (플러그인 + 스킬)
         │ MCP STDIO
         ▼
    redmine-devrelay@0.4.0   (도구 스키마, STDIO, npm)
@@ -78,6 +78,7 @@ Claude Code / Codex / Cursor  (플러그인 + 스킬)
 | `plugins/cursor` | Cursor 플러그인 |
 | `plugins/claude-code` | Claude Code 플러그인 + 스킬 |
 | `plugins/codex` | Codex 플러그인 + 스킬 |
+| `plugins/antigravity` | Antigravity IDE/CLI 플러그인 |
 
 ### MCP 도구
 
@@ -177,7 +178,16 @@ claude --plugin-dir ./plugins/claude-code
 
 `plugins/codex`를 로드합니다. 조회는 approve, 쓰기는 prompt 권장. 자세한 내용은 `plugins/codex/README.md`.
 
-### 6. MCP Inspector
+### 6. Antigravity
+
+```bash
+agy plugin install ./plugins/antigravity
+```
+
+GitHub: clone repo then `agy plugin install ./devrelay/plugins/antigravity`.  
+Slash: `/redmine:help`, `/redmine:my-issues`, … — see `plugins/antigravity/README.md`.
+
+### 7. MCP Inspector
 
 ```bash
 npx @modelcontextprotocol/inspector node packages/redmine-mcp/dist/index.js
@@ -195,7 +205,7 @@ npx @modelcontextprotocol/inspector node packages/redmine-mcp/dist/index.js
 ```
 packages/redmine-client/   # npm: redmine-devrelay-client@0.4.0
 packages/redmine-mcp/      # npm: redmine-devrelay@0.4.0
-plugins/cursor|claude-code|codex/
+plugins/cursor|claude-code|codex|antigravity/
 docker/redmine/            # 통합 테스트용 Redmine
 docs/superpowers/          # Phase 설계·구현 계획
 ```

@@ -56,7 +56,26 @@ After Marketplace listing: `/add-plugin redmine-devrelay`.
 로컬: `plugins/cursor/mcp.json`이 `redmine-devrelay@0.4.0`를 가리킴.  
 See `plugins/cursor/README.md`.
 
-## 8. Connection check
+## 8. Antigravity
+
+```bash
+agy plugin install ./plugins/antigravity
+agy plugin list
+```
+
+From GitHub:
+
+```bash
+git clone https://github.com/HuijungYoon/devrelay.git
+agy plugin install ./devrelay/plugins/antigravity
+```
+
+Set `REDMINE_URL` / `REDMINE_API_KEY`. If `${REDMINE_URL}` / `${REDMINE_API_KEY}` in plugin `mcp_config.json` is not expanded, configure `~/.gemini/config/mcp_config.json` (see `plugins/antigravity/README.md`).
+
+Slash 예: `/redmine:help`, `/redmine:my-issues`, `/redmine:create-issue`.  
+쓰기는 **미리보기 → 확인 → 적용**.
+
+## 9. Connection check
 
 Ask the agent to call `redmine_test_connection`, or use MCP Inspector:
 
