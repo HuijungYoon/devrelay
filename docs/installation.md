@@ -47,8 +47,22 @@ Slash 예: `/redmine:help`, `/redmine:my-issues`, `/redmine:create-issue`, `/red
 
 ## 6. Codex
 
-Load `plugins/codex` per Codex plugin docs.  
-Skills: `help`, `my-issues`, `issue`, `create-issue`, `update-issue`, `add-comment`, `update-status` 등.
+Git marketplace:
+
+```bash
+codex plugin marketplace add HuijungYoon/devrelay
+codex plugin install redmine-devrelay@devrelay
+```
+
+Local (repo root):
+
+```bash
+codex plugin marketplace add .
+codex plugin install redmine-devrelay@devrelay
+```
+
+Set `REDMINE_URL` / `REDMINE_API_KEY`. Skills: `help`, `test-connection`, `list-projects`, `my-issues`, `issue`, `create-issue`, `update-issue`, `add-comment`, `add-attachment`, `update-status`.  
+Details: `plugins/codex/README.md`.
 
 ## 7. Cursor
 

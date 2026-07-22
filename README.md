@@ -183,7 +183,13 @@ claude --plugin-dir ./plugins/claude-code
 
 ### 5. Codex
 
-`plugins/codex`를 로드합니다. 조회는 approve, 쓰기는 prompt 권장. 자세한 내용은 `plugins/codex/README.md`.
+```bash
+codex plugin marketplace add HuijungYoon/devrelay
+codex plugin install redmine-devrelay@devrelay
+```
+
+로컬 개발: 레포 루트에서 `codex plugin marketplace add .` 후 동일 install.  
+조회는 approve, 쓰기는 prompt 권장. 자세한 내용: `plugins/codex/README.md`.
 
 ### 6. Antigravity
 
