@@ -4,6 +4,8 @@ Redmine 조회·쓰기 via `redmine-devrelay@0.5.0` (dry-run → 확인 → `con
 
 ## Install
 
+Requires Codex CLI with `codex plugin marketplace` / `codex plugin install`; upgrade if your build lacks those commands (e.g. 0.107.0 without `plugin`).
+
 ### Git marketplace
 
 ```bash

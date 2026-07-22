@@ -47,6 +47,8 @@ Slash 예: `/redmine:help`, `/redmine:my-issues`, `/redmine:create-issue`, `/red
 
 ## 6. Codex
 
+Requires Codex CLI with `codex plugin marketplace` / `codex plugin install` (upgrade from older builds such as 0.107.0 if missing).
+
 Git marketplace:
 
 ```bash
