@@ -88,7 +88,7 @@ If Codex CLI rejects `authentication: ON_FIRST_USE` for env-only plugins, fall b
 | `name` | `redmine-devrelay` |
 | `version` | `0.5.0` |
 | `description` / `interface.longDescription` | Redmine read + write via MCP; dry-run → user confirm → `confirm=true` + `previewToken` |
-| `interface.displayName` | `Redmine DevRelay` (or `Redmine`) |
+| `interface.displayName` | `Redmine DevRelay` |
 | `interface.shortDescription` | Short blurb including write-with-confirm |
 | `interface.capabilities` | Reflect read + write (use Codex-allowed capability strings; adjust if CLI rejects) |
 | `skills` | `./skills/` |
