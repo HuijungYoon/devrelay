@@ -183,13 +183,16 @@ claude --plugin-dir ./plugins/claude-code
 
 ### 5. Codex
 
+`codex plugin marketplace` / `codex plugin install` 지원 CLI 필요 (없으면 업그레이드, 예: 0.107.0).
+
 ```bash
 codex plugin marketplace add HuijungYoon/devrelay
 codex plugin install redmine-devrelay@devrelay
 ```
 
 로컬 개발: 레포 루트에서 `codex plugin marketplace add .` 후 동일 install.  
-조회는 approve, 쓰기는 prompt 권장. 자세한 내용: `plugins/codex/README.md`.
+환경변수 `REDMINE_URL` / `REDMINE_API_KEY`. 조회는 approve, 쓰기는 prompt 권장.  
+자세한 내용: `plugins/codex/README.md`.
 
 ### 6. Antigravity
 

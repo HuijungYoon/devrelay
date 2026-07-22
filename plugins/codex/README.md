@@ -68,12 +68,12 @@ approval_mode = "approve"
 
 | Skill | 동작 |
 | --- | --- |
-| `help` | 명령 목록 |
+| `help` | 명령 목록 + 설치/환경 요약 |
 | `test-connection` | 연결 확인 |
 | `list-projects` | 프로젝트 목록 |
 | `my-issues` | 내 열린 이슈 |
 | `issue` | 이슈 상세 + journals |
-| `create-issue` | 이슈 생성 (dry-run → 확인) |
+| `create-issue` | 이슈 생성 (dry-run → 확인, 첨부 가능) |
 | `update-issue` | 이슈 수정 (dry-run → 확인) |
 | `add-comment` | 댓글 (dry-run → 확인) |
 | `add-attachment` | 파일 첨부 (dry-run → 확인) |
