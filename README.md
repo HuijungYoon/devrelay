@@ -174,12 +174,15 @@ export REDMINE_API_KEY=your-api-key
 
 `plugins/claude-code/.mcp.json`은 `redmine-devrelay@0.5.0`를 사용합니다.
 
-```bash
-claude --plugin-dir ./plugins/claude-code
+```text
+/plugin marketplace add HuijungYoon/devrelay
+/plugin install redmine-devrelay@devrelay
 ```
 
+로컬 폴백: `claude --plugin-dir ./plugins/claude-code`
+
 - `/mcp`로 연결 확인
-- `/redmine:create-issue`, `/redmine:update-issue` 등 또는 자연어
+- `/redmine-devrelay:create-issue`, `/redmine-devrelay:update-issue` 등 또는 자연어
 
 ### 5. Codex
 
