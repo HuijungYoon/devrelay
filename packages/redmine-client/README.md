@@ -2,12 +2,12 @@
 
 [redmine-devrelay](https://www.npmjs.com/package/redmine-devrelay) MCP 서버가 사용하는 Redmine REST 클라이언트입니다.
 
-- **버전:** `0.4.1` (MCP 서버와 맞춤)
+- **버전:** `0.5.0` (MCP 서버와 맞춤)
 - **GitHub:** https://github.com/HuijungYoon/devrelay
 - **MCP 서버:** [redmine-devrelay](https://www.npmjs.com/package/redmine-devrelay)
 
 ```bash
-npm install redmine-devrelay-client@0.4.1
+npm install redmine-devrelay-client@0.5.0
 ```
 
 ## 지원 기능
@@ -19,6 +19,7 @@ npm install redmine-devrelay-client@0.4.1
 - HTML 본문 포맷
   - `formatDescriptionForRedmine` — 평문 줄 → `<p>…</p>`
   - `formatNotesForRedmine` — `\n` → `<br />`
+  - `detectNotesMarkup` — Textile/Markdown 감지 (MCP notes 차단용)
 - 첨부: `inspectAttachments` / `uploadFile` / `addIssueAttachments` (최대 5개·10MiB)
 
 ## License

@@ -79,7 +79,21 @@ describe("tool schemas", () => {
   it("addComment requires notes", () => {
     expect(safeParseAddComment({ issueId: 1 }).success).toBe(false);
     expect(
+      safeParseAddComment({ issueId: 1, notes: "n" }).success
+    ).toBe(true);
+  });
+
+  it("confirm=true requires previewToken", () => {
+    expect(
       safeParseAddComment({ issueId: 1, notes: "n", confirm: true }).success
+    ).toBe(false);
+    expect(
+      safeParseAddComment({
+        issueId: 1,
+        notes: "n",
+        confirm: true,
+        previewToken: "tok",
+      }).success
     ).toBe(true);
   });
 

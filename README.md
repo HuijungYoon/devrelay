@@ -2,18 +2,25 @@
 
 Codex · Claude Code · Cursor · Antigravity에서 **자연어와 슬래시 명령**으로 Redmine 이슈를 조회·생성·수정할 수 있게 해주는 MCP 연동 프로젝트입니다.
 
-에이전트는 Redmine REST를 직접 호출하지 않고, 공통 MCP 서버 [`redmine-devrelay`](https://www.npmjs.com/package/redmine-devrelay)를 통합니다. 쓰기 API는 **미리보기(dry-run) → 사용자 확인 → `confirm=true`** 게이트를 강제합니다.
+에이전트는 Redmine REST를 직접 호출하지 않고, 공통 MCP 서버 [`redmine-devrelay`](https://www.npmjs.com/package/redmine-devrelay)를 통합니다. 쓰기 API는 **dry-run → 확인 → `confirm=true` + `previewToken`** 게이트를 강제합니다.
 
-**현재 배포 버전: `0.4.1`** (`redmine-devrelay` / `redmine-devrelay-client`)
+**현재 배포 버전: `0.5.0`** (`redmine-devrelay` / `redmine-devrelay-client`)
 
-## 현재까지 (Phase 1–4)
+## 현재까지 (Phase 1–5)
 
 | Phase | 내용 | 버전 |
 | --- | --- | --- |
 | 1 | 연결·프로젝트·이슈 조회 | 0.1.x |
 | 2 | 이슈 생성 / 댓글 / 상태 변경 (+ 담당자·관리자) | 0.2.x |
 | 3 | `update_issue`, 생성 필드 확장, HTML 본문 줄바꿈 | 0.3.x |
-| 4 | 이슈 **첨부파일** (create + `add_attachment`) | **0.4.x** |
+| 4 | 이슈 **첨부파일** (create + `add_attachment`) | 0.4.x |
+| 5 | notes 평문 강제, **`previewToken` confirm 게이트** | **0.5.x** |
+
+### 0.5.x 하이라이트
+
+- `notes` Textile/Markdown dry-run 차단 (`blocked` + matches)
+- 쓰기 적용 시 dry-run에서 받은 `previewToken` 필수 (TTL 10분, 1회용)
+- 첫 호출 `confirm=true` 불가
 
 ### 0.4.x 하이라이트
 
@@ -29,7 +36,7 @@ Codex · Claude Code · Cursor · Antigravity에서 **자연어와 슬래시 명
 - 사설망 HTTP(`http://192.168.x.x/...`) 허용, `/redmine` base path 유지
 - **HTML 본문 자동 변환** (이 Redmine은 Textile이 아님)
   - description: 평문 줄 → `<p>…</p>`
-  - notes/댓글: `\n` → `<br />`
+  - notes/댓글: `\n` → `<br />` (평문만; Textile/Markdown은 dry-run에서 차단)
 
 아직 없는 것: 커스텀 필드, tracker/status 이름 해석, 일괄 수정.
 
@@ -62,10 +69,10 @@ Codex · Claude Code · Cursor · Antigravity에서 **자연어와 슬래시 명
 Claude Code / Codex / Cursor / Antigravity  (플러그인 + 스킬)
         │ MCP STDIO
         ▼
-   redmine-devrelay@0.4.1   (도구 스키마, STDIO, npm)
+   redmine-devrelay@0.5.0   (도구 스키마, STDIO, npm)
         │
         ▼
-   redmine-devrelay-client@0.4.1  (REST, 인증, HTML 포맷, 쓰기)
+   redmine-devrelay-client@0.5.0  (REST, 인증, HTML 포맷, 쓰기)
         │ HTTPS 또는 사설 IP HTTP
         ▼
    Redmine REST API
@@ -73,8 +80,8 @@ Claude Code / Codex / Cursor / Antigravity  (플러그인 + 스킬)
 
 | 경로 | 역할 |
 | --- | --- |
-| `packages/redmine-client` | npm: `redmine-devrelay-client@0.4.1` |
-| `packages/redmine-mcp` | npm: `redmine-devrelay@0.4.1` |
+| `packages/redmine-client` | npm: `redmine-devrelay-client@0.5.0` |
+| `packages/redmine-mcp` | npm: `redmine-devrelay@0.5.0` |
 | `plugins/cursor` | Cursor 플러그인 |
 | `plugins/claude-code` | Claude Code 플러그인 + 스킬 |
 | `plugins/codex` | Codex 플러그인 + 스킬 |
@@ -118,7 +125,7 @@ Claude Code / Codex / Cursor / Antigravity  (플러그인 + 스킬)
 ### 1. npm으로 실행 (권장)
 
 ```bash
-npx -y redmine-devrelay@0.4.1
+npx -y redmine-devrelay@0.5.0
 ```
 
 로컬 빌드:
@@ -161,11 +168,11 @@ export REDMINE_API_KEY=your-api-key
 /add-plugin redmine-devrelay
 ```
 
-또는 `plugins/cursor/mcp.json` / MCP 설정에서 `npx -y redmine-devrelay@0.4.1` 연결 후 `REDMINE_URL` / `REDMINE_API_KEY` 설정.
+또는 `plugins/cursor/mcp.json` / MCP 설정에서 `npx -y redmine-devrelay@0.5.0` 연결 후 `REDMINE_URL` / `REDMINE_API_KEY` 설정.
 
 ### 4. Claude Code
 
-`plugins/claude-code/.mcp.json`은 `redmine-devrelay@0.4.1`를 사용합니다.
+`plugins/claude-code/.mcp.json`은 `redmine-devrelay@0.5.0`를 사용합니다.
 
 ```bash
 claude --plugin-dir ./plugins/claude-code
@@ -195,7 +202,7 @@ npx @modelcontextprotocol/inspector node packages/redmine-mcp/dist/index.js
 
 ## 사용 팁
 
-- 쓰기는 항상 **미리보기 → 확인 → `confirm=true`**. 원시 REST 우회 금지.
+- 쓰기는 항상 **dry-run → 확인 → `confirm=true` + `previewToken`**. 원시 REST 우회 금지.
 - description/댓글은 **평문 줄바꿈**으로 넣으면 됩니다. HTML은 클라이언트가 변환합니다.
 - API Key는 환경변수로만. 채팅·로그에 출력하지 마세요.
 - `assignedTo` = 담당자, `watchers` = 관리자(일감관리자). update 시 `watchers`는 **전체 교체**.
@@ -203,8 +210,8 @@ npx @modelcontextprotocol/inspector node packages/redmine-mcp/dist/index.js
 ## 저장소 구조
 
 ```
-packages/redmine-client/   # npm: redmine-devrelay-client@0.4.1
-packages/redmine-mcp/      # npm: redmine-devrelay@0.4.1
+packages/redmine-client/   # npm: redmine-devrelay-client@0.5.0
+packages/redmine-mcp/      # npm: redmine-devrelay@0.5.0
 plugins/cursor|claude-code|codex|antigravity/
 docker/redmine/            # 통합 테스트용 Redmine
 docs/superpowers/          # Phase 설계·구현 계획
@@ -225,4 +232,4 @@ docs/superpowers/          # Phase 설계·구현 계획
 
 ## 라이선스 / 배포
 
-MIT · npm: [`redmine-devrelay@0.4.1`](https://www.npmjs.com/package/redmine-devrelay), [`redmine-devrelay-client@0.4.1`](https://www.npmjs.com/package/redmine-devrelay-client)
+MIT · npm: [`redmine-devrelay@0.5.0`](https://www.npmjs.com/package/redmine-devrelay), [`redmine-devrelay-client@0.5.0`](https://www.npmjs.com/package/redmine-devrelay-client)

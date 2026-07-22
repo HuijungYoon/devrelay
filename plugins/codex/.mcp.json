@@ -1,7 +1,7 @@
 {
   "redmine": {
     "command": "npx",
-    "args": ["-y", "redmine-devrelay@0.4.1"],
+    "args": ["-y", "redmine-devrelay@0.5.0"],
     "env_vars": ["REDMINE_URL", "REDMINE_API_KEY", "REDMINE_ALLOWED_HOSTS", "REDMINE_CA_CERT_PATH"]
   }
 }

@@ -1,6 +1,7 @@
 import type { RedmineClient, RedmineUser } from "redmine-devrelay-client";
 import {
   RedmineError,
+  detectNotesMarkup,
   formatDescriptionForRedmine,
   matchMemberByName,
 } from "redmine-devrelay-client";
@@ -11,6 +12,65 @@ import type {
   UpdateIssueInput,
   UpdateStatusInput,
 } from "./schemas.js";
+import {
+  consumePreviewToken,
+  issuePreviewToken,
+  type PreviewTool,
+} from "./previewStore.js";
+
+type NotesMarkupBlock = {
+  blocked: true;
+  reason: string;
+  matches: string[];
+};
+
+function asPayload(input: object): Record<string, unknown> {
+  return input as Record<string, unknown>;
+}
+
+function withIssuedToken<T extends Record<string, unknown>>(
+  tool: PreviewTool,
+  input: object,
+  preview: T
+): T & { previewToken: string } {
+  return {
+    ...preview,
+    previewToken: issuePreviewToken(tool, asPayload(input)),
+  };
+}
+
+function consumeIfConfirm(
+  tool: PreviewTool,
+  input: { confirm?: boolean; previewToken?: string }
+): void {
+  if (input.confirm) {
+    consumePreviewToken(tool, input.previewToken, asPayload(input));
+  }
+}
+
+function notesMarkupBlock(notes: string): NotesMarkupBlock | null {
+  const matches = detectNotesMarkup(notes);
+  if (matches.length === 0) return null;
+  return {
+    blocked: true,
+    reason: "notes must be plain text (no Textile/Markdown)",
+    matches,
+  };
+}
+
+function assertPlainNotesOrThrow(notes: string): void {
+  const block = notesMarkupBlock(notes);
+  if (!block) return;
+  throw new RedmineError({
+    code: "REDMINE_VALIDATION_ERROR",
+    message: `${block.reason}: found ${block.matches.join(", ")}`,
+    check: [
+      "Rewrite notes as plain text (newlines only)",
+      "Do not use Textile (h3., *, bq.) or Markdown (# , -, **bold**)",
+      `Remove: ${block.matches.join(", ")}`,
+    ],
+  });
+}
 
 function attachmentWouldApply(
   client: RedmineClient,
@@ -229,8 +289,13 @@ export async function handleCreateIssue(
       : {}),
   };
   if (!input.confirm) {
-    return { dryRun: true as const, wouldApply };
+    return withIssuedToken("redmine_create_issue", input, {
+      dryRun: true as const,
+      wouldApply,
+    });
   }
+
+  consumeIfConfirm("redmine_create_issue", input);
 
   const uploads = input.attachments?.length
     ? await client.uploadAttachments(input.attachments)
@@ -295,6 +360,14 @@ export async function handleUpdateIssue(
   client: RedmineClient,
   input: UpdateIssueInput
 ) {
+  if (input.notes !== undefined) {
+    const block = notesMarkupBlock(input.notes);
+    if (block) {
+      if (input.confirm) assertPlainNotesOrThrow(input.notes);
+      return { dryRun: true as const, issueId: input.issueId, ...block };
+    }
+  }
+
   const current = await client.getIssue(input.issueId);
   const projectId = current.project?.id;
   if (!projectId) {
@@ -369,14 +442,16 @@ export async function handleUpdateIssue(
   }
 
   if (!input.confirm) {
-    return {
+    return withIssuedToken("redmine_update_issue", input, {
       dryRun: true as const,
       issueId: input.issueId,
       changes,
       ...(assignee?.label ? { assignedToLabel: assignee.label } : {}),
       ...(watchers ? { watcherLabels: watchers.watcherLabels } : {}),
-    };
+    });
   }
+
+  consumeIfConfirm("redmine_update_issue", input);
 
   const result = await client.updateIssue({
     issueId: input.issueId,
@@ -404,10 +479,20 @@ export async function handleAddComment(
   client: RedmineClient,
   input: AddCommentInput
 ) {
+  const block = notesMarkupBlock(input.notes);
+  if (block) {
+    if (input.confirm) assertPlainNotesOrThrow(input.notes);
+    return { dryRun: true as const, ...block };
+  }
+
   const wouldApply = { issueId: input.issueId, notes: input.notes };
   if (!input.confirm) {
-    return { dryRun: true as const, wouldApply };
+    return withIssuedToken("redmine_add_comment", input, {
+      dryRun: true as const,
+      wouldApply,
+    });
   }
+  consumeIfConfirm("redmine_add_comment", input);
   const result = await client.addComment(input.issueId, input.notes);
   return { dryRun: false as const, result };
 }
@@ -419,8 +504,12 @@ export async function handleAddAttachment(
   const attachments = attachmentWouldApply(client, input.attachments);
   const wouldApply = { issueId: input.issueId, attachments };
   if (!input.confirm) {
-    return { dryRun: true as const, wouldApply };
+    return withIssuedToken("redmine_add_attachment", input, {
+      dryRun: true as const,
+      wouldApply,
+    });
   }
+  consumeIfConfirm("redmine_add_attachment", input);
   const uploads = await client.uploadAttachments(input.attachments);
   const result = await client.addIssueAttachments({
     issueId: input.issueId,
@@ -437,14 +526,26 @@ export async function handleUpdateStatus(
   client: RedmineClient,
   input: UpdateStatusInput
 ) {
+  if (input.notes !== undefined) {
+    const block = notesMarkupBlock(input.notes);
+    if (block) {
+      if (input.confirm) assertPlainNotesOrThrow(input.notes);
+      return { dryRun: true as const, ...block };
+    }
+  }
+
   const wouldApply = {
     issueId: input.issueId,
     statusId: input.statusId,
     ...(input.notes !== undefined ? { notes: input.notes } : {}),
   };
   if (!input.confirm) {
-    return { dryRun: true as const, wouldApply };
+    return withIssuedToken("redmine_update_status", input, {
+      dryRun: true as const,
+      wouldApply,
+    });
   }
+  consumeIfConfirm("redmine_update_status", input);
   const result = await client.updateIssueStatus(
     input.issueId,
     input.statusId,

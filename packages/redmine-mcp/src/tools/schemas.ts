@@ -90,6 +90,24 @@ const attachmentsField = z
   .max(5)
   .optional();
 
+const confirmFields = {
+  confirm: z.boolean().optional(),
+  previewToken: z.string().min(1).optional(),
+};
+
+const requirePreviewTokenWhenConfirm = (
+  v: { confirm?: boolean; previewToken?: string },
+  ctx: z.RefinementCtx
+) => {
+  if (v.confirm === true && !v.previewToken) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "previewToken is required when confirm=true",
+      path: ["previewToken"],
+    });
+  }
+};
+
 export const createIssueInputSchema = z
   .object({
     projectId: positiveInt,
@@ -105,9 +123,10 @@ export const createIssueInputSchema = z
     assignedTo: userRef.optional(),
     watchers: z.array(userRef).optional(),
     attachments: attachmentsField,
-    confirm: z.boolean().optional(),
+    ...confirmFields,
   })
-  .strict();
+  .strict()
+  .superRefine(requirePreviewTokenWhenConfirm);
 
 export const updateIssueInputSchema = z
   .object({
@@ -124,7 +143,7 @@ export const updateIssueInputSchema = z
     assignedTo: userRef.optional(),
     watchers: z.array(userRef).optional(),
     notes: z.string().optional(),
-    confirm: z.boolean().optional(),
+    ...confirmFields,
   })
   .strict()
   .refine(
@@ -141,7 +160,8 @@ export const updateIssueInputSchema = z
       v.assignedTo !== undefined ||
       v.watchers !== undefined,
     { message: "At least one field to update is required" }
-  );
+  )
+  .superRefine(requirePreviewTokenWhenConfirm);
 
 export const searchUsersInputSchema = z
   .object({
@@ -162,26 +182,29 @@ export const addCommentInputSchema = z
   .object({
     issueId: positiveInt,
     notes: z.string().min(1),
-    confirm: z.boolean().optional(),
+    ...confirmFields,
   })
-  .strict();
+  .strict()
+  .superRefine(requirePreviewTokenWhenConfirm);
 
 export const addAttachmentInputSchema = z
   .object({
     issueId: positiveInt,
     attachments: z.array(attachmentInputSchema).min(1).max(5),
-    confirm: z.boolean().optional(),
+    ...confirmFields,
   })
-  .strict();
+  .strict()
+  .superRefine(requirePreviewTokenWhenConfirm);
 
 export const updateStatusInputSchema = z
   .object({
     issueId: positiveInt,
     statusId: positiveInt,
     notes: z.string().optional(),
-    confirm: z.boolean().optional(),
+    ...confirmFields,
   })
-  .strict();
+  .strict()
+  .superRefine(requirePreviewTokenWhenConfirm);
 
 export type ConnectionInput = z.infer<typeof connectionInputSchema>;
 export type ListProjectsInput = z.infer<typeof listProjectsInputSchema>;
@@ -415,7 +438,13 @@ export const toolJsonSchemas = {
       },
       confirm: {
         type: "boolean",
-        description: "false/omit = dry-run preview; true = create",
+        description:
+          "false/omit = dry-run (returns previewToken); true = create (requires previewToken)",
+      },
+      previewToken: {
+        type: "string",
+        minLength: 1,
+        description: "Token from matching dry-run; required when confirm=true",
       },
     },
     required: ["projectId", "subject"],
@@ -479,10 +508,20 @@ export const toolJsonSchemas = {
           ],
         },
       },
-      notes: { type: "string", description: "Optional journal note" },
+      notes: {
+        type: "string",
+        description:
+          "Optional journal note — plain text only (no Textile/Markdown). Markup is blocked.",
+      },
       confirm: {
         type: "boolean",
-        description: "false/omit = before→after preview; true = apply",
+        description:
+          "false/omit = before→after preview (returns previewToken); true = apply (requires previewToken)",
+      },
+      previewToken: {
+        type: "string",
+        minLength: 1,
+        description: "Token from matching dry-run; required when confirm=true",
       },
     },
     required: ["issueId"],
@@ -520,8 +559,22 @@ export const toolJsonSchemas = {
     type: "object",
     properties: {
       issueId: { type: "integer", minimum: 1 },
-      notes: { type: "string", minLength: 1 },
-      confirm: { type: "boolean" },
+      notes: {
+        type: "string",
+        minLength: 1,
+        description:
+          "Comment body — plain text only (no Textile h3./* or Markdown). Newlines OK.",
+      },
+      confirm: {
+        type: "boolean",
+        description:
+          "false/omit = dry-run (returns previewToken); true = apply (requires previewToken)",
+      },
+      previewToken: {
+        type: "string",
+        minLength: 1,
+        description: "Token from matching dry-run; required when confirm=true",
+      },
     },
     required: ["issueId", "notes"],
     additionalProperties: false,
@@ -549,7 +602,13 @@ export const toolJsonSchemas = {
       },
       confirm: {
         type: "boolean",
-        description: "false/omit = dry-run preview; true = upload and attach",
+        description:
+          "false/omit = dry-run preview (returns previewToken); true = upload and attach (requires previewToken)",
+      },
+      previewToken: {
+        type: "string",
+        minLength: 1,
+        description: "Token from matching dry-run; required when confirm=true",
       },
     },
     required: ["issueId", "attachments"],
@@ -560,8 +619,21 @@ export const toolJsonSchemas = {
     properties: {
       issueId: { type: "integer", minimum: 1 },
       statusId: { type: "integer", minimum: 1 },
-      notes: { type: "string" },
-      confirm: { type: "boolean" },
+      notes: {
+        type: "string",
+        description:
+          "Optional journal note — plain text only (no Textile/Markdown).",
+      },
+      confirm: {
+        type: "boolean",
+        description:
+          "false/omit = dry-run (returns previewToken); true = apply (requires previewToken)",
+      },
+      previewToken: {
+        type: "string",
+        minLength: 1,
+        description: "Token from matching dry-run; required when confirm=true",
+      },
     },
     required: ["issueId", "statusId"],
     additionalProperties: false,

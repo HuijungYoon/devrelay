@@ -2,14 +2,14 @@
 
 Cursor · Claude Code · Codex용 **Redmine MCP 서버**입니다.
 
-- **버전:** `0.4.1`
+- **버전:** `0.5.0`
 - **GitHub:** https://github.com/HuijungYoon/devrelay
 - **Client:** [redmine-devrelay-client](https://www.npmjs.com/package/redmine-devrelay-client) (동일 버전)
 
 ## 빠른 시작
 
 ```bash
-npx -y redmine-devrelay@0.4.1
+npx -y redmine-devrelay@0.5.0
 ```
 
 | 환경변수 | 설명 |
@@ -21,14 +21,15 @@ npx -y redmine-devrelay@0.4.1
 
 ## 쓰기 규칙
 
-**미리보기 → 확인 → `confirm=true`.** 쓰기 도구는 dry-run이 기본입니다.
+**dry-run → 확인 → `confirm=true` + `previewToken`.**  
+dry-run 응답의 `previewToken` 없이는 적용할 수 없습니다 (TTL 10분, 1회용).
 
 이 Redmine은 **HTML 본문**을 씁니다. 평문으로 넣으면 클라이언트가 변환합니다.
 
 | 필드 | 자동 변환 |
 | --- | --- |
 | `description` | 일반 텍스트 줄 → `<p>…</p>` (이미 HTML이면 그대로) |
-| `notes` / 댓글 | 줄바꿈 → `<br />` |
+| `notes` / 댓글 | 줄바꿈 → `<br />`. **평문만** — Textile/Markdown은 dry-run에서 `blocked` |
 
 ## 조회 API
 
@@ -47,7 +48,7 @@ npx -y redmine-devrelay@0.4.1
 | --- | --- |
 | `redmine_create_issue` | 이슈 생성. dry-run 시 `wouldApply` 미리보기 |
 | `redmine_update_issue` | 이슈 수정. dry-run 시 `changes[]` 이전→이후 |
-| `redmine_add_comment` | 이슈 댓글 추가 (`\n` → `<br />` 자동) |
+| `redmine_add_comment` | 이슈 댓글 추가 (평문만; Textile/Markdown 차단) |
 | `redmine_add_attachment` | 기존 이슈에 로컬 파일 첨부 |
 | `redmine_update_status` | 이슈 상태(`statusId`)만 변경 |
 
@@ -63,13 +64,15 @@ npx -y redmine-devrelay@0.4.1
 | `assignedTo` | 담당자 (`"me"` / id / 이름) |
 | `watchers` | 관리자 (id·이름 배열, update 시 전체 교체) |
 | `attachments` | 로컬 파일 `[{ path, filename?, description? }]` (create / add_attachment) |
-| `confirm` | `false`(기본)=미리보기, `true`=적용 |
+| `confirm` | `false`(기본)=미리보기(+`previewToken`), `true`=적용 (`previewToken` 필수) |
+| `previewToken` | dry-run에서 받은 토큰. payload가 바뀌면 무효 |
 
 ## 버전 이력 (요약)
 
 | 버전 | 내용 |
 | --- | --- |
-| **0.4.1** | 문서·예시 IP 정리, Antigravity 플러그인 핀 |
+| **0.5.0** | notes Textile/Markdown 차단, `previewToken` confirm 게이트 |
+| 0.4.1 | 문서·예시 IP 정리, Antigravity 플러그인 핀 |
 | 0.4.0 | 첨부파일: create `attachments` + `redmine_add_attachment` |
 | 0.3.3 | npm README·플러그인 핀·설치 문서 동기화 |
 | 0.3.2 | description 평문 → `<p>` HTML 자동 변환 |

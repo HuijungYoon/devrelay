@@ -22,5 +22,9 @@ export {
   ATTACHMENT_MAX_BYTES,
   ATTACHMENT_MAX_FILES,
 } from "./types.js";
-export { formatNotesForRedmine, formatDescriptionForRedmine } from "./textile.js";
+export {
+  detectNotesMarkup,
+  formatNotesForRedmine,
+  formatDescriptionForRedmine,
+} from "./textile.js";
 export type * from "./types.js";
