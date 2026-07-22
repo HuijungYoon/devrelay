@@ -1,0 +1,21 @@
+{
+  "name": "devrelay",
+  "owner": {
+    "name": "M2I",
+    "email": "hjyoon@mxon.co.kr"
+  },
+  "metadata": {
+    "description": "DevRelay plugins for Claude Code — Redmine MCP and issue skills",
+    "version": "0.5.0"
+  },
+  "plugins": [
+    {
+      "name": "redmine-devrelay",
+      "source": "./plugins/claude-code",
+      "description": "Connect Claude Code to Redmine: test connection, list projects, search my open issues, view issue detail, and create/update/comment/attach with dry-run confirm gate.",
+      "version": "0.5.0",
+      "keywords": ["redmine", "mcp", "issues"],
+      "category": "developer-tools"
+    }
+  ]
+}
