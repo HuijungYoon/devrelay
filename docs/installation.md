@@ -38,12 +38,35 @@ Client 패키지(라이브러리): `redmine-devrelay-client@0.5.0`.
 
 ## 5. Claude Code
 
+**Breaking:** slash namespace is `/redmine-devrelay:…` (was `/redmine:…`).
+
+Set `REDMINE_URL` / `REDMINE_API_KEY` first (section 3).
+
+Marketplace install:
+
+```text
+/plugin marketplace add HuijungYoon/devrelay
+/plugin install redmine-devrelay@devrelay
+/reload-plugins
+```
+
+Local clone / path marketplace:
+
+```text
+/plugin marketplace add /path/to/devrelay
+/plugin install redmine-devrelay@devrelay
+```
+
+Dev fallback (no marketplace):
+
 ```bash
 claude --plugin-dir ./plugins/claude-code
 ```
 
-Slash 예: `/redmine:help`, `/redmine:my-issues`, `/redmine:create-issue`, `/redmine:update-issue`.  
+Slash 예: `/redmine-devrelay:help`, `/redmine-devrelay:my-issues`, `/redmine-devrelay:create-issue`.  
 쓰기는 **미리보기 → 확인 → 적용**.
+
+Community submit prep: `docs/claude-code-marketplace-submit.md`.
 
 ## 6. Codex
 
