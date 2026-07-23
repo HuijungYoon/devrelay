@@ -1,86 +1,88 @@
 # redmine-devrelay
 
-Cursor · Claude Code · Codex용 **Redmine MCP 서버**입니다.
+[![Korean](https://img.shields.io/badge/lang-한국어-blue)](README.ko.md)
 
-- **버전:** `0.5.1`
+**Redmine MCP server** for Cursor · Claude Code · Codex.
+
+- **Version:** `0.5.1`
 - **GitHub:** https://github.com/HuijungYoon/devrelay
-- **Client:** [redmine-devrelay-client](https://www.npmjs.com/package/redmine-devrelay-client) (동일 버전)
+- **Client:** [redmine-devrelay-client](https://www.npmjs.com/package/redmine-devrelay-client) (same version)
 
-## 빠른 시작
+## Quick start
 
 ```bash
 npx -y redmine-devrelay@0.5.1
 ```
 
-| 환경변수 | 설명 |
+| Env var | Description |
 | --- | --- |
-| `REDMINE_URL` | Redmine 베이스 URL (`/redmine` path 포함 가능) |
-| `REDMINE_API_KEY` | REST API Key |
-| `REDMINE_ALLOWED_HOSTS` | (선택) 호스트 allowlist. 사설 IPv4 HTTP는 별도 허용 |
-| `REDMINE_CA_CERT_PATH` | (선택) 사설 CA PEM |
+| `REDMINE_URL` | Redmine base URL (may include `/redmine` path) |
+| `REDMINE_API_KEY` | REST API key |
+| `REDMINE_ALLOWED_HOSTS` | (optional) Host allowlist. Private IPv4 HTTP is allowed separately |
+| `REDMINE_CA_CERT_PATH` | (optional) Private CA PEM |
 
-## 쓰기 규칙
+## Write rules
 
-**dry-run → 확인 → `confirm=true` + `previewToken`.**  
-dry-run 응답의 `previewToken` 없이는 적용할 수 없습니다 (TTL 10분, 1회용).
+**dry-run → confirm → `confirm=true` + `previewToken`.**  
+You cannot apply without the `previewToken` from the dry-run response (TTL 10 minutes, single-use).
 
-이 Redmine은 **HTML 본문**을 씁니다. 평문으로 넣으면 클라이언트가 변환합니다.
+This Redmine uses **HTML bodies**. Pass plain text and the client converts it.
 
-| 필드 | 자동 변환 |
+| Field | Auto conversion |
 | --- | --- |
-| `description` | 일반 텍스트 줄 → `<p>…</p>` (이미 HTML이면 그대로) |
-| `notes` / 댓글 | 줄바꿈 → `<br />`. **평문만** — Textile/Markdown은 dry-run에서 `blocked` |
+| `description` | Plain text lines → `<p>…</p>` (left as-is if already HTML) |
+| `notes` / comments | Newlines → `<br />`. **Plain text only** — Textile/Markdown is `blocked` in dry-run |
 
-## 조회 API
+## Read APIs
 
-| 도구 | 설명 |
+| Tool | Description |
 | --- | --- |
-| `redmine_test_connection` | URL·API Key로 현재 사용자 연결 확인 |
-| `redmine_list_projects` | 접근 가능한 프로젝트 목록 |
-| `redmine_list_project_members` | 프로젝트 멤버 목록 (담당자·관리자 선택용) |
-| `redmine_search_users` | 전체 사용자 검색 (권한 필요할 수 있음) |
-| `redmine_search_issues` | 이슈 검색 (기본: 열린 이슈, `assignedTo: "me"` 지원) |
-| `redmine_get_issue` | 이슈 상세 조회 (journals 등 include) |
+| `redmine_test_connection` | Verify connection as the current user with URL and API key |
+| `redmine_list_projects` | List accessible projects |
+| `redmine_list_project_members` | List project members (for assignee / watchers) |
+| `redmine_search_users` | Search all users (may require permission) |
+| `redmine_search_issues` | Search issues (default: open; supports `assignedTo: "me"`) |
+| `redmine_get_issue` | Issue detail (includes journals, etc.) |
 
-## 쓰기 API
+## Write APIs
 
-| 도구 | 설명 |
+| Tool | Description |
 | --- | --- |
-| `redmine_create_issue` | 이슈 생성. dry-run 시 `wouldApply` 미리보기 |
-| `redmine_update_issue` | 이슈 수정. dry-run 시 `changes[]` 이전→이후 |
-| `redmine_add_comment` | 이슈 댓글 추가 (평문만; Textile/Markdown 차단) |
-| `redmine_add_attachment` | 기존 이슈에 로컬 파일 첨부 |
-| `redmine_update_status` | 이슈 상태(`statusId`)만 변경 |
+| `redmine_create_issue` | Create issue. Dry-run returns `wouldApply` preview |
+| `redmine_update_issue` | Update issue. Dry-run returns before→after `changes[]` |
+| `redmine_add_comment` | Add comment (plain text only; Textile/Markdown blocked) |
+| `redmine_add_attachment` | Attach a local file to an existing issue |
+| `redmine_update_status` | Change issue status (`statusId`) only |
 
-### create / update 선택 필드
+### Optional create / update fields
 
-| 필드 | 의미 |
+| Field | Meaning |
 | --- | --- |
-| `trackerId` | 유형 |
-| `statusId` | 상태 |
-| `priorityId` | 우선순위 |
-| `startDate` / `dueDate` | 시작일 / 완료기한 (`YYYY-MM-DD`) |
-| `doneRatio` | 진척도 (0–100) |
-| `assignedTo` | 담당자 (`"me"` / id / 이름) |
-| `watchers` | 관리자 (id·이름 배열, update 시 전체 교체) |
-| `attachments` | 로컬 파일 `[{ path, filename?, description? }]` (create / add_attachment) |
-| `confirm` | `false`(기본)=미리보기(+`previewToken`), `true`=적용 (`previewToken` 필수) |
-| `previewToken` | dry-run에서 받은 토큰. payload가 바뀌면 무효 |
+| `trackerId` | Tracker |
+| `statusId` | Status |
+| `priorityId` | Priority |
+| `startDate` / `dueDate` | Start / due date (`YYYY-MM-DD`) |
+| `doneRatio` | Done ratio (0–100) |
+| `assignedTo` | Assignee (`"me"` / id / name) |
+| `watchers` | Watchers (id or name array; full replace on update) |
+| `attachments` | Local files `[{ path, filename?, description? }]` (create / add_attachment) |
+| `confirm` | `false` (default) = preview (+ `previewToken`), `true` = apply (`previewToken` required) |
+| `previewToken` | Token from dry-run. Invalid if payload changes |
 
-## 버전 이력 (요약)
+## Changelog (summary)
 
-| 버전 | 내용 |
+| Version | Notes |
 | --- | --- |
-| **0.5.1** | Codex marketplace 설치 CLI 정합 (`ON_USE`, `plugin add`) + pin |
-| 0.5.0 | notes Textile/Markdown 차단, `previewToken` confirm 게이트 |
-| 0.4.1 | 문서·예시 IP 정리, Antigravity 플러그인 핀 |
-| 0.4.0 | 첨부파일: create `attachments` + `redmine_add_attachment` |
-| 0.3.3 | npm README·플러그인 핀·설치 문서 동기화 |
-| 0.3.2 | description 평문 → `<p>` HTML 자동 변환 |
+| **0.5.1** | Codex marketplace install CLI alignment (`ON_USE`, `plugin add`) + pin |
+| 0.5.0 | Block Textile/Markdown in notes, `previewToken` confirm gate |
+| 0.4.1 | Docs/example IP cleanup, Antigravity plugin pin |
+| 0.4.0 | Attachments: create `attachments` + `redmine_add_attachment` |
+| 0.3.3 | Sync npm README, plugin pins, install docs |
+| 0.3.2 | Auto-convert plain description → `<p>` HTML |
 | 0.3.1 | notes `\n` → `<br />` |
-| 0.3.0 | `update_issue`, create 필드·미리보기 확장 |
-| 0.2.x | create / comment / status, 멤버·watchers, 사설 HTTP |
-| 0.1.x | 조회 전용 (Phase 1) |
+| 0.3.0 | `update_issue`, expanded create fields and preview |
+| 0.2.x | create / comment / status, members · watchers, private HTTP |
+| 0.1.x | Read-only (Phase 1) |
 
 ## License
 
