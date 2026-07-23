@@ -1,134 +1,136 @@
 # DevRelay / redmine-devrelay
 
-Codex · Claude Code · Cursor · Antigravity에서 **자연어와 슬래시 명령**으로 Redmine 이슈를 조회·생성·수정할 수 있게 해주는 MCP 연동 프로젝트입니다.
+[![Korean](https://img.shields.io/badge/lang-한국어-blue)](README.ko.md)
 
-에이전트는 Redmine REST를 직접 호출하지 않고, 공통 MCP 서버 [`redmine-devrelay`](https://www.npmjs.com/package/redmine-devrelay)를 통합니다. 쓰기 API는 **dry-run → 확인 → `confirm=true` + `previewToken`** 게이트를 강제합니다.
+MCP integration that lets you query, create, and update Redmine issues with **natural language and slash commands** in Codex · Claude Code · Cursor · Antigravity.
 
-**현재 배포 버전: `0.5.1`** (`redmine-devrelay` / `redmine-devrelay-client`)
+Agents do not call the Redmine REST API directly. They go through the shared MCP server [`redmine-devrelay`](https://www.npmjs.com/package/redmine-devrelay). Write APIs enforce a **dry-run → confirm → `confirm=true` + `previewToken`** gate.
 
-## 현재까지 (Phase 1–5)
+**Current release: `0.5.1`** (`redmine-devrelay` / `redmine-devrelay-client`)
 
-| Phase | 내용 | 버전 |
+## Shipped so far (Phase 1–5)
+
+| Phase | Scope | Version |
 | --- | --- | --- |
-| 1 | 연결·프로젝트·이슈 조회 | 0.1.x |
-| 2 | 이슈 생성 / 댓글 / 상태 변경 (+ 담당자·관리자) | 0.2.x |
-| 3 | `update_issue`, 생성 필드 확장, HTML 본문 줄바꿈 | 0.3.x |
-| 4 | 이슈 **첨부파일** (create + `add_attachment`) | 0.4.x |
-| 5 | notes 평문 강제, **`previewToken` confirm 게이트** | **0.5.x** |
+| 1 | Connection, projects, issue read | 0.1.x |
+| 2 | Create issue / comment / status change (+ assignee & watchers) | 0.2.x |
+| 3 | `update_issue`, expanded create fields, HTML body line breaks | 0.3.x |
+| 4 | Issue **attachments** (create + `add_attachment`) | 0.4.x |
+| 5 | Plain-text notes enforcement, **`previewToken` confirm gate** | **0.5.x** |
 
-### 0.5.x 하이라이트
+### 0.5.x highlights
 
-- `notes` Textile/Markdown dry-run 차단 (`blocked` + matches)
-- 쓰기 적용 시 dry-run에서 받은 `previewToken` 필수 (TTL 10분, 1회용)
-- 첫 호출 `confirm=true` 불가
+- Block Textile/Markdown in `notes` during dry-run (`blocked` + matches)
+- Write applies require `previewToken` from dry-run (TTL 10 minutes, single-use)
+- First call cannot use `confirm=true`
 
-### 0.4.x 하이라이트
+### 0.4.x highlights
 
 - `attachments: [{ path, filename?, description? }]` on create
-- `redmine_add_attachment` — 기존 이슈에 로컬 파일 첨부
-- dry-run은 경로·파일명·크기만; `confirm=true`에서만 업로드
+- `redmine_add_attachment` — attach a local file to an existing issue
+- Dry-run returns path, filename, and size only; upload happens only with `confirm=true`
 
-### 0.3.x 하이라이트
+### 0.3.x highlights
 
-- `redmine_update_issue` — 이전→이후 `changes[]` dry-run 후 적용
-- create/update: 유형·상태·우선순위·날짜·진척도·담당자(`assignedTo`)·관리자(`watchers`)
+- `redmine_update_issue` — apply after dry-run with before→after `changes[]`
+- create/update: tracker, status, priority, dates, done ratio, assignee (`assignedTo`), watchers
 - `redmine_list_project_members` / `redmine_search_users`
-- 사설망 HTTP(`http://192.168.x.x/...`) 허용, `/redmine` base path 유지
-- **HTML 본문 자동 변환** (이 Redmine은 Textile이 아님)
-  - description: 평문 줄 → `<p>…</p>`
-  - notes/댓글: `\n` → `<br />` (평문만; Textile/Markdown은 dry-run에서 차단)
+- Private-network HTTP (`http://192.168.x.x/...`) allowed; `/redmine` base path preserved
+- **Automatic HTML body conversion** (this Redmine is not Textile)
+  - description: plain lines → `<p>…</p>`
+  - notes/comments: `\n` → `<br />` (plain text only; Textile/Markdown blocked in dry-run)
 
-아직 없는 것: 커스텀 필드, tracker/status 이름 해석, 일괄 수정.
+Not yet: custom fields, tracker/status name resolution, bulk updates.
 
-## 무엇을 할 수 있나요?
+## What can you do?
 
-- “Cloud HMI에서 내게 할당된 열린 이슈 보여줘”
-- “#1523 상세랑 최근 댓글 보여줘”
-- “이슈 만들어줘” → 프로젝트·제목·담당자·관리자 확인 → dry-run → 적용
-- “#23870 설명/진척도 바꿔줘” → before/after 미리보기 → 확인 후 적용
-- “댓글 달아줘” → 미리보기 → 확인
+- “Show my open issues on Cloud HMI”
+- “Show #1523 details and recent comments”
+- “Create an issue” → confirm project, subject, assignee, watchers → dry-run → apply
+- “Change description/progress on #23870” → before/after preview → confirm → apply
+- “Add a comment” → preview → confirm
 
-슬래시 예시 (Cursor):
+Slash examples (Cursor):
 
-| 명령 | 동작 |
+| Command | Action |
 | --- | --- |
-| `/help` | 명령 목록 |
-| `/test-connection` | 연결·현재 사용자 |
-| `/list-projects` | 프로젝트 목록 |
-| `/my-issues` | 내 열린 이슈 |
-| `/issue 1523` | 이슈 상세 + journals |
-| `/create-issue` | 이슈 생성 (dry-run → 확인) |
-| `/update-issue` | 이슈 수정 (dry-run → 확인) |
-| `/add-comment` | 댓글 (dry-run → 확인) |
-| `/add-attachment` | 파일 첨부 (dry-run → 확인) |
-| `/update-status` | 상태만 변경 (dry-run → 확인) |
+| `/help` | Command list |
+| `/test-connection` | Connection and current user |
+| `/list-projects` | Project list |
+| `/my-issues` | My open issues |
+| `/issue 1523` | Issue detail + journals |
+| `/create-issue` | Create issue (dry-run → confirm) |
+| `/update-issue` | Update issue (dry-run → confirm) |
+| `/add-comment` | Comment (dry-run → confirm) |
+| `/add-attachment` | Attach file (dry-run → confirm) |
+| `/update-status` | Status only (dry-run → confirm) |
 
-## 구성
+## Architecture
 
 ```
-Claude Code / Codex / Cursor / Antigravity  (플러그인 + 스킬)
+Claude Code / Codex / Cursor / Antigravity  (plugins + skills)
         │ MCP STDIO
         ▼
-   redmine-devrelay@0.5.1   (도구 스키마, STDIO, npm)
+   redmine-devrelay@0.5.1   (tool schemas, STDIO, npm)
         │
         ▼
-   redmine-devrelay-client@0.5.1  (REST, 인증, HTML 포맷, 쓰기)
-        │ HTTPS 또는 사설 IP HTTP
+   redmine-devrelay-client@0.5.1  (REST, auth, HTML formatting, writes)
+        │ HTTPS or private-IP HTTP
         ▼
    Redmine REST API
 ```
 
-| 경로 | 역할 |
+| Path | Role |
 | --- | --- |
 | `packages/redmine-client` | npm: `redmine-devrelay-client@0.5.1` |
 | `packages/redmine-mcp` | npm: `redmine-devrelay@0.5.1` |
-| `plugins/cursor` | Cursor 플러그인 |
-| `plugins/claude-code` | Claude Code 플러그인 + 스킬 |
-| `plugins/codex` | Codex 플러그인 + 스킬 |
-| `plugins/antigravity` | Antigravity IDE/CLI 플러그인 |
+| `plugins/cursor` | Cursor plugin |
+| `plugins/claude-code` | Claude Code plugin + skills |
+| `plugins/codex` | Codex plugin + skills |
+| `plugins/antigravity` | Antigravity IDE/CLI plugin |
 
-### MCP 도구
+### MCP tools
 
-**조회**
+**Read**
 
-| 도구 | 설명 |
+| Tool | Description |
 | --- | --- |
-| `redmine_test_connection` | URL·API Key로 현재 사용자 확인 |
-| `redmine_list_projects` | 접근 가능한 프로젝트 목록 |
-| `redmine_list_project_members` | 프로젝트 멤버 (담당자·관리자 선택) |
-| `redmine_search_users` | 전체 사용자 검색 (권한 필요할 수 있음) |
-| `redmine_search_issues` | 이슈 검색 (`assignedTo: "me"`, 기본 열린 이슈) |
-| `redmine_get_issue` | 이슈 상세 (`journals` 등 include) |
+| `redmine_test_connection` | Verify current user with URL and API key |
+| `redmine_list_projects` | List accessible projects |
+| `redmine_list_project_members` | Project members (pick assignee/watchers) |
+| `redmine_search_users` | Search all users (may require permission) |
+| `redmine_search_issues` | Search issues (`assignedTo: "me"`, open by default) |
+| `redmine_get_issue` | Issue detail (includes `journals`, etc.) |
 
-**쓰기** (`confirm` 기본 `false` = 미리보기)
+**Write** (`confirm` defaults to `false` = preview)
 
-| 도구 | 설명 |
+| Tool | Description |
 | --- | --- |
-| `redmine_create_issue` | 생성 · `wouldApply` 미리보기 (선택 `attachments`) |
-| `redmine_update_issue` | 수정 · `changes[]` 이전→이후 |
-| `redmine_add_comment` | 댓글 (`\n` → `<br />`) |
-| `redmine_add_attachment` | 기존 이슈에 로컬 파일 첨부 |
-| `redmine_update_status` | `statusId`만 변경 |
+| `redmine_create_issue` | Create · `wouldApply` preview (optional `attachments`) |
+| `redmine_update_issue` | Update · before→after `changes[]` |
+| `redmine_add_comment` | Comment (`\n` → `<br />`) |
+| `redmine_add_attachment` | Attach a local file to an existing issue |
+| `redmine_update_status` | Change `statusId` only |
 
-자세한 필드·HTML 규칙은 [`packages/redmine-mcp/README.md`](packages/redmine-mcp/README.md) 참고.
+See [`packages/redmine-mcp/README.md`](packages/redmine-mcp/README.md) for field details and HTML rules.
 
-## 사전 준비
+## Prerequisites
 
-1. **Node.js 20+** (권장 22 LTS), **pnpm**
-2. Redmine REST API 활성화  
+1. **Node.js 20+** (22 LTS recommended), **pnpm**
+2. Redmine REST API enabled  
    Administration → Settings → API → REST web service
-3. 본인 계정 **API Key** (My account → API access key)
-4. PC에서 Redmine URL 접근 가능 (사내망이면 VPN)
+3. Your account **API key** (My account → API access key)
+4. Network access to the Redmine URL from your machine (VPN if on a corporate network)
 
-## 빠른 시작
+## Quick start
 
-### 1. npm으로 실행 (권장)
+### 1. Run via npm (recommended)
 
 ```bash
 npx -y redmine-devrelay@0.5.1
 ```
 
-로컬 빌드:
+Local build:
 
 ```bash
 pnpm install
@@ -136,9 +138,9 @@ pnpm --filter redmine-devrelay-client build
 pnpm --filter redmine-devrelay build
 ```
 
-### 2. 환경변수
+### 2. Environment variables
 
-`.env.example`을 참고하세요. 키는 git에 넣지 마세요.
+See `.env.example`. Do not commit keys to git.
 
 ```bash
 # Windows PowerShell
@@ -152,15 +154,15 @@ export REDMINE_URL=https://redmine.example.com
 export REDMINE_API_KEY=your-api-key
 ```
 
-선택:
+Optional:
 
-| 변수 | 설명 |
+| Variable | Description |
 | --- | --- |
-| `REDMINE_ALLOWED_HOSTS` | 호스트 allowlist (비어 있으면 생략 가능). 사설 IPv4는 별도 허용 |
-| `REDMINE_CA_CERT_PATH` | 사설 CA PEM |
+| `REDMINE_ALLOWED_HOSTS` | Host allowlist (can omit when empty). Private IPv4 is allowed separately |
+| `REDMINE_CA_CERT_PATH` | Private CA PEM |
 
-사설망 예: `REDMINE_URL=http://192.168.10.50/redmine`  
-로컬 Docker: `http://localhost:3000` + `REDMINE_ALLOWED_HOSTS=localhost` (`docker/redmine/README.md`)
+Private network example: `REDMINE_URL=http://192.168.10.50/redmine`  
+Local Docker: `http://localhost:3000` + `REDMINE_ALLOWED_HOSTS=localhost` (`docker/redmine/README.md`)
 
 ### 3. Cursor
 
@@ -168,31 +170,31 @@ export REDMINE_API_KEY=your-api-key
 /add-plugin redmine-devrelay
 ```
 
-또는 `plugins/cursor/mcp.json` / MCP 설정에서 `npx -y redmine-devrelay@0.5.1` 연결 후 `REDMINE_URL` / `REDMINE_API_KEY` 설정.
+Or connect `npx -y redmine-devrelay@0.5.1` in `plugins/cursor/mcp.json` / MCP settings, then set `REDMINE_URL` / `REDMINE_API_KEY`.
 
 ### 4. Claude Code
 
-`plugins/claude-code/.mcp.json`은 `redmine-devrelay@0.5.1`를 사용합니다.
+`plugins/claude-code/.mcp.json` uses `redmine-devrelay@0.5.1`.
 
 ```bash
 claude --plugin-dir ./plugins/claude-code
 ```
 
-- `/mcp`로 연결 확인
-- `/redmine:create-issue`, `/redmine:update-issue` 등 또는 자연어
+- Check connection with `/mcp`
+- Use `/redmine:create-issue`, `/redmine:update-issue`, etc., or natural language
 
 ### 5. Codex
 
-`codex plugin marketplace` / `codex plugin add` 지원 CLI 필요 (없으면 업그레이드, 예: 0.107.0).
+Requires a CLI that supports `codex plugin marketplace` / `codex plugin add` (upgrade if missing, e.g. 0.107.0).
 
 ```bash
 codex plugin marketplace add HuijungYoon/devrelay
 codex plugin add redmine-devrelay@devrelay
 ```
 
-로컬 개발: 레포 루트에서 `codex plugin marketplace add .` 후 동일 install.  
-환경변수 `REDMINE_URL` / `REDMINE_API_KEY`. 조회는 approve, 쓰기는 prompt 권장.  
-자세한 내용: `plugins/codex/README.md`.
+For local development: from the repo root, `codex plugin marketplace add .` then the same install.  
+Set `REDMINE_URL` / `REDMINE_API_KEY`. Prefer approve for reads and prompt for writes.  
+Details: `plugins/codex/README.md`.
 
 ### 6. Antigravity
 
@@ -200,7 +202,7 @@ codex plugin add redmine-devrelay@devrelay
 agy plugin install ./plugins/antigravity
 ```
 
-GitHub: clone repo then `agy plugin install ./devrelay/plugins/antigravity`.  
+From GitHub: clone the repo, then `agy plugin install ./devrelay/plugins/antigravity`.  
 Slash: `/redmine:help`, `/redmine:my-issues`, … — see `plugins/antigravity/README.md`.
 
 ### 7. MCP Inspector
@@ -209,36 +211,36 @@ Slash: `/redmine:help`, `/redmine:my-issues`, … — see `plugins/antigravity/R
 npx @modelcontextprotocol/inspector node packages/redmine-mcp/dist/index.js
 ```
 
-## 사용 팁
+## Usage tips
 
-- 쓰기는 항상 **dry-run → 확인 → `confirm=true` + `previewToken`**. 원시 REST 우회 금지.
-- description/댓글은 **평문 줄바꿈**으로 넣으면 됩니다. HTML은 클라이언트가 변환합니다.
-- API Key는 환경변수로만. 채팅·로그에 출력하지 마세요.
-- `assignedTo` = 담당자, `watchers` = 관리자(일감관리자). update 시 `watchers`는 **전체 교체**.
+- Writes always go **dry-run → confirm → `confirm=true` + `previewToken`**. Do not bypass via raw REST.
+- Put description/comments as **plain text with newlines**; the client converts to HTML.
+- Keep API keys in environment variables only. Never print them in chat or logs.
+- `assignedTo` = assignee, `watchers` = watchers. On update, `watchers` is a **full replacement**.
 
-## 저장소 구조
+## Repository layout
 
 ```
 packages/redmine-client/   # npm: redmine-devrelay-client@0.5.1
 packages/redmine-mcp/      # npm: redmine-devrelay@0.5.1
 plugins/cursor|claude-code|codex|antigravity/
-docker/redmine/            # 통합 테스트용 Redmine
-docs/superpowers/          # Phase 설계·구현 계획
+docker/redmine/            # Redmine for integration tests
+docs/superpowers/          # Phase designs and implementation plans
 ```
 
-## 문서
+## Docs
 
-| 문서 | 내용 |
+| Doc | Contents |
 | --- | --- |
-| [packages/redmine-mcp/README.md](packages/redmine-mcp/README.md) | MCP 도구·쓰기·HTML 규칙 |
-| [docs/installation.md](docs/installation.md) | 설치·환경변수·플러그인 |
-| [docs/security.md](docs/security.md) | API Key·호스트·감사 |
-| [docs/troubleshooting.md](docs/troubleshooting.md) | 연결/인증/TLS |
-| [docs/development.md](docs/development.md) | 빌드·테스트·Inspector |
+| [packages/redmine-mcp/README.md](packages/redmine-mcp/README.md) | MCP tools, writes, HTML rules |
+| [docs/installation.md](docs/installation.md) | Install, env vars, plugins |
+| [docs/security.md](docs/security.md) | API key, hosts, audit |
+| [docs/troubleshooting.md](docs/troubleshooting.md) | Connection / auth / TLS |
+| [docs/development.md](docs/development.md) | Build, test, Inspector |
 | [docs/superpowers/specs/2026-07-10-redmine-mcp-phase1-design.md](docs/superpowers/specs/2026-07-10-redmine-mcp-phase1-design.md) | Phase 1 |
 | [docs/superpowers/specs/2026-07-13-redmine-mcp-phase2-write-design.md](docs/superpowers/specs/2026-07-13-redmine-mcp-phase2-write-design.md) | Phase 2 |
 | [docs/superpowers/specs/2026-07-13-redmine-mcp-phase3-update-issue-design.md](docs/superpowers/specs/2026-07-13-redmine-mcp-phase3-update-issue-design.md) | Phase 3 |
 
-## 라이선스 / 배포
+## License / publish
 
 MIT · npm: [`redmine-devrelay@0.5.1`](https://www.npmjs.com/package/redmine-devrelay), [`redmine-devrelay-client@0.5.1`](https://www.npmjs.com/package/redmine-devrelay-client)
