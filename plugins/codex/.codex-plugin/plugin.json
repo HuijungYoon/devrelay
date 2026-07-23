@@ -1,6 +1,6 @@
 {
   "name": "redmine-devrelay",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Redmine read/write via redmine-devrelay MCP (dry-run → confirm + previewToken) and bundled skills.",
   "author": { "name": "M2I" },
   "license": "MIT",
@@ -11,7 +11,7 @@
   "interface": {
     "displayName": "Redmine DevRelay",
     "shortDescription": "Redmine issues with confirm-gated writes",
-    "longDescription": "Search, view, create, and update Redmine issues from Codex via redmine-devrelay@0.5.0. Writes use dry-run preview, then confirm=true with previewToken.",
+    "longDescription": "Search, view, create, and update Redmine issues from Codex via redmine-devrelay@0.5.1. Writes use dry-run preview, then confirm=true with previewToken.",
     "developerName": "M2I",
     "category": "Productivity",
     "capabilities": ["Read", "Write"],

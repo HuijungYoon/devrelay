@@ -2,11 +2,11 @@
 
 Install target for `/add-plugin redmine-devrelay` after Marketplace listing.
 
-**MCP 패키지:** `redmine-devrelay@0.5.0` (조회 + 쓰기, dry-run 확인 게이트)
+**MCP 패키지:** `redmine-devrelay@0.5.1` (조회 + 쓰기, dry-run 확인 게이트)
 
 ## Components
 
-- **MCP:** `npx -y redmine-devrelay@0.5.0`
+- **MCP:** `npx -y redmine-devrelay@0.5.1`
 - **Skills / slash commands:**
 
 | Slash | 동작 |
@@ -42,7 +42,7 @@ Cursor → Settings → Plugins / Customize, or clone this repo and point a team
 .cursor-plugin/marketplace.json
 ```
 
-Plugin path: `plugins/cursor` · `mcp.json`은 `redmine-devrelay@0.5.0`를 가리킵니다.
+Plugin path: `plugins/cursor` · `mcp.json`은 `redmine-devrelay@0.5.1`를 가리킵니다.
 
 ## Publish to Cursor Marketplace
 
