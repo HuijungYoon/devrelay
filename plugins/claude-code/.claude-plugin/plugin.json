@@ -1,7 +1,9 @@
-{
-  "name": "redmine",
-  "description": "Search, view, and write Redmine issues via redmine-devrelay MCP (dry-run → confirm).",
-  "version": "0.5.1",
+﻿{
+  "name": "redmine-devrelay",
+  "description": "Redmine read/write via redmine-devrelay MCP (dry-run → confirm) and slash skills for Claude Code.",
+  "version": "0.5.2",
   "author": { "name": "M2I" },
+  "homepage": "https://github.com/HuijungYoon/devrelay",
+  "repository": "https://github.com/HuijungYoon/devrelay",
   "license": "MIT"
 }

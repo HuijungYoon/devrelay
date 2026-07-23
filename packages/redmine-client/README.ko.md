@@ -4,12 +4,12 @@
 
 [redmine-devrelay](https://www.npmjs.com/package/redmine-devrelay) MCP 서버가 사용하는 Redmine REST 클라이언트입니다.
 
-- **버전:** `0.5.1` (MCP 서버와 맞춤)
+- **버전:** `0.5.2` (MCP 서버와 맞춤)
 - **GitHub:** https://github.com/HuijungYoon/devrelay
 - **MCP 서버:** [redmine-devrelay](https://www.npmjs.com/package/redmine-devrelay)
 
 ```bash
-npm install redmine-devrelay-client@0.5.1
+npm install redmine-devrelay-client@0.5.2
 ```
 
 ## 지원 기능

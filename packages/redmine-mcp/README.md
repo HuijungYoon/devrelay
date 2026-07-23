@@ -4,14 +4,14 @@
 
 **Redmine MCP server** for Cursor · Claude Code · Codex.
 
-- **Version:** `0.5.1`
+- **Version:** `0.5.2`
 - **GitHub:** https://github.com/HuijungYoon/devrelay
 - **Client:** [redmine-devrelay-client](https://www.npmjs.com/package/redmine-devrelay-client) (same version)
 
 ## Quick start
 
 ```bash
-npx -y redmine-devrelay@0.5.1
+npx -y redmine-devrelay@0.5.2
 ```
 
 | Env var | Description |
@@ -73,7 +73,8 @@ This Redmine uses **HTML bodies**. Pass plain text and the client converts it.
 
 | Version | Notes |
 | --- | --- |
-| **0.5.1** | Codex marketplace install CLI alignment (`ON_USE`, `plugin add`) + pin |
+| **0.5.2** | English npm README; Claude Code marketplace install (`redmine-devrelay` plugin id) |
+| 0.5.1 | Codex marketplace install CLI alignment (`ON_USE`, `plugin add`) + pin |
 | 0.5.0 | Block Textile/Markdown in notes, `previewToken` confirm gate |
 | 0.4.1 | Docs/example IP cleanup, Antigravity plugin pin |
 | 0.4.0 | Attachments: create `attachments` + `redmine_add_attachment` |

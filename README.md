@@ -6,7 +6,7 @@ MCP integration that lets you query, create, and update Redmine issues with **na
 
 Agents do not call the Redmine REST API directly. They go through the shared MCP server [`redmine-devrelay`](https://www.npmjs.com/package/redmine-devrelay). Write APIs enforce a **dry-run → confirm → `confirm=true` + `previewToken`** gate.
 
-**Current release: `0.5.1`** (`redmine-devrelay` / `redmine-devrelay-client`)
+**Current release: `0.5.2`** (`redmine-devrelay` / `redmine-devrelay-client`)
 
 ## Shipped so far (Phase 1–5)
 
@@ -71,10 +71,10 @@ Slash examples (Cursor):
 Claude Code / Codex / Cursor / Antigravity  (plugins + skills)
         │ MCP STDIO
         ▼
-   redmine-devrelay@0.5.1   (tool schemas, STDIO, npm)
+   redmine-devrelay@0.5.2   (tool schemas, STDIO, npm)
         │
         ▼
-   redmine-devrelay-client@0.5.1  (REST, auth, HTML formatting, writes)
+   redmine-devrelay-client@0.5.2  (REST, auth, HTML formatting, writes)
         │ HTTPS or private-IP HTTP
         ▼
    Redmine REST API
@@ -82,8 +82,8 @@ Claude Code / Codex / Cursor / Antigravity  (plugins + skills)
 
 | Path | Role |
 | --- | --- |
-| `packages/redmine-client` | npm: `redmine-devrelay-client@0.5.1` |
-| `packages/redmine-mcp` | npm: `redmine-devrelay@0.5.1` |
+| `packages/redmine-client` | npm: `redmine-devrelay-client@0.5.2` |
+| `packages/redmine-mcp` | npm: `redmine-devrelay@0.5.2` |
 | `plugins/cursor` | Cursor plugin |
 | `plugins/claude-code` | Claude Code plugin + skills |
 | `plugins/codex` | Codex plugin + skills |
@@ -127,7 +127,7 @@ See [`packages/redmine-mcp/README.md`](packages/redmine-mcp/README.md) for field
 ### 1. Run via npm (recommended)
 
 ```bash
-npx -y redmine-devrelay@0.5.1
+npx -y redmine-devrelay@0.5.2
 ```
 
 Local build:
@@ -170,18 +170,21 @@ Local Docker: `http://localhost:3000` + `REDMINE_ALLOWED_HOSTS=localhost` (`dock
 /add-plugin redmine-devrelay
 ```
 
-Or connect `npx -y redmine-devrelay@0.5.1` in `plugins/cursor/mcp.json` / MCP settings, then set `REDMINE_URL` / `REDMINE_API_KEY`.
+Or connect `npx -y redmine-devrelay@0.5.2` in `plugins/cursor/mcp.json` / MCP settings, then set `REDMINE_URL` / `REDMINE_API_KEY`.
 
 ### 4. Claude Code
 
-`plugins/claude-code/.mcp.json` uses `redmine-devrelay@0.5.1`.
-
-```bash
-claude --plugin-dir ./plugins/claude-code
+```text
+/plugin marketplace add HuijungYoon/devrelay
+/plugin install redmine-devrelay@devrelay
+/reload-plugins
 ```
 
+Local fallback: `claude --plugin-dir ./plugins/claude-code`
+
 - Check connection with `/mcp`
-- Use `/redmine:create-issue`, `/redmine:update-issue`, etc., or natural language
+- Slash namespace is `/redmine-devrelay:…` (e.g. `/redmine-devrelay:create-issue`) or natural language
+- Details: `plugins/claude-code/README.md`
 
 ### 5. Codex
 
@@ -221,8 +224,8 @@ npx @modelcontextprotocol/inspector node packages/redmine-mcp/dist/index.js
 ## Repository layout
 
 ```
-packages/redmine-client/   # npm: redmine-devrelay-client@0.5.1
-packages/redmine-mcp/      # npm: redmine-devrelay@0.5.1
+packages/redmine-client/   # npm: redmine-devrelay-client@0.5.2
+packages/redmine-mcp/      # npm: redmine-devrelay@0.5.2
 plugins/cursor|claude-code|codex|antigravity/
 docker/redmine/            # Redmine for integration tests
 docs/superpowers/          # Phase designs and implementation plans
@@ -243,4 +246,4 @@ docs/superpowers/          # Phase designs and implementation plans
 
 ## License / publish
 
-MIT · npm: [`redmine-devrelay@0.5.1`](https://www.npmjs.com/package/redmine-devrelay), [`redmine-devrelay-client@0.5.1`](https://www.npmjs.com/package/redmine-devrelay-client)
+MIT · npm: [`redmine-devrelay@0.5.2`](https://www.npmjs.com/package/redmine-devrelay), [`redmine-devrelay-client@0.5.2`](https://www.npmjs.com/package/redmine-devrelay-client)

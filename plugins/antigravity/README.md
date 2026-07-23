@@ -1,6 +1,6 @@
 # Antigravity plugin — Redmine DevRelay
 
-IDE + CLI plugin for Google Antigravity (`agy`). MCP: `redmine-devrelay@0.5.1` (read + write, dry-run confirm gate).
+IDE + CLI plugin for Google Antigravity (`agy`). MCP: `redmine-devrelay@0.5.2` (read + write, dry-run confirm gate).
 
 ## Prerequisites
 
@@ -23,7 +23,7 @@ agy plugin install ./devrelay/plugins/antigravity
 
 ## MCP env
 
-`mcp_config.json` pins `npx -y redmine-devrelay@0.5.1` and passes `REDMINE_*`.
+`mcp_config.json` pins `npx -y redmine-devrelay@0.5.2` and passes `REDMINE_*`.
 
 If Antigravity does not expand `${REDMINE_URL}` / `${REDMINE_API_KEY}`:
 

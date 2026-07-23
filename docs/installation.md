@@ -26,24 +26,47 @@ export REDMINE_CA_CERT_PATH=/path/to/company-ca.pem
 
 ## 4. Install MCP package (npm)
 
-현재 배포 버전: **`0.5.1`**
+현재 배포 버전: **`0.5.2`**
 
 ```bash
-npm install -g redmine-devrelay@0.5.1
+npm install -g redmine-devrelay@0.5.2
 ```
 
-Or rely on `npx -y redmine-devrelay@0.5.1` from plugin `.mcp.json` / `mcp.json`.
+Or rely on `npx -y redmine-devrelay@0.5.2` from plugin `.mcp.json` / `mcp.json`.
 
-Client 패키지(라이브러리): `redmine-devrelay-client@0.5.1`.
+Client 패키지(라이브러리): `redmine-devrelay-client@0.5.2`.
 
 ## 5. Claude Code
+
+**Breaking:** slash namespace is `/redmine-devrelay:…` (was `/redmine:…`).
+
+Set `REDMINE_URL` / `REDMINE_API_KEY` first (section 3).
+
+Marketplace install:
+
+```text
+/plugin marketplace add HuijungYoon/devrelay
+/plugin install redmine-devrelay@devrelay
+/reload-plugins
+```
+
+Local clone / path marketplace:
+
+```text
+/plugin marketplace add /path/to/devrelay
+/plugin install redmine-devrelay@devrelay
+```
+
+Dev fallback (no marketplace):
 
 ```bash
 claude --plugin-dir ./plugins/claude-code
 ```
 
-Slash 예: `/redmine:help`, `/redmine:my-issues`, `/redmine:create-issue`, `/redmine:update-issue`.  
+Slash 예: `/redmine-devrelay:help`, `/redmine-devrelay:my-issues`, `/redmine-devrelay:create-issue`.  
 쓰기는 **미리보기 → 확인 → 적용**.
+
+Community submit prep: `docs/claude-code-marketplace-submit.md`.
 
 ## 6. Codex
 
@@ -69,7 +92,7 @@ Details: `plugins/codex/README.md`.
 ## 7. Cursor
 
 After Marketplace listing: `/add-plugin redmine-devrelay`.  
-로컬: `plugins/cursor/mcp.json`이 `redmine-devrelay@0.5.1`를 가리킴.  
+로컬: `plugins/cursor/mcp.json`이 `redmine-devrelay@0.5.2`를 가리킴.  
 See `plugins/cursor/README.md`.
 
 ## 8. Antigravity
@@ -96,5 +119,5 @@ Slash 예: `/redmine:help`, `/redmine:my-issues`, `/redmine:create-issue`.
 Ask the agent to call `redmine_test_connection`, or use MCP Inspector:
 
 ```bash
-npx @modelcontextprotocol/inspector npx -y redmine-devrelay@0.5.1
+npx @modelcontextprotocol/inspector npx -y redmine-devrelay@0.5.2
 ```
