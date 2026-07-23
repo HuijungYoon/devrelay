@@ -1,7 +1,7 @@
-﻿{
+{
   "name": "redmine",
-  "description": "Search and view Redmine issues from Claude Code.",
-  "version": "0.1.0",
+  "description": "Search, view, and write Redmine issues via redmine-devrelay MCP (dry-run → confirm).",
+  "version": "0.5.1",
   "author": { "name": "M2I" },
   "license": "MIT"
 }
