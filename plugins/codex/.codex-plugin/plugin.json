@@ -1,17 +1,20 @@
-﻿{
-  "name": "redmine",
-  "version": "0.1.0",
-  "description": "Search and view Redmine issues from Codex.",
+{
+  "name": "redmine-devrelay",
+  "version": "0.5.0",
+  "description": "Redmine read/write via redmine-devrelay MCP (dry-run → confirm + previewToken) and bundled skills.",
   "author": { "name": "M2I" },
   "license": "MIT",
+  "homepage": "https://github.com/HuijungYoon/devrelay",
+  "repository": "https://github.com/HuijungYoon/devrelay",
   "skills": "./skills/",
   "mcpServers": "./.mcp.json",
   "interface": {
-    "displayName": "Redmine",
-    "shortDescription": "View Redmine issues",
-    "longDescription": "Search and view Redmine issues from Codex (read-only Phase 1).",
+    "displayName": "Redmine DevRelay",
+    "shortDescription": "Redmine issues with confirm-gated writes",
+    "longDescription": "Search, view, create, and update Redmine issues from Codex via redmine-devrelay@0.5.0. Writes use dry-run preview, then confirm=true with previewToken.",
     "developerName": "M2I",
     "category": "Productivity",
-    "capabilities": ["Read"]
+    "capabilities": ["Read", "Write"],
+    "websiteURL": "https://github.com/HuijungYoon/devrelay"
   }
 }

@@ -1,4 +1,4 @@
-﻿# DevRelay / redmine-devrelay
+# DevRelay / redmine-devrelay
 
 Codex · Claude Code · Cursor · Antigravity에서 **자연어와 슬래시 명령**으로 Redmine 이슈를 조회·생성·수정할 수 있게 해주는 MCP 연동 프로젝트입니다.
 
@@ -183,7 +183,16 @@ claude --plugin-dir ./plugins/claude-code
 
 ### 5. Codex
 
-`plugins/codex`를 로드합니다. 조회는 approve, 쓰기는 prompt 권장. 자세한 내용은 `plugins/codex/README.md`.
+`codex plugin marketplace` / `codex plugin add` 지원 CLI 필요 (없으면 업그레이드, 예: 0.107.0).
+
+```bash
+codex plugin marketplace add HuijungYoon/devrelay
+codex plugin add redmine-devrelay@devrelay
+```
+
+로컬 개발: 레포 루트에서 `codex plugin marketplace add .` 후 동일 install.  
+환경변수 `REDMINE_URL` / `REDMINE_API_KEY`. 조회는 approve, 쓰기는 prompt 권장.  
+자세한 내용: `plugins/codex/README.md`.
 
 ### 6. Antigravity
 
