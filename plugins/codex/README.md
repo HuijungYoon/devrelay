@@ -4,13 +4,13 @@ Redmine 조회·쓰기 via `redmine-devrelay@0.5.0` (dry-run → 확인 → `con
 
 ## Install
 
-Requires Codex CLI with `codex plugin marketplace` / `codex plugin install`; upgrade if your build lacks those commands (e.g. 0.107.0 without `plugin`).
+Requires Codex CLI with `codex plugin marketplace` / `codex plugin add`; upgrade if your build lacks those commands (e.g. 0.107.0 without `plugin`).
 
 ### Git marketplace
 
 ```bash
 codex plugin marketplace add HuijungYoon/devrelay
-codex plugin install redmine-devrelay@devrelay
+codex plugin add redmine-devrelay@devrelay
 ```
 
 Feature-branch test: `codex plugin marketplace add HuijungYoon/devrelay --ref <branch>` then the same install. Prefer a full checkout (avoid `--sparse .agents/plugins` alone — it can omit `plugins/codex`).
@@ -21,7 +21,7 @@ Feature-branch test: `codex plugin marketplace add HuijungYoon/devrelay --ref <b
 git clone https://github.com/HuijungYoon/devrelay.git
 cd devrelay
 codex plugin marketplace add .
-codex plugin install redmine-devrelay@devrelay
+codex plugin add redmine-devrelay@devrelay
 ```
 
 Then start a new Codex session / reload plugins if needed.

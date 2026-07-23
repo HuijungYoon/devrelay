@@ -1,4 +1,4 @@
-﻿---
+---
 name: help
 description: List Redmine DevRelay slash commands / skills with short descriptions
 ---
@@ -9,11 +9,11 @@ Do **not** call Redmine MCP tools. Only show available skills/commands and short
 
 ## Install (Codex)
 
-Requires CLI with `codex plugin marketplace` / `codex plugin install` (upgrade if missing, e.g. 0.107.0).
+Requires CLI with `codex plugin marketplace` / `codex plugin add` (upgrade if missing, e.g. 0.107.0).
 
 ```bash
 codex plugin marketplace add HuijungYoon/devrelay
-codex plugin install redmine-devrelay@devrelay
+codex plugin add redmine-devrelay@devrelay
 ```
 
 Local (repo root): `codex plugin marketplace add .` then the same install.  
