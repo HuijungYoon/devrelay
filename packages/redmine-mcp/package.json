@@ -1,6 +1,6 @@
 {
   "name": "redmine-devrelay",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Redmine MCP server for Cursor/Claude/Codex ??read issues and create/comment/update with confirm gate (DevRelay)",
   "type": "module",
   "bin": {
@@ -9,7 +9,8 @@
   "main": "./dist/index.js",
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "README.ko.md"
   ],
   "repository": {
     "type": "git",
