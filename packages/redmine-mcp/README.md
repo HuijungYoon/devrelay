@@ -61,6 +61,15 @@ pnpm --filter redmine-devrelay start:http
 
 **경고:** env 자격증명은 해당 HTTP 프로세스의 모든 클라이언트가 공유합니다. 데모/로컬 전용이며, 프로덕션에서는 끄고 요청마다 `X-Redmine-Url` / `X-Redmine-Api-Key`를 쓰세요.
 
+잘못된 URL 등 자격증명/설정 검증 실패는 `400` (응답에 API key 미포함). 헤더 누락은 `401`.
+
+### HTTP 세션 한도
+
+| 환경변수 | 기본 | 설명 |
+| --- | --- | --- |
+| `MCP_MAX_SESSIONS` | `100` | 동시 세션 상한. 초과 시 새 `initialize`는 `503` |
+| `MCP_SESSION_TTL_MS` | `1800000` (30분) | 유휴 TTL. 접근 시 만료 세션 정리 |
+
 ## 쓰기 규칙
 
 **dry-run → 확인 → `confirm=true` + `previewToken`.**  

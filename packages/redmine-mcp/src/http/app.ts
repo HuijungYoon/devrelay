@@ -5,16 +5,39 @@ import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import {
   RedmineClient,
+  RedmineError,
   configFromCredentials,
 } from "redmine-devrelay-client";
 import { createRedmineMcpServer } from "../createServer.js";
 import { logInfo } from "../logging.js";
 import { parseByokHeaders } from "./byok.js";
-import { SessionStore } from "./sessions.js";
+import { SessionStore, type SessionStoreOptions } from "./sessions.js";
 
 export type CreateHttpAppOptions = {
   allowEnvFallback: boolean;
-};
+} & SessionStoreOptions;
+
+function isMissingByokError(err: unknown): boolean {
+  return err instanceof Error && /BYOK required/i.test(err.message);
+}
+
+function isClientConfigError(err: unknown): boolean {
+  return (
+    err instanceof RedmineError && err.code === "REDMINE_VALIDATION_ERROR"
+  );
+}
+
+/** Safe client-facing message — never echo apiKey or raw credentials. */
+function clientConfigErrorMessage(err: unknown): string {
+  if (err instanceof RedmineError) {
+    // RedmineError validation messages include URL/host hints, not apiKey.
+    return err.message;
+  }
+  if (err instanceof Error && !/api[_-]?key/i.test(err.message)) {
+    return err.message;
+  }
+  return "Invalid Redmine credentials or URL";
+}
 
 function resolveByok(
   headers: Request["headers"],
@@ -22,7 +45,11 @@ function resolveByok(
 ): { baseUrl: string; apiKey: string } | null {
   try {
     return parseByokHeaders(headers);
-  } catch {
+  } catch (err) {
+    if (!isMissingByokError(err)) {
+      // Non-missing validation from parseByokHeaders → caller maps to 400
+      throw err;
+    }
     // headers missing — try env fallback when allowed
   }
 
@@ -38,6 +65,13 @@ function sendByokRequired(res: Response): void {
   res.status(401).json({
     error: "BYOK required",
     message: "Set X-Redmine-Url and X-Redmine-Api-Key headers",
+  });
+}
+
+function sendBadCredentials(res: Response, err: unknown): void {
+  res.status(400).json({
+    error: "Invalid credentials",
+    message: clientConfigErrorMessage(err),
   });
 }
 
@@ -80,7 +114,11 @@ export function createHttpApp(opts: CreateHttpAppOptions): Express {
 
   const app = express();
   app.use(express.json({ limit: "4mb" }));
-  const sessions = new SessionStore();
+  const sessions = new SessionStore({
+    maxSessions: opts.maxSessions,
+    ttlMs: opts.ttlMs,
+    now: opts.now,
+  });
 
   app.get("/healthz", (_req, res) => {
     res.status(200).json({ ok: true });
@@ -129,6 +167,14 @@ export function createHttpApp(opts: CreateHttpAppOptions): Express {
         return;
       }
 
+      if (!sessions.canCreate()) {
+        res.status(503).json({
+          error: "Service Unavailable",
+          message: `Session limit reached (max ${sessions.maxSessions})`,
+        });
+        return;
+      }
+
       const credentials = resolveByok(req.headers, opts.allowEnvFallback);
       if (!credentials) {
         sendByokRequired(res);
@@ -171,14 +217,18 @@ export function createHttpApp(opts: CreateHttpAppOptions): Express {
       });
       await cleanupInitializeSession(sessions, transport, server);
       if (!res.headersSent) {
-        res.status(500).json({
-          jsonrpc: "2.0",
-          error: {
-            code: -32603,
-            message: "Internal server error",
-          },
-          id: null,
-        });
+        if (isClientConfigError(err)) {
+          sendBadCredentials(res, err);
+        } else {
+          res.status(500).json({
+            jsonrpc: "2.0",
+            error: {
+              code: -32603,
+              message: "Internal server error",
+            },
+            id: null,
+          });
+        }
       }
     }
   });

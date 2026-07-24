@@ -20,18 +20,22 @@ const BYOK_HEADERS = {
   "x-redmine-api-key": "test-key",
 };
 
-async function byokInitialize(base: string): Promise<{
+async function byokInitialize(
+  base: string,
+  headers: Record<string, string> = BYOK_HEADERS
+): Promise<{
   res: Response;
   sessionId: string | null;
+  body: string;
 }> {
   const res = await fetch(`${base}/mcp`, {
     method: "POST",
-    headers: BYOK_HEADERS,
+    headers,
     body: JSON.stringify(INIT_BODY),
   });
   // Drain SSE/JSON body so the connection can close cleanly.
-  await res.text();
-  return { res, sessionId: res.headers.get("mcp-session-id") };
+  const body = await res.text();
+  return { res, sessionId: res.headers.get("mcp-session-id"), body };
 }
 
 describe("http app", () => {
@@ -75,6 +79,22 @@ describe("http app", () => {
       body: JSON.stringify(INIT_BODY),
     });
     expect(res.status).toBe(401);
+  });
+
+  it("invalid BYOK URL returns 400 not 500 and omits apiKey", async () => {
+    const apiKey = "secret-key-must-not-leak";
+    const { res, body } = await byokInitialize(base, {
+      "content-type": "application/json",
+      accept: "application/json, text/event-stream",
+      "x-redmine-url": "not-a-valid-url",
+      "x-redmine-api-key": apiKey,
+    });
+    expect(res.status).toBe(400);
+    expect(res.status).not.toBe(500);
+    expect(body).not.toContain(apiKey);
+    const json = JSON.parse(body) as { error?: string; message?: string };
+    expect(json.error).toBe("Invalid credentials");
+    expect(json.message).toBeTruthy();
   });
 
   it("successful BYOK initialize returns session id header", async () => {
@@ -136,5 +156,39 @@ describe("http app", () => {
     });
     await res.text();
     expect(res.status).toBe(404);
+  });
+});
+
+describe("http app session limits", () => {
+  let server: Server;
+  let base: string;
+
+  beforeAll(async () => {
+    const app = createHttpApp({
+      allowEnvFallback: false,
+      maxSessions: 1,
+      ttlMs: 30 * 60 * 1000,
+    });
+    server = await new Promise((resolve) => {
+      const s = app.listen(0, () => resolve(s));
+    });
+    const addr = server.address();
+    if (!addr || typeof addr === "string") throw new Error("no port");
+    base = `http://127.0.0.1:${addr.port}`;
+  });
+
+  afterAll(async () => {
+    await new Promise<void>((r) => server.close(() => r()));
+  });
+
+  it("rejects new initialize with 503 when at maxSessions", async () => {
+    const first = await byokInitialize(base);
+    expect(first.res.status).toBe(200);
+    expect(first.sessionId).toBeTruthy();
+
+    const second = await byokInitialize(base);
+    expect(second.res.status).toBe(503);
+    expect(second.body).toMatch(/Session limit/i);
+    expect(second.body).not.toContain("test-key");
   });
 });
