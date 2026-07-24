@@ -1,5 +1,6 @@
 # Patterns relative to monorepo root (docker/fly build context).
 .git
+.worktrees
 .superpowers
 docs
 plugins

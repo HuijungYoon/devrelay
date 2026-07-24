@@ -1,12 +1,12 @@
-# Example Fly app — rename `app` when creating the real app.
-# Deploy from monorepo root (no secrets in this file):
-#   fly deploy --config packages/redmine-mcp/fly.toml
+# Deploy FROM monorepo root:
+#   fly deploy --config packages/redmine-mcp/fly.toml `
+#     --dockerfile packages/redmine-mcp/Dockerfile `
+#     --ignorefile packages/redmine-mcp/.dockerignore
+#
+# (--config alone resolves Dockerfile relative to this file's directory, which
+# breaks monorepo-root COPY paths — always pass --dockerfile/--ignorefile.)
 app = "devrelay-redmine-mcp"
 primary_region = "nrt"
-
-[build]
-  dockerfile = "packages/redmine-mcp/Dockerfile"
-  ignorefile = "packages/redmine-mcp/.dockerignore"
 
 [env]
   HTTP_ALLOW_ENV_FALLBACK = "0"

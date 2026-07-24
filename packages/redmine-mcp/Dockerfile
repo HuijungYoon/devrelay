@@ -3,7 +3,7 @@
 #   fly deploy --config packages/redmine-mcp/fly.toml
 FROM node:20-bookworm-slim AS build
 WORKDIR /app
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml tsconfig.base.json ./
 COPY packages/redmine-client/package.json packages/redmine-client/package.json
 COPY packages/redmine-mcp/package.json packages/redmine-mcp/package.json
 RUN corepack enable && pnpm install --frozen-lockfile
