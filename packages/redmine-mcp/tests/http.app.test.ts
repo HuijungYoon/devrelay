@@ -69,6 +69,18 @@ describe("http app", () => {
     expect(res.status).toBe(200);
   });
 
+  it("serves privacy and terms html", async () => {
+    const privacy = await fetch(`${base}/privacy`);
+    expect(privacy.status).toBe(200);
+    expect(privacy.headers.get("content-type")).toMatch(/html/);
+    expect(await privacy.text()).toMatch(/Privacy Policy/i);
+
+    const terms = await fetch(`${base}/terms`);
+    expect(terms.status).toBe(200);
+    expect(terms.headers.get("content-type")).toMatch(/html/);
+    expect(await terms.text()).toMatch(/Terms of Use/i);
+  });
+
   it("rejects /mcp without BYOK", async () => {
     const res = await fetch(`${base}/mcp`, {
       method: "POST",

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Privacy Policy — Redmine DevRelay</title>
+  <style>
+    :root { color-scheme: light; }
+    body { font-family: Georgia, "Times New Roman", serif; line-height: 1.55; max-width: 42rem; margin: 2rem auto; padding: 0 1.25rem; color: #1a1a1a; }
+    h1, h2 { font-family: system-ui, sans-serif; font-weight: 650; }
+    h1 { font-size: 1.75rem; }
+    h2 { font-size: 1.15rem; margin-top: 1.75rem; }
+    .meta { color: #555; font-size: 0.95rem; }
+    a { color: #0b57d0; }
+    ul { padding-left: 1.2rem; }
+    .note { background: #f6f6f6; border-left: 3px solid #ccc; padding: 0.75rem 1rem; margin: 1.25rem 0; font-size: 0.95rem; }
+  </style>
+</head>
+<body>
+  <h1>Privacy Policy</h1>
+  <p class="meta">Product: <strong>Redmine DevRelay</strong> (MCP plugin for ChatGPT / Codex)<br />
+  Publisher: M2I / DevRelay maintainers<br />
+  Effective: 24 July 2026<br />
+  Contact: <a href="https://github.com/HuijungYoon/devrelay/issues">GitHub Issues</a></p>
+
+  <div class="note">This page describes how the hosted Redmine DevRelay MCP service handles data. It is provided for OpenAI Plugins Directory listing and user transparency. It is not legal advice; review before relying on it commercially.</div>
+
+  <h2>1. What the service does</h2>
+  <p>Redmine DevRelay connects ChatGPT / Codex to a Redmine instance you choose via the Model Context Protocol (MCP). Users supply their own Redmine base URL and API key (<strong>BYOK</strong>). The service calls that Redmine’s REST API to read or (with explicit confirm) write issues.</p>
+
+  <h2>2. Data you provide</h2>
+  <ul>
+    <li><strong>Redmine URL and API key</strong> — sent as request headers (<code>X-Redmine-Url</code>, <code>X-Redmine-Api-Key</code>) when you connect.</li>
+    <li><strong>Tool inputs</strong> — issue ids, subjects, comments, filters, and similar fields you ask the assistant to send.</li>
+    <li><strong>Redmine responses</strong> — issue/project/user fields returned by your Redmine and passed back to the AI host.</li>
+  </ul>
+
+  <h2>3. How we use data</h2>
+  <ul>
+    <li>Credentials and tool inputs are used <strong>only to fulfill the MCP request</strong> (proxy to your Redmine).</li>
+    <li>Production hosted MCP keeps <strong>HTTP_ALLOW_ENV_FALLBACK=0</strong>: no shared process-wide Redmine key for end users.</li>
+    <li>Session state may hold an in-memory Redmine client for the MCP session lifetime (idle TTL / max sessions apply). Sessions are not a long-term credential vault.</li>
+    <li>We do <strong>not</strong> sell personal data or use Redmine contents for advertising.</li>
+  </ul>
+
+  <h2>4. Hosting and subprocessors</h2>
+  <p>The production MCP endpoint is hosted on <strong>Fly.io</strong>. Infrastructure logs (e.g. request timing, error codes, hostnames) may be retained by the host per their policies. Avoid putting secrets in issue text or logs.</p>
+
+  <h2>5. Demo / review instance</h2>
+  <p>A separate public <strong>demo Redmine</strong> may be provided solely for OpenAI review and documentation. It holds disposable seed data and is not your corporate Redmine. Demo credentials must not be reused for production systems.</p>
+
+  <h2>6. Local / Git marketplace installs</h2>
+  <p>When you run <code>npx redmine-devrelay</code> locally (STDIO), credentials stay in your environment and process. That path does not require the hosted MCP.</p>
+
+  <h2>7. Retention</h2>
+  <p>We do not operate a user account database for BYOK keys. In-memory sessions expire (TTL) or are closed with the MCP session. Hosting provider logs follow Fly.io retention. You control retention inside your own Redmine.</p>
+
+  <h2>8. Security</h2>
+  <ul>
+    <li>Prefer HTTPS Redmine URLs.</li>
+    <li>Do not paste API keys into chat transcripts when avoidable.</li>
+    <li>Write tools use dry-run → confirm + <code>previewToken</code>; treat confirm as deliberate approval.</li>
+  </ul>
+
+  <h2>9. Children’s data</h2>
+  <p>The service is intended for workplace / developer use, not for children under 13 (or the equivalent age in your jurisdiction).</p>
+
+  <h2>10. Changes</h2>
+  <p>We may update this policy; the “Effective” date above will change. Continued use after posting means you accept the updated policy.</p>
+
+  <h2>11. Contact</h2>
+  <p>Questions: open an issue at <a href="https://github.com/HuijungYoon/devrelay/issues">https://github.com/HuijungYoon/devrelay/issues</a>.</p>
+
+  <p class="meta"><a href="/terms">Terms of Use</a> · <a href="https://github.com/HuijungYoon/devrelay">Project</a></p>
+</body>
+</html>

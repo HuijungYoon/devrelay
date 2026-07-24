@@ -9,6 +9,7 @@
   "main": "./dist/index.js",
   "files": [
     "dist",
+    "static",
     "README.md",
     "README.ko.md"
   ],

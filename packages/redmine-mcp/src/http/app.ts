@@ -1,4 +1,7 @@
 import { randomUUID } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import express, { type Express, type Request, type Response } from "express";
 import type { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
@@ -12,6 +15,17 @@ import { createRedmineMcpServer } from "../createServer.js";
 import { logInfo } from "../logging.js";
 import { parseByokHeaders } from "./byok.js";
 import { SessionStore, type SessionStoreOptions } from "./sessions.js";
+
+const STATIC_DIR = join(dirname(fileURLToPath(import.meta.url)), "../../static");
+
+function sendStaticHtml(res: Response, filename: string): void {
+  try {
+    const html = readFileSync(join(STATIC_DIR, filename), "utf8");
+    res.status(200).type("html").send(html);
+  } catch {
+    res.status(404).type("text/plain").send("not found");
+  }
+}
 
 export type CreateHttpAppOptions = {
   allowEnvFallback: boolean;
@@ -122,6 +136,14 @@ export function createHttpApp(opts: CreateHttpAppOptions): Express {
 
   app.get("/healthz", (_req, res) => {
     res.status(200).json({ ok: true });
+  });
+
+  app.get("/privacy", (_req, res) => {
+    sendStaticHtml(res, "privacy.html");
+  });
+
+  app.get("/terms", (_req, res) => {
+    sendStaticHtml(res, "terms.html");
   });
 
   app.get("/.well-known/openai-apps-challenge", (_req, res) => {

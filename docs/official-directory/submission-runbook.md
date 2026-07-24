@@ -37,18 +37,19 @@ fly secrets set OPENAI_APPS_CHALLENGE_TOKEN="<from-portal>"
 
 ### Production MCP URL
 
-After TLS + custom domain:
-
 ```text
-https://<host>/mcp
+https://devrelay-redmine-mcp.fly.dev/mcp
 ```
 
 Also verify:
 
-- `GET https://<host>/healthz`
-- `GET https://<host>/.well-known/openai-apps-challenge` → plain-text challenge token
+- `GET https://devrelay-redmine-mcp.fly.dev/healthz`
+- `GET https://devrelay-redmine-mcp.fly.dev/privacy` and `/terms`
+- `GET https://devrelay-redmine-mcp.fly.dev/.well-known/openai-apps-challenge` → plain-text challenge token
 
 CSP: prefer **server-side-only** Redmine fetches from the MCP process (no browser wildcard to customer Redmine origins). Portal CSP field: MCP host only unless you add a separate UI later.
+
+Filled portal copy + test cases: [portal-submission-draft.md](./portal-submission-draft.md).
 
 Never commit Fly/API secrets or demo Redmine keys.
 
@@ -62,8 +63,8 @@ Never commit Fly/API secrets or demo Redmine keys.
 | **Category** | Productivity |
 | **Website** | `https://github.com/HuijungYoon/devrelay` |
 | **Support** | `https://github.com/HuijungYoon/devrelay/issues` |
-| **Privacy** | `https://<publisher-domain>/privacy` *(must be live before submit)* |
-| **Terms** | `https://<publisher-domain>/terms` *(must be live before submit)* |
+| **Privacy** | `https://devrelay-redmine-mcp.fly.dev/privacy` |
+| **Terms** | `https://devrelay-redmine-mcp.fly.dev/terms` |
 
 ### Short description
 
@@ -136,11 +137,11 @@ Suggested paste block (fill placeholders):
 
 1. Open Apps Management with **Write** access and a **verified** publisher identity.
 2. **Create plugin → With MCP**.
-3. Enter production MCP URL: `https://<host>/mcp`.
+3. Enter production MCP URL: `https://devrelay-redmine-mcp.fly.dev/mcp`.
 4. Set `OPENAI_APPS_CHALLENGE_TOKEN` on the host to the portal challenge value; complete **domain verification** (`/.well-known/openai-apps-challenge`).
 5. **Scan Tools**; confirm tool annotations (read vs destructive / confirm guidance) look correct.
 6. Upload skills ZIP from `plugins/codex` (zip skills / plugin assets as the portal expects). **Strip `.mcp.json`** from the ZIP if the portal warns about marketplace MCP config.
-7. Paste starter prompts, **5 positive + 3 negative** tests, and demo Redmine credentials (URL + API key from the password manager — not from git).
+7. Paste starter prompts, **5 positive + 3 negative** tests, and demo Redmine credentials (URL + API key from the password manager — not from git). See [portal-submission-draft.md](./portal-submission-draft.md).
 8. **Submit for Review**. **Publish only after approval.**
 
 ---

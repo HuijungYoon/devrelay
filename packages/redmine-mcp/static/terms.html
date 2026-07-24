@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Terms of Use — Redmine DevRelay</title>
+  <style>
+    :root { color-scheme: light; }
+    body { font-family: Georgia, "Times New Roman", serif; line-height: 1.55; max-width: 42rem; margin: 2rem auto; padding: 0 1.25rem; color: #1a1a1a; }
+    h1, h2 { font-family: system-ui, sans-serif; font-weight: 650; }
+    h1 { font-size: 1.75rem; }
+    h2 { font-size: 1.15rem; margin-top: 1.75rem; }
+    .meta { color: #555; font-size: 0.95rem; }
+    a { color: #0b57d0; }
+    ul { padding-left: 1.2rem; }
+    .note { background: #f6f6f6; border-left: 3px solid #ccc; padding: 0.75rem 1rem; margin: 1.25rem 0; font-size: 0.95rem; }
+  </style>
+</head>
+<body>
+  <h1>Terms of Use</h1>
+  <p class="meta">Product: <strong>Redmine DevRelay</strong><br />
+  Publisher: M2I / DevRelay maintainers<br />
+  Effective: 24 July 2026<br />
+  Contact: <a href="https://github.com/HuijungYoon/devrelay/issues">GitHub Issues</a></p>
+
+  <div class="note">These terms govern use of the hosted Redmine DevRelay MCP service and related plugin materials. Not legal advice — have counsel review before commercial reliance.</div>
+
+  <h2>1. Service</h2>
+  <p>Redmine DevRelay provides MCP tools that talk to a Redmine instance you configure (BYOK). OpenAI ChatGPT / Codex (or other MCP hosts) invoke those tools on your behalf.</p>
+
+  <h2>2. Your responsibilities</h2>
+  <ul>
+    <li>You must have the right to use the Redmine URL and API key you supply.</li>
+    <li>You are responsible for actions performed in Redmine through the tools (including writes after confirm).</li>
+    <li>You must not use the service to violate law, Redmine’s terms, or third-party rights.</li>
+    <li>Do not attempt to probe, overload, or abuse the hosted MCP or demo Redmine.</li>
+  </ul>
+
+  <h2>3. BYOK and your Redmine</h2>
+  <p>We do not host your production Redmine data. Content lives in the Redmine you point at. Misconfiguration (wrong URL/key, overly privileged keys) is your risk.</p>
+
+  <h2>4. Confirm gate</h2>
+  <p>Write tools default to dry-run and require <code>confirm=true</code> with a matching <code>previewToken</code>. Treat confirmation as authorization to apply the previewed change.</p>
+
+  <h2>5. Demo instance</h2>
+  <p>Any public demo Redmine is for evaluation / Directory review only, with disposable data. No uptime or data durability SLA.</p>
+
+  <h2>6. Availability</h2>
+  <p>The service is provided “as is” and “as available.” Hosting, network, or Redmine outages may interrupt use. Open-source packages are also available for local STDIO install without the hosted MCP.</p>
+
+  <h2>7. Intellectual property</h2>
+  <p>DevRelay code is offered under the project’s open-source license (MIT) as published on GitHub. These Terms do not replace that license for the source code.</p>
+
+  <h2>8. Disclaimers</h2>
+  <p>To the fullest extent permitted by law, we disclaim warranties of merchantability, fitness for a particular purpose, and non-infringement. We are not liable for damages arising from Redmine changes, lost work, or third-party (including OpenAI) platform behavior.</p>
+
+  <h2>9. Limitation of liability</h2>
+  <p>Where liability cannot be excluded, it is limited to the greater of (a) fees you paid us for the hosted service in the prior 3 months (often zero) or (b) USD 50, except where prohibited.</p>
+
+  <h2>10. Changes and termination</h2>
+  <p>We may modify or discontinue the hosted endpoint. Continued use after notice constitutes acceptance. We may suspend access for abuse or security risk.</p>
+
+  <h2>11. Contact</h2>
+  <p><a href="https://github.com/HuijungYoon/devrelay/issues">https://github.com/HuijungYoon/devrelay/issues</a></p>
+
+  <p class="meta"><a href="/privacy">Privacy Policy</a> · <a href="https://github.com/HuijungYoon/devrelay">Project</a></p>
+</body>
+</html>
