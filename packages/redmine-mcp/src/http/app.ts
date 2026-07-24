@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import express, { type Express, type Request, type Response } from "express";
+import type { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import {
@@ -40,7 +41,43 @@ function sendByokRequired(res: Response): void {
   });
 }
 
+/**
+ * Idempotent cleanup after failed initialize (or transport close).
+ * Closes transport + MCP server and drops the session map entry so
+ * RedmineClient/apiKey are not left dangling.
+ */
+async function cleanupInitializeSession(
+  sessions: SessionStore,
+  transport: StreamableHTTPServerTransport | undefined,
+  server: Server | undefined
+): Promise<void> {
+  const sid = transport?.sessionId;
+  if (sid) {
+    sessions.delete(sid);
+  }
+  try {
+    await transport?.close();
+  } catch {
+    // idempotent
+  }
+  try {
+    await server?.close();
+  } catch {
+    // idempotent
+  }
+}
+
 export function createHttpApp(opts: CreateHttpAppOptions): Express {
+  // Demo-only: process env REDMINE_* is shared by every client that omits BYOK
+  // headers. Prefer X-Redmine-Url / X-Redmine-Api-Key per request in production.
+  // (REDMINE_ALLOWED_HOSTS applies via loadConfig elsewhere; this HTTP env
+  // fallback path does not add a separate host allowlist — warning only.)
+  if (opts.allowEnvFallback) {
+    logInfo(
+      "HTTP allowEnvFallback enabled: process env REDMINE_URL/REDMINE_API_KEY is shared across all clients (demo-only)"
+    );
+  }
+
   const app = express();
   app.use(express.json({ limit: "4mb" }));
   const sessions = new SessionStore();
@@ -59,6 +96,8 @@ export function createHttpApp(opts: CreateHttpAppOptions): Express {
   });
 
   app.post("/mcp", async (req, res) => {
+    let transport: StreamableHTTPServerTransport | undefined;
+    let server: Server | undefined;
     try {
       const sessionIdHeader = req.headers["mcp-session-id"];
       const sessionId =
@@ -99,27 +138,38 @@ export function createHttpApp(opts: CreateHttpAppOptions): Express {
       const client = RedmineClient.fromConfig(
         configFromCredentials(credentials)
       );
-      const server = createRedmineMcpServer(client);
+      server = createRedmineMcpServer(client);
 
-      const transport = new StreamableHTTPServerTransport({
+      transport = new StreamableHTTPServerTransport({
         sessionIdGenerator: () => randomUUID(),
         onsessioninitialized: (newSessionId) => {
-          sessions.set(newSessionId, { transport, server, client });
+          sessions.set(newSessionId, {
+            transport: transport!,
+            server: server!,
+            client,
+          });
         },
       });
 
+      // connect() replaces transport.onclose — chain after connect so we still
+      // close the MCP server and drop the session map entry.
+      await server.connect(transport);
+      const prevOnClose = transport.onclose;
       transport.onclose = () => {
-        if (transport.sessionId) {
-          sessions.delete(transport.sessionId);
+        const sid = transport!.sessionId;
+        if (sid) {
+          sessions.delete(sid);
         }
+        prevOnClose?.();
+        void server!.close().catch(() => {});
       };
 
-      await server.connect(transport);
       await transport.handleRequest(req, res, req.body);
     } catch (err) {
       logInfo("mcp request failed", {
         message: err instanceof Error ? err.message : "unknown error",
       });
+      await cleanupInitializeSession(sessions, transport, server);
       if (!res.headersSent) {
         res.status(500).json({
           jsonrpc: "2.0",

@@ -2,6 +2,38 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import type { Server } from "node:http";
 import { createHttpApp } from "../src/http/app.js";
 
+const INIT_BODY = {
+  jsonrpc: "2.0",
+  id: 1,
+  method: "initialize",
+  params: {
+    protocolVersion: "2024-11-05",
+    capabilities: {},
+    clientInfo: { name: "test", version: "0" },
+  },
+};
+
+const BYOK_HEADERS = {
+  "content-type": "application/json",
+  accept: "application/json, text/event-stream",
+  "x-redmine-url": "https://redmine.example.com",
+  "x-redmine-api-key": "test-key",
+};
+
+async function byokInitialize(base: string): Promise<{
+  res: Response;
+  sessionId: string | null;
+}> {
+  const res = await fetch(`${base}/mcp`, {
+    method: "POST",
+    headers: BYOK_HEADERS,
+    body: JSON.stringify(INIT_BODY),
+  });
+  // Drain SSE/JSON body so the connection can close cleanly.
+  await res.text();
+  return { res, sessionId: res.headers.get("mcp-session-id") };
+}
+
 describe("http app", () => {
   let server: Server;
   let base: string;
@@ -40,17 +72,69 @@ describe("http app", () => {
         "content-type": "application/json",
         accept: "application/json, text/event-stream",
       },
-      body: JSON.stringify({
-        jsonrpc: "2.0",
-        id: 1,
-        method: "initialize",
-        params: {
-          protocolVersion: "2024-11-05",
-          capabilities: {},
-          clientInfo: { name: "test", version: "0" },
-        },
-      }),
+      body: JSON.stringify(INIT_BODY),
     });
     expect(res.status).toBe(401);
+  });
+
+  it("successful BYOK initialize returns session id header", async () => {
+    const { res, sessionId } = await byokInitialize(base);
+    expect(res.status).toBe(200);
+    expect(sessionId).toBeTruthy();
+    expect(sessionId).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    );
+  });
+
+  it("follow-up request with mcp-session-id is accepted as known session", async () => {
+    const { sessionId } = await byokInitialize(base);
+    expect(sessionId).toBeTruthy();
+
+    const res = await fetch(`${base}/mcp`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        accept: "application/json, text/event-stream",
+        "mcp-session-id": sessionId!,
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        method: "notifications/initialized",
+      }),
+    });
+    await res.text();
+    // Known session: not 401 (BYOK) and not 404 (unknown session).
+    expect(res.status).not.toBe(401);
+    expect(res.status).not.toBe(404);
+    expect([200, 202]).toContain(res.status);
+  });
+
+  it("DELETE session then subsequent request fails appropriately", async () => {
+    const { sessionId } = await byokInitialize(base);
+    expect(sessionId).toBeTruthy();
+
+    const del = await fetch(`${base}/mcp`, {
+      method: "DELETE",
+      headers: { "mcp-session-id": sessionId! },
+    });
+    await del.text();
+    expect(del.status).toBe(200);
+
+    const res = await fetch(`${base}/mcp`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        accept: "application/json, text/event-stream",
+        "mcp-session-id": sessionId!,
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 2,
+        method: "tools/list",
+        params: {},
+      }),
+    });
+    await res.text();
+    expect(res.status).toBe(404);
   });
 });
