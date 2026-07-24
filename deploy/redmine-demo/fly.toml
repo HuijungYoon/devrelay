@@ -1,0 +1,30 @@
+# Public Directory-review demo Redmine (SQLite). Separate from any corporate Redmine.
+# Deploy:
+#   fly apps create devrelay-redmine-demo
+#   fly volumes create redmine_data --region nrt --size 1 -a devrelay-redmine-demo -y
+#   fly deploy --config deploy/redmine-demo/fly.toml
+app = "devrelay-redmine-demo"
+primary_region = "nrt"
+
+[build]
+  image = "redmine:5.1.3"
+
+[env]
+  # Official image uses SQLite when no MySQL/Postgres env is set.
+  RAILS_ENV = "production"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = false
+  min_machines_running = 1
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
+
+# Persist SQLite DB (official image default when no MySQL/Postgres is set).
+# Attachments for review seeds are optional; files/ stays ephemeral.
+[mounts]
+  source = "redmine_data"
+  destination = "/usr/src/redmine/sqlite"
