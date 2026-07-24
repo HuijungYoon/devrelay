@@ -4,14 +4,16 @@
 
 **Redmine MCP server** for Cursor · Claude Code · Codex.
 
-- **Version:** `0.5.2`
+- **Version:** `0.6.0`
 - **GitHub:** https://github.com/HuijungYoon/devrelay
 - **Client:** [redmine-devrelay-client](https://www.npmjs.com/package/redmine-devrelay-client) (same version)
 
-## Quick start
+## Quick start (STDIO)
+
+STDIO is the default transport. Local IDE plugins use this path.
 
 ```bash
-npx -y redmine-devrelay@0.5.2
+npx -y redmine-devrelay@0.6.0
 ```
 
 | Env var | Description |
@@ -20,6 +22,55 @@ npx -y redmine-devrelay@0.5.2
 | `REDMINE_API_KEY` | REST API key |
 | `REDMINE_ALLOWED_HOSTS` | (optional) Host allowlist. Private IPv4 HTTP is allowed separately |
 | `REDMINE_CA_CERT_PATH` | (optional) Private CA PEM |
+
+## HTTP mode (`--http`) · BYOK
+
+For remote / Streamable HTTP deployments. The Codex Git marketplace keeps STDIO `npx` and does **not** switch to a remote URL.
+
+```bash
+npx -y redmine-devrelay@0.6.0 --http
+# or after build
+pnpm --filter redmine-devrelay start:http
+# port: --port 9090 or PORT (default 8080)
+```
+
+Endpoints:
+
+| Path | Description |
+| --- | --- |
+| `POST /mcp` | MCP Streamable HTTP |
+| `GET /healthz` | Health check |
+| `GET /.well-known/openai-apps-challenge` | OpenAI Apps challenge (see below) |
+
+### BYOK headers (per request)
+
+In production, pass Redmine credentials on each request:
+
+| Header | Description |
+| --- | --- |
+| `X-Redmine-Url` | Redmine base URL |
+| `X-Redmine-Api-Key` | REST API key |
+
+Missing headers → `401` (`BYOK required`).
+
+### `OPENAI_APPS_CHALLENGE_TOKEN`
+
+When set, `GET /.well-known/openai-apps-challenge` returns the token as plain text. Unset → `404`.
+
+### `HTTP_ALLOW_ENV_FALLBACK=1` (demo only)
+
+When `1`, missing BYOK headers fall back to process env `REDMINE_URL` / `REDMINE_API_KEY`.
+
+**Warning:** env credentials are shared by every client of that HTTP process. Demo/local only — turn off in production and use `X-Redmine-Url` / `X-Redmine-Api-Key` per request.
+
+Invalid URL / config validation failures → `400` (API key never included in the response). Missing headers → `401`.
+
+### HTTP session limits
+
+| Env var | Default | Description |
+| --- | --- | --- |
+| `MCP_MAX_SESSIONS` | `100` | Concurrent session cap; new `initialize` returns `503` when full |
+| `MCP_SESSION_TTL_MS` | `1800000` (30m) | Idle TTL; expired sessions pruned on access |
 
 ## Write rules
 
@@ -73,6 +124,7 @@ This Redmine uses **HTML bodies**. Pass plain text and the client converts it.
 
 | Version | Notes |
 | --- | --- |
+| **0.6.0** | Streamable HTTP + BYOK headers, `--http` CLI, OpenAI Apps challenge, demo-only env fallback |
 | **0.5.2** | English npm README; Claude Code marketplace install (`redmine-devrelay` plugin id) |
 | 0.5.1 | Codex marketplace install CLI alignment (`ON_USE`, `plugin add`) + pin |
 | 0.5.0 | Block Textile/Markdown in notes, `previewToken` confirm gate |

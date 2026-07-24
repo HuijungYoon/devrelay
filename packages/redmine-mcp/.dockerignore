@@ -1,0 +1,16 @@
+# Patterns relative to monorepo root (docker/fly build context).
+.git
+.superpowers
+docs
+plugins
+**/node_modules
+**/dist
+**/coverage
+**/.env
+**/.env.*
+**/*.md
+packages/*/tests
+**/vitest.config.ts
+**/*.test.ts
+**/*.test.js
+**/*.map

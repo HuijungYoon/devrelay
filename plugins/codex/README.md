@@ -1,7 +1,7 @@
 # Codex — Redmine DevRelay
 
-Redmine 조회·쓰기 via `redmine-devrelay@0.5.2` (dry-run → 확인 → `confirm=true` + `previewToken`).
 
+Redmine 조회·쓰기 via `redmine-devrelay@0.6.0` (dry-run → 확인 → `confirm=true` + `previewToken`).
 ## Install
 
 Requires Codex CLI with `codex plugin marketplace` / `codex plugin add`; upgrade if your build lacks those commands (e.g. 0.107.0 without `plugin`).
@@ -39,7 +39,6 @@ export REDMINE_API_KEY=...
 
 Optional: `REDMINE_ALLOWED_HOSTS`, `REDMINE_CA_CERT_PATH`.
 
-`.mcp.json` uses `npx -y redmine-devrelay@0.5.2`.
 
 ## Recommended approval policy
 
