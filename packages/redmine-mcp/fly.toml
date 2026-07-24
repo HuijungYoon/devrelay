@@ -1,0 +1,17 @@
+# Example Fly app — rename `app` when creating the real app.
+# Deploy from monorepo root (no secrets in this file):
+#   fly deploy --config packages/redmine-mcp/fly.toml
+app = "devrelay-redmine-mcp"
+primary_region = "nrt"
+
+[build]
+  dockerfile = "packages/redmine-mcp/Dockerfile"
+  ignorefile = "packages/redmine-mcp/.dockerignore"
+
+[env]
+  HTTP_ALLOW_ENV_FALLBACK = "0"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = false
