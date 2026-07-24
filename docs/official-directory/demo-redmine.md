@@ -1,5 +1,7 @@
 # Public demo Redmine (Directory review)
 
+> **Deferred (2026-07-24).** Demo Fly app torn down with Directory pause. Keep this as recreate checklist only.
+
 OpenAI Plugins Directory reviewers must reach a Redmine instance over the public internet with an API key that works without MFA or VPN. This document is the ops checklist for that **demo** instance only.
 
 Internal / corporate Redmine stays for local validation. Do **not** point Directory review at it.

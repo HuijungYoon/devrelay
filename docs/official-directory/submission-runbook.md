@@ -1,8 +1,10 @@
 # Official Plugins Directory — submission runbook
 
+> **Status (2026-07-24): deferred.** Official Plugins Directory listing is paused (Platform prepaid billing gate). Public Fly apps (`devrelay-redmine-mcp`, `devrelay-redmine-demo`) were torn down. Distribution is Git marketplace / STDIO `npx redmine-devrelay` only. HTTP `--http` code and this runbook remain for a future self-host or Directory retry.
+
 Copy-paste materials and portal checklist for listing **Redmine DevRelay**. Demo Redmine setup: [demo-redmine.md](./demo-redmine.md). Design context: `docs/superpowers/specs/2026-07-24-official-plugin-directory-submission-design.md`.
 
-Do **not** submit until: public demo Redmine is live, Privacy/Terms URLs resolve, MCP HTTPS + domain verification work, and Task 9 manual checks pass.
+Do **not** submit until: public demo Redmine is live, Privacy/Terms URLs resolve, MCP HTTPS + domain verification work, and Task 9 manual checks pass. URLs below that point at `*.fly.dev` are historical until hosting is recreated.
 
 ---
 

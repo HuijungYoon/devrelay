@@ -1,12 +1,14 @@
 # Portal submission draft — Redmine DevRelay
 
+> **Deferred (2026-07-24).** Not submitting now. Fly production URLs below are offline until apps are recreated.
+
 Copy into the OpenAI Plugins Directory form. **Do not put API keys in git**; use your password manager for demo credentials.
 
 Related: [submission-runbook.md](./submission-runbook.md), [demo-redmine.md](./demo-redmine.md).
 
 ---
 
-## Live endpoints (current)
+## Endpoints (historical — offline until Fly apps are recreated)
 
 | Item | URL |
 | --- | --- |

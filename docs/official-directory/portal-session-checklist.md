@@ -1,5 +1,7 @@
 # OpenAI portal — fill-in checklist (live session)
 
+> **Deferred (2026-07-24).** Directory submit paused; Fly MCP/demo torn down. Keep for a future retry. Live install path: Codex Git marketplace / `npx redmine-devrelay` (STDIO).
+
 Portal: https://platform.openai.com/apps-manage/  
 Docs: https://learn.chatgpt.com/docs/submit-plugins  
 Skills ZIP (no `.mcp.json`): `dist-portal/redmine-devrelay-skills.zip`  
