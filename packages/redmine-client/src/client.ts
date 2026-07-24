@@ -97,6 +97,10 @@ export class RedmineClient {
     return new RedmineClient(new RedmineHttp(config), config);
   }
 
+  static fromConfig(config: RedmineConfig): RedmineClient {
+    return new RedmineClient(new RedmineHttp(config), config);
+  }
+
   async getCurrentUser(): Promise<RedmineUser> {
     const data = await this.http.getJson<RawUser>("/users/current.json");
     return normalizeUser(data.user);

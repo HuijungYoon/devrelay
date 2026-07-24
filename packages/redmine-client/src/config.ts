@@ -48,24 +48,19 @@ function parseIntEnv(
   return n;
 }
 
-export function loadConfig(env: NodeJS.ProcessEnv = process.env): RedmineConfig {
-  const urlRaw = env.REDMINE_URL?.trim();
-  const apiKey = env.REDMINE_API_KEY?.trim();
-  if (!urlRaw || !apiKey) {
-    throw new RedmineError({
-      code: "REDMINE_VALIDATION_ERROR",
-      message: "REDMINE_URL and REDMINE_API_KEY are required",
-      check: ["Export REDMINE_URL", "Export REDMINE_API_KEY"],
-    });
-  }
-
+function validateBaseUrl(
+  urlRaw: string,
+  allowedHosts: string[] | undefined,
+  urlName: string,
+  allowedHostsName: string
+): string {
   let parsed: URL;
   try {
     parsed = new URL(urlRaw);
   } catch {
     throw new RedmineError({
       code: "REDMINE_VALIDATION_ERROR",
-      message: `Invalid REDMINE_URL: ${urlRaw}`,
+      message: `Invalid ${urlName}: ${urlRaw}`,
       check: ["Use an absolute URL like https://redmine.example.com"],
     });
   }
@@ -85,11 +80,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): RedmineConfig 
     });
   }
 
-  const allowedHosts = env.REDMINE_ALLOWED_HOSTS
-    ?.split(",")
-    .map((h) => h.trim().toLowerCase())
-    .filter(Boolean);
-
   if (
     allowedHosts?.length &&
     !allowedHosts.includes(host) &&
@@ -97,8 +87,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): RedmineConfig 
   ) {
     throw new RedmineError({
       code: "REDMINE_VALIDATION_ERROR",
-      message: `Host ${host} is not in REDMINE_ALLOWED_HOSTS`,
-      check: ["Add the Redmine hostname to REDMINE_ALLOWED_HOSTS"],
+      message: `Host ${host} is not in ${allowedHostsName}`,
+      check: [`Add the Redmine hostname to ${allowedHostsName}`],
     });
   }
 
@@ -111,7 +101,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): RedmineConfig 
     throw new RedmineError({
       code: "REDMINE_VALIDATION_ERROR",
       message:
-        "REDMINE_URL must use https (http only for private IPs or allowlisted local hosts)",
+        `${urlName} must use https ` +
+        "(http only for private IPs or allowlisted local hosts)",
       check: [
         "Use https://...",
         "Or use an RFC1918 private IP over http",
@@ -120,7 +111,74 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): RedmineConfig 
     });
   }
 
-  const baseUrl = urlRaw.replace(/\/$/, "");
+  return urlRaw.replace(/\/$/, "");
+}
+
+function normalizeAllowedHosts(hosts: string[] | undefined): string[] | undefined {
+  return hosts?.map((host) => host.trim().toLowerCase()).filter(Boolean);
+}
+
+export function configFromCredentials(input: {
+  baseUrl: string;
+  apiKey: string;
+  allowedHosts?: string[];
+  caCertPath?: string;
+  connectTimeoutMs?: number;
+  requestTimeoutMs?: number;
+  maxResultCount?: number;
+  logLevel?: string;
+}): RedmineConfig {
+  const urlRaw = input.baseUrl?.trim();
+  const apiKey = input.apiKey?.trim();
+  if (!urlRaw || !apiKey) {
+    throw new RedmineError({
+      code: "REDMINE_VALIDATION_ERROR",
+      message: "baseUrl and apiKey are required",
+      check: ["Provide Redmine URL", "Provide Redmine API key"],
+    });
+  }
+
+  const allowedHosts = normalizeAllowedHosts(input.allowedHosts);
+  const baseUrl = validateBaseUrl(
+    urlRaw,
+    allowedHosts,
+    "baseUrl",
+    "allowedHosts"
+  );
+
+  return {
+    baseUrl,
+    apiKey,
+    connectTimeoutMs: input.connectTimeoutMs ?? 5000,
+    requestTimeoutMs: input.requestTimeoutMs ?? 15000,
+    maxResultCount: input.maxResultCount ?? 100,
+    logLevel: input.logLevel ?? "info",
+    caCertPath: input.caCertPath || undefined,
+    allowedHosts,
+    userAgent: "redmine-mcp/0.1.0",
+  };
+}
+
+export function loadConfig(env: NodeJS.ProcessEnv = process.env): RedmineConfig {
+  const urlRaw = env.REDMINE_URL?.trim();
+  const apiKey = env.REDMINE_API_KEY?.trim();
+  if (!urlRaw || !apiKey) {
+    throw new RedmineError({
+      code: "REDMINE_VALIDATION_ERROR",
+      message: "REDMINE_URL and REDMINE_API_KEY are required",
+      check: ["Export REDMINE_URL", "Export REDMINE_API_KEY"],
+    });
+  }
+
+  const allowedHosts = normalizeAllowedHosts(
+    env.REDMINE_ALLOWED_HOSTS?.split(",")
+  );
+  const baseUrl = validateBaseUrl(
+    urlRaw,
+    allowedHosts,
+    "REDMINE_URL",
+    "REDMINE_ALLOWED_HOSTS"
+  );
 
   return {
     baseUrl,
