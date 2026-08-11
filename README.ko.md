@@ -100,17 +100,21 @@ Claude Code / Codex / Cursor / Antigravity  (플러그인 + 스킬)
 | `redmine_list_project_members` | 프로젝트 멤버 (담당자·관리자 선택) |
 | `redmine_search_users` | 전체 사용자 검색 (권한 필요할 수 있음) |
 | `redmine_search_issues` | 이슈 검색 (`assignedTo: "me"`, 기본 열린 이슈) |
-| `redmine_get_issue` | 이슈 상세 (`journals` 등 include) |
+| `redmine_get_issue` | 이슈 상세 (`journals`·`children` 등 include) |
+| `redmine_list_issue_relations` | 연결된 일감 목록 (+ `relationId`) |
 
 **쓰기** (`confirm` 기본 `false` = 미리보기)
 
 | 도구 | 설명 |
 | --- | --- |
-| `redmine_create_issue` | 생성 · `wouldApply` 미리보기 (선택 `attachments`) |
-| `redmine_update_issue` | 수정 · `changes[]` 이전→이후 |
+| `redmine_create_issue` | 생성 · `wouldApply` 미리보기 (선택 `attachments`, `parentIssueId`로 하위일감 생성) |
+| `redmine_update_issue` | 수정 · `changes[]` 이전→이후 (`parentIssueId: null`이면 하위 연결 해제) |
 | `redmine_add_comment` | 댓글 (`\n` → `<br />`) |
 | `redmine_add_attachment` | 기존 이슈에 로컬 파일 첨부 |
 | `redmine_update_status` | `statusId`만 변경 |
+| `redmine_add_issue_relation` | 연결된 일감 추가 (`relates`·`blocks`·`precedes` 등) |
+| `redmine_update_issue_relation` | 연결된 일감 수정 (삭제 후 재생성) |
+| `redmine_remove_issue_relation` | 연결된 일감 삭제 — 링크만 끊고 일감은 유지 |
 
 자세한 필드·HTML 규칙은 [`packages/redmine-mcp/README.md`](packages/redmine-mcp/README.md) 참고.
 

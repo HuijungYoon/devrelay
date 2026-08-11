@@ -100,17 +100,21 @@ Claude Code / Codex / Cursor / Antigravity  (plugins + skills)
 | `redmine_list_project_members` | Project members (pick assignee/watchers) |
 | `redmine_search_users` | Search all users (may require permission) |
 | `redmine_search_issues` | Search issues (`assignedTo: "me"`, open by default) |
-| `redmine_get_issue` | Issue detail (includes `journals`, etc.) |
+| `redmine_get_issue` | Issue detail (includes `journals`, `children`, etc.) |
+| `redmine_list_issue_relations` | Related issues with their `relationId` |
 
 **Write** (`confirm` defaults to `false` = preview)
 
 | Tool | Description |
 | --- | --- |
-| `redmine_create_issue` | Create · `wouldApply` preview (optional `attachments`) |
-| `redmine_update_issue` | Update · before→after `changes[]` |
+| `redmine_create_issue` | Create · `wouldApply` preview (optional `attachments`, `parentIssueId` for a subtask) |
+| `redmine_update_issue` | Update · before→after `changes[]` (`parentIssueId: null` detaches a subtask) |
 | `redmine_add_comment` | Comment (`\n` → `<br />`) |
 | `redmine_add_attachment` | Attach a local file to an existing issue |
 | `redmine_update_status` | Change `statusId` only |
+| `redmine_add_issue_relation` | Link two issues (`relates`, `blocks`, `precedes`, …) |
+| `redmine_update_issue_relation` | Change a relation (remove + re-create) |
+| `redmine_remove_issue_relation` | Unlink two issues — both issues stay |
 
 See [`packages/redmine-mcp/README.md`](packages/redmine-mcp/README.md) for field details and HTML rules.
 

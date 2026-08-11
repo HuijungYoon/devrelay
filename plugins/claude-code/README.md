@@ -75,5 +75,7 @@ Build first: `pnpm --filter redmine-devrelay build`
 | `/redmine-devrelay:add-comment` | Comment (dry-run → confirm) |
 | `/redmine-devrelay:add-attachment` | Attachment (dry-run → confirm) |
 | `/redmine-devrelay:update-status` | Status change (dry-run → confirm) |
+| `/redmine-devrelay:relate-issue` | Related issues — add / change / remove (dry-run → confirm) |
+| `/redmine-devrelay:subtask` | Subtasks — create / move / detach (dry-run → confirm) |
 
 Community marketplace submission checklist: `docs/claude-code-marketplace-submit.md`.
