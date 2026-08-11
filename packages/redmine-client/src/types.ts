@@ -114,10 +114,68 @@ export type IssueUploadToken = {
 export const ATTACHMENT_MAX_FILES = 5;
 export const ATTACHMENT_MAX_BYTES = 10 * 1024 * 1024;
 
+/** Redmine relation_type values (연결된 일감 관계 종류) */
+export const ISSUE_RELATION_TYPES = [
+  "relates",
+  "duplicates",
+  "duplicated",
+  "blocks",
+  "blocked",
+  "precedes",
+  "follows",
+  "copied_to",
+  "copied_from",
+] as const;
+
+export type IssueRelationType = (typeof ISSUE_RELATION_TYPES)[number];
+
+/** Relation types that accept a delay (in days) */
+export const DELAY_RELATION_TYPES = ["precedes", "follows"] as const;
+
+export type IssueRelation = {
+  id: number;
+  issueId: number;
+  issueToId: number;
+  relationType: string;
+  delay: number | null;
+};
+
+export type ListIssueRelationsResult = {
+  issueId: number;
+  relations: IssueRelation[];
+  totalCount: number;
+};
+
+export type AddIssueRelationInput = {
+  issueId: number;
+  issueToId: number;
+  relationType: IssueRelationType;
+  delay?: number | null;
+};
+
+export type RemoveIssueRelationResult = {
+  relationId: number;
+  removed: true;
+};
+
+export type ReplaceIssueRelationInput = {
+  relationId: number;
+  issueToId?: number;
+  relationType?: IssueRelationType;
+  delay?: number | null;
+};
+
+export type ReplaceIssueRelationResult = {
+  removedRelationId: number;
+  relation: IssueRelation;
+};
+
 export type CreateIssueInput = {
   projectId: number;
   subject: string;
   description?: string;
+  /** 상위 일감 (parent_issue_id) — creates this issue as a subtask */
+  parentIssueId?: number;
   trackerId?: number;
   statusId?: number;
   priorityId?: number;
@@ -147,6 +205,8 @@ export type UpdateIssueInput = {
   issueId: number;
   subject?: string;
   description?: string;
+  /** 상위 일감 — number attaches/moves, null detaches (하위일감 연결 해제) */
+  parentIssueId?: number | null;
   trackerId?: number;
   statusId?: number;
   priorityId?: number;
@@ -164,6 +224,7 @@ export type UpdateIssueResult = {
   issueId: number;
   subject?: string;
   status: { id: number; name: string } | null;
+  parentIssueId?: number | null;
 };
 
 export type SearchUsersResult = {

@@ -5,16 +5,22 @@ import type {
   AddCommentResult,
   AddIssueAttachmentsInput,
   AddIssueAttachmentsResult,
+  AddIssueRelationInput,
   AttachmentInput,
   AttachmentPreview,
   CreateIssueInput,
   CreateIssueResult,
   IssueInclude,
+  IssueRelation,
+  ListIssueRelationsResult,
   ListProjectMembersResult,
   ListProjectsResult,
   NormalizedIssueDetail,
   RedmineProject,
   RedmineUser,
+  RemoveIssueRelationResult,
+  ReplaceIssueRelationInput,
+  ReplaceIssueRelationResult,
   SearchIssuesInput,
   SearchIssuesResult,
   SearchUsersResult,
@@ -24,6 +30,13 @@ import type {
   UploadedAttachment,
 } from "./types.js";
 import { getIssue, searchIssues } from "./issues.js";
+import {
+  addIssueRelation,
+  getIssueRelation,
+  listIssueRelations,
+  removeIssueRelation,
+  replaceIssueRelation,
+} from "./relations.js";
 import { listProjectMembers } from "./memberships.js";
 import { searchUsers } from "./users.js";
 import {
@@ -181,6 +194,32 @@ export class RedmineClient {
 
   updateIssue(input: UpdateIssueInput): Promise<UpdateIssueResult> {
     return updateIssue(this.http, input);
+  }
+
+  /** 연결된 일감 목록 (GET /issues/:id/relations.json) */
+  listIssueRelations(issueId: number): Promise<ListIssueRelationsResult> {
+    return listIssueRelations(this.http, issueId);
+  }
+
+  getIssueRelation(relationId: number): Promise<IssueRelation> {
+    return getIssueRelation(this.http, relationId);
+  }
+
+  addIssueRelation(input: AddIssueRelationInput): Promise<IssueRelation> {
+    return addIssueRelation(this.http, input);
+  }
+
+  removeIssueRelation(
+    relationId: number
+  ): Promise<RemoveIssueRelationResult> {
+    return removeIssueRelation(this.http, relationId);
+  }
+
+  /** Change a relation (delete + re-create; Redmine has no update endpoint) */
+  replaceIssueRelation(
+    input: ReplaceIssueRelationInput
+  ): Promise<ReplaceIssueRelationResult> {
+    return replaceIssueRelation(this.http, input);
   }
 
   inspectAttachments(inputs: AttachmentInput[]): AttachmentPreview[] {
