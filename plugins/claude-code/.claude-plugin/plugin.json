@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "redmine-devrelay",
   "description": "Redmine read/write via redmine-devrelay MCP (dry-run → confirm) and slash skills for Claude Code.",
   "version": "0.5.2",
