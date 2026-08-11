@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ISSUE_RELATION_TYPES } from "redmine-devrelay-client";
 
 const positiveInt = z.number().int().positive();
 
@@ -113,6 +114,7 @@ export const createIssueInputSchema = z
     projectId: positiveInt,
     subject: z.string().min(1),
     description: z.string().optional(),
+    parentIssueId: positiveInt.optional(),
     trackerId: positiveInt.optional(),
     statusId: positiveInt.optional(),
     priorityId: positiveInt.optional(),
@@ -133,6 +135,8 @@ export const updateIssueInputSchema = z
     issueId: positiveInt,
     subject: z.string().min(1).optional(),
     description: z.string().optional(),
+    /** number = 하위일감으로 편입/부모 변경, null = 부모 연결 해제 */
+    parentIssueId: z.union([positiveInt, z.null()]).optional(),
     trackerId: positiveInt.optional(),
     statusId: positiveInt.optional(),
     priorityId: positiveInt.optional(),
@@ -150,6 +154,7 @@ export const updateIssueInputSchema = z
     (v) =>
       v.subject !== undefined ||
       v.description !== undefined ||
+      v.parentIssueId !== undefined ||
       v.trackerId !== undefined ||
       v.statusId !== undefined ||
       v.priorityId !== undefined ||
@@ -206,6 +211,56 @@ export const updateStatusInputSchema = z
   .strict()
   .superRefine(requirePreviewTokenWhenConfirm);
 
+const relationType = z.enum(ISSUE_RELATION_TYPES);
+const relationDelay = z.number().int();
+
+export const listIssueRelationsInputSchema = z
+  .object({
+    issueId: positiveInt,
+  })
+  .strict();
+
+export const addIssueRelationInputSchema = z
+  .object({
+    issueId: positiveInt,
+    issueToId: positiveInt,
+    relationType: relationType,
+    delay: relationDelay.optional(),
+    ...confirmFields,
+  })
+  .strict()
+  .refine((v) => v.issueId !== v.issueToId, {
+    message: "issueToId must differ from issueId",
+    path: ["issueToId"],
+  })
+  .superRefine(requirePreviewTokenWhenConfirm);
+
+export const updateIssueRelationInputSchema = z
+  .object({
+    relationId: positiveInt,
+    issueToId: positiveInt.optional(),
+    relationType: relationType.optional(),
+    delay: z.union([relationDelay, z.null()]).optional(),
+    ...confirmFields,
+  })
+  .strict()
+  .refine(
+    (v) =>
+      v.issueToId !== undefined ||
+      v.relationType !== undefined ||
+      v.delay !== undefined,
+    { message: "At least one of issueToId/relationType/delay is required" }
+  )
+  .superRefine(requirePreviewTokenWhenConfirm);
+
+export const removeIssueRelationInputSchema = z
+  .object({
+    relationId: positiveInt,
+    ...confirmFields,
+  })
+  .strict()
+  .superRefine(requirePreviewTokenWhenConfirm);
+
 export type ConnectionInput = z.infer<typeof connectionInputSchema>;
 export type ListProjectsInput = z.infer<typeof listProjectsInputSchema>;
 export type SearchIssuesInput = z.infer<typeof searchIssuesInputSchema>;
@@ -219,6 +274,18 @@ export type ListProjectMembersInput = z.infer<
 export type AddCommentInput = z.infer<typeof addCommentInputSchema>;
 export type AddAttachmentInput = z.infer<typeof addAttachmentInputSchema>;
 export type UpdateStatusInput = z.infer<typeof updateStatusInputSchema>;
+export type ListIssueRelationsInput = z.infer<
+  typeof listIssueRelationsInputSchema
+>;
+export type AddIssueRelationInput = z.infer<
+  typeof addIssueRelationInputSchema
+>;
+export type UpdateIssueRelationInput = z.infer<
+  typeof updateIssueRelationInputSchema
+>;
+export type RemoveIssueRelationInput = z.infer<
+  typeof removeIssueRelationInputSchema
+>;
 
 export function safeParseConnection(input: unknown) {
   return connectionInputSchema.safeParse(input ?? {});
@@ -262,6 +329,22 @@ export function safeParseAddAttachment(input: unknown) {
 
 export function safeParseUpdateStatus(input: unknown) {
   return updateStatusInputSchema.safeParse(input ?? {});
+}
+
+export function safeParseListIssueRelations(input: unknown) {
+  return listIssueRelationsInputSchema.safeParse(input ?? {});
+}
+
+export function safeParseAddIssueRelation(input: unknown) {
+  return addIssueRelationInputSchema.safeParse(input ?? {});
+}
+
+export function safeParseUpdateIssueRelation(input: unknown) {
+  return updateIssueRelationInputSchema.safeParse(input ?? {});
+}
+
+export function safeParseRemoveIssueRelation(input: unknown) {
+  return removeIssueRelationInputSchema.safeParse(input ?? {});
 }
 
 /** JSON Schema objects for MCP ListTools (additionalProperties: false). */
@@ -366,6 +449,12 @@ export const toolJsonSchemas = {
         description: "Issue subject/title (required)",
       },
       description: { type: "string", description: "Issue description body" },
+      parentIssueId: {
+        type: "integer",
+        minimum: 1,
+        description:
+          "상위 일감 id — set to create this issue as a 하위일감 (subtask)",
+      },
       trackerId: {
         type: "integer",
         minimum: 1,
@@ -456,6 +545,11 @@ export const toolJsonSchemas = {
       issueId: { type: "integer", minimum: 1 },
       subject: { type: "string", minLength: 1 },
       description: { type: "string" },
+      parentIssueId: {
+        description:
+          "상위 일감: id = 하위일감으로 편입/부모 변경, null = 부모 연결 해제 (하위일감 삭제). Omit to leave unchanged.",
+        oneOf: [{ type: "integer", minimum: 1 }, { type: "null" }],
+      },
       trackerId: {
         type: "integer",
         minimum: 1,
@@ -612,6 +706,104 @@ export const toolJsonSchemas = {
       },
     },
     required: ["issueId", "attachments"],
+    additionalProperties: false,
+  },
+  redmine_list_issue_relations: {
+    type: "object",
+    properties: {
+      issueId: {
+        type: "integer",
+        minimum: 1,
+        description: "Issue whose 연결된 일감 (relations) to list",
+      },
+    },
+    required: ["issueId"],
+    additionalProperties: false,
+  },
+  redmine_add_issue_relation: {
+    type: "object",
+    properties: {
+      issueId: { type: "integer", minimum: 1, description: "Source issue id" },
+      issueToId: {
+        type: "integer",
+        minimum: 1,
+        description: "Issue id to link to (must differ from issueId)",
+      },
+      relationType: {
+        type: "string",
+        enum: [...ISSUE_RELATION_TYPES],
+        description:
+          "relates(관련됨) duplicates/duplicated(중복) blocks/blocked(차단) precedes/follows(선행/후속) copied_to/copied_from(복사)",
+      },
+      delay: {
+        type: "integer",
+        description: "Days of delay — precedes/follows only",
+      },
+      confirm: {
+        type: "boolean",
+        description:
+          "false/omit = dry-run (returns previewToken); true = apply (requires previewToken)",
+      },
+      previewToken: {
+        type: "string",
+        minLength: 1,
+        description: "Token from matching dry-run; required when confirm=true",
+      },
+    },
+    required: ["issueId", "issueToId", "relationType"],
+    additionalProperties: false,
+  },
+  redmine_update_issue_relation: {
+    type: "object",
+    properties: {
+      relationId: {
+        type: "integer",
+        minimum: 1,
+        description: "Relation id from redmine_list_issue_relations",
+      },
+      issueToId: { type: "integer", minimum: 1 },
+      relationType: {
+        type: "string",
+        enum: [...ISSUE_RELATION_TYPES],
+      },
+      delay: {
+        description: "Days of delay (precedes/follows only); null clears it",
+        oneOf: [{ type: "integer" }, { type: "null" }],
+      },
+      confirm: {
+        type: "boolean",
+        description:
+          "false/omit = before→after preview (returns previewToken); true = apply (requires previewToken)",
+      },
+      previewToken: {
+        type: "string",
+        minLength: 1,
+        description: "Token from matching dry-run; required when confirm=true",
+      },
+    },
+    required: ["relationId"],
+    additionalProperties: false,
+  },
+  redmine_remove_issue_relation: {
+    type: "object",
+    properties: {
+      relationId: {
+        type: "integer",
+        minimum: 1,
+        description: "Relation id from redmine_list_issue_relations",
+      },
+      confirm: {
+        type: "boolean",
+        description:
+          "false/omit = dry-run (returns previewToken); true = remove (requires previewToken)",
+      },
+      previewToken: {
+        type: "string",
+        minLength: 1,
+        description: "Token from matching dry-run; required when confirm=true",
+      },
+    },
+    required: ["relationId"],
     additionalProperties: false,
   },
   redmine_update_status: {

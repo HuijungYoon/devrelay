@@ -16,19 +16,29 @@ import {
   handleUpdateIssue,
   handleUpdateStatus,
 } from "./tools/writes.js";
+import {
+  handleAddIssueRelation,
+  handleListIssueRelations,
+  handleRemoveIssueRelation,
+  handleUpdateIssueRelation,
+} from "./tools/relations.js";
 import { handleSearchUsers } from "./tools/users.js";
 import { handleListProjectMembers } from "./tools/members.js";
 import {
   safeParseAddAttachment,
   safeParseAddComment,
+  safeParseAddIssueRelation,
   safeParseConnection,
   safeParseCreateIssue,
   safeParseGetIssue,
+  safeParseListIssueRelations,
   safeParseListProjectMembers,
   safeParseListProjects,
+  safeParseRemoveIssueRelation,
   safeParseSearch,
   safeParseSearchUsers,
   safeParseUpdateIssue,
+  safeParseUpdateIssueRelation,
   safeParseUpdateStatus,
 } from "./tools/schemas.js";
 import { INSTRUCTIONS, listToolsPayload } from "./toolDefs.js";
@@ -143,6 +153,30 @@ export function createRedmineMcpServer(client: RedmineClient): Server {
           const parsed = safeParseUpdateStatus(req.params.arguments);
           if (!parsed.success) throw validationError(parsed.error.message);
           result = await handleUpdateStatus(client, parsed.data);
+          break;
+        }
+        case "redmine_list_issue_relations": {
+          const parsed = safeParseListIssueRelations(req.params.arguments);
+          if (!parsed.success) throw validationError(parsed.error.message);
+          result = await handleListIssueRelations(client, parsed.data);
+          break;
+        }
+        case "redmine_add_issue_relation": {
+          const parsed = safeParseAddIssueRelation(req.params.arguments);
+          if (!parsed.success) throw validationError(parsed.error.message);
+          result = await handleAddIssueRelation(client, parsed.data);
+          break;
+        }
+        case "redmine_update_issue_relation": {
+          const parsed = safeParseUpdateIssueRelation(req.params.arguments);
+          if (!parsed.success) throw validationError(parsed.error.message);
+          result = await handleUpdateIssueRelation(client, parsed.data);
+          break;
+        }
+        case "redmine_remove_issue_relation": {
+          const parsed = safeParseRemoveIssueRelation(req.params.arguments);
+          if (!parsed.success) throw validationError(parsed.error.message);
+          result = await handleRemoveIssueRelation(client, parsed.data);
           break;
         }
         default:

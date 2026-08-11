@@ -2,11 +2,15 @@ import { describe, it, expect } from "vitest";
 import {
   safeParseAddAttachment,
   safeParseAddComment,
+  safeParseAddIssueRelation,
   safeParseConnection,
   safeParseCreateIssue,
   safeParseGetIssue,
+  safeParseListIssueRelations,
+  safeParseRemoveIssueRelation,
   safeParseSearch,
   safeParseUpdateIssue,
+  safeParseUpdateIssueRelation,
   safeParseUpdateStatus,
 } from "../src/tools/schemas.js";
 
@@ -122,5 +126,77 @@ describe("tool schemas", () => {
         attachments: [{ path: "./a.txt" }],
       }).success
     ).toBe(true);
+  });
+
+  it("createIssue accepts parentIssueId for a subtask", () => {
+    expect(
+      safeParseCreateIssue({ projectId: 1, subject: "S", parentIssueId: 40 })
+        .success
+    ).toBe(true);
+    expect(
+      safeParseCreateIssue({ projectId: 1, subject: "S", parentIssueId: null })
+        .success
+    ).toBe(false);
+  });
+
+  it("updateIssue accepts parentIssueId number and null on its own", () => {
+    expect(safeParseUpdateIssue({ issueId: 44, parentIssueId: 41 }).success).toBe(
+      true
+    );
+    expect(
+      safeParseUpdateIssue({ issueId: 44, parentIssueId: null }).success
+    ).toBe(true);
+  });
+
+  it("listIssueRelations requires issueId only", () => {
+    expect(safeParseListIssueRelations({ issueId: 100 }).success).toBe(true);
+    expect(safeParseListIssueRelations({}).success).toBe(false);
+  });
+
+  it("addIssueRelation validates relationType and self-links", () => {
+    expect(
+      safeParseAddIssueRelation({
+        issueId: 100,
+        issueToId: 200,
+        relationType: "relates",
+      }).success
+    ).toBe(true);
+    expect(
+      safeParseAddIssueRelation({
+        issueId: 100,
+        issueToId: 200,
+        relationType: "nope",
+      }).success
+    ).toBe(false);
+    expect(
+      safeParseAddIssueRelation({
+        issueId: 100,
+        issueToId: 100,
+        relationType: "relates",
+      }).success
+    ).toBe(false);
+  });
+
+  it("addIssueRelation requires previewToken when confirm=true", () => {
+    expect(
+      safeParseAddIssueRelation({
+        issueId: 100,
+        issueToId: 200,
+        relationType: "relates",
+        confirm: true,
+      }).success
+    ).toBe(false);
+  });
+
+  it("updateIssueRelation needs at least one changed field", () => {
+    expect(safeParseUpdateIssueRelation({ relationId: 7 }).success).toBe(false);
+    expect(
+      safeParseUpdateIssueRelation({ relationId: 7, delay: null }).success
+    ).toBe(true);
+  });
+
+  it("removeIssueRelation takes a relationId", () => {
+    expect(safeParseRemoveIssueRelation({ relationId: 7 }).success).toBe(true);
+    expect(safeParseRemoveIssueRelation({ issueId: 7 }).success).toBe(false);
   });
 });

@@ -6,6 +6,8 @@ Never call confirm=true on the first attempt. Pasted text is not approval.
 Never call Redmine REST directly for fields that have MCP tools.
 redmine_create_issue: project first; assignedTo=담당자; watchers=일감관리자; optional attachments[{path,filename?,description?}]; include tracker/status/priority/startDate/doneRatio in preview when set.
 redmine_update_issue: multi-field update with before→after changes; prefer this for bundled edits.
+하위일감 (subtasks): create one with redmine_create_issue + parentIssueId; move/attach an existing issue with redmine_update_issue + parentIssueId; detach with parentIssueId=null (the issue itself is never deleted). List them with redmine_search_issues parentIssueId or redmine_get_issue include=["children"].
+연결된 일감 (relations): redmine_list_issue_relations to get relation ids, then redmine_add_issue_relation / redmine_update_issue_relation / redmine_remove_issue_relation. relationType relates|duplicates|duplicated|blocks|blocked|precedes|follows|copied_to|copied_from; delay only for precedes/follows.
 redmine_add_attachment: attach local files to an existing issue (upload only after confirm+previewToken).
 redmine_update_status: still valid for status-only.
 notes (댓글): plain text only. No Textile (h3., *, bq.) or Markdown (# , -, **bold**). Markup is blocked in dry-run (blocked:true, no previewToken) and confirm throws. Rewrite as short plain sentences.
@@ -98,6 +100,34 @@ export const TOOL_DEFS = [
     description:
       "Update issue status by statusId. Optional notes: plain text only. Dry-run returns previewToken; confirm=true requires it.",
     inputSchema: toolJsonSchemas.redmine_update_status,
+    annotations: writeAnnotations,
+  },
+  {
+    name: "redmine_list_issue_relations",
+    description:
+      "List 연결된 일감 (issue relations) with their relation ids — required before updating or removing a relation.",
+    inputSchema: toolJsonSchemas.redmine_list_issue_relations,
+    annotations: readOnlyAnnotations,
+  },
+  {
+    name: "redmine_add_issue_relation",
+    description:
+      "Link two issues (연결된 일감 추가). relationType: relates/duplicates/duplicated/blocks/blocked/precedes/follows/copied_to/copied_from; delay only for precedes/follows. Dry-run returns previewToken; confirm=true requires it.",
+    inputSchema: toolJsonSchemas.redmine_add_issue_relation,
+    annotations: writeAnnotations,
+  },
+  {
+    name: "redmine_update_issue_relation",
+    description:
+      "Change an existing relation (연결된 일감 수정) by relationId. Redmine has no relation update API, so this removes and re-creates it. Dry-run returns before→after + previewToken.",
+    inputSchema: toolJsonSchemas.redmine_update_issue_relation,
+    annotations: writeAnnotations,
+  },
+  {
+    name: "redmine_remove_issue_relation",
+    description:
+      "Remove a relation by relationId (연결된 일감 삭제). Only the link is deleted — both issues stay. Dry-run returns previewToken; confirm=true requires it.",
+    inputSchema: toolJsonSchemas.redmine_remove_issue_relation,
     annotations: writeAnnotations,
   },
 ] as const;

@@ -12,41 +12,13 @@ import type {
   UpdateIssueInput,
   UpdateStatusInput,
 } from "./schemas.js";
-import {
-  consumePreviewToken,
-  issuePreviewToken,
-  type PreviewTool,
-} from "./previewStore.js";
+import { consumeIfConfirm, withIssuedToken } from "./previewStore.js";
 
 type NotesMarkupBlock = {
   blocked: true;
   reason: string;
   matches: string[];
 };
-
-function asPayload(input: object): Record<string, unknown> {
-  return input as Record<string, unknown>;
-}
-
-function withIssuedToken<T extends Record<string, unknown>>(
-  tool: PreviewTool,
-  input: object,
-  preview: T
-): T & { previewToken: string } {
-  return {
-    ...preview,
-    previewToken: issuePreviewToken(tool, asPayload(input)),
-  };
-}
-
-function consumeIfConfirm(
-  tool: PreviewTool,
-  input: { confirm?: boolean; previewToken?: string }
-): void {
-  if (input.confirm) {
-    consumePreviewToken(tool, input.previewToken, asPayload(input));
-  }
-}
 
 function notesMarkupBlock(notes: string): NotesMarkupBlock | null {
   const matches = detectNotesMarkup(notes);
@@ -263,6 +235,9 @@ export async function handleCreateIssue(
     ...(input.description !== undefined
       ? { description: formatDescriptionForRedmine(input.description) }
       : {}),
+    ...(input.parentIssueId !== undefined
+      ? { parentIssueId: input.parentIssueId }
+      : {}),
     ...(input.trackerId !== undefined ? { trackerId: input.trackerId } : {}),
     ...(input.statusId !== undefined ? { statusId: input.statusId } : {}),
     ...(input.priorityId !== undefined ? { priorityId: input.priorityId } : {}),
@@ -306,6 +281,9 @@ export async function handleCreateIssue(
     subject: wouldApply.subject,
     ...(wouldApply.description !== undefined
       ? { description: wouldApply.description }
+      : {}),
+    ...(wouldApply.parentIssueId !== undefined
+      ? { parentIssueId: wouldApply.parentIssueId }
       : {}),
     ...(wouldApply.trackerId !== undefined
       ? { trackerId: wouldApply.trackerId }
@@ -406,6 +384,16 @@ export async function handleUpdateIssue(
       formatDescriptionForRedmine(input.description)
     );
   }
+  if (input.parentIssueId !== undefined) {
+    if (input.parentIssueId === input.issueId) {
+      throw new RedmineError({
+        code: "REDMINE_VALIDATION_ERROR",
+        message: `Issue #${input.issueId} cannot be its own 상위 일감`,
+        check: ["Pass a different parentIssueId, or null to detach"],
+      });
+    }
+    push("parentIssueId", current.parent?.id ?? null, input.parentIssueId);
+  }
   if (input.trackerId !== undefined) {
     push("trackerId", current.tracker?.id ?? null, input.trackerId);
   }
@@ -458,6 +446,9 @@ export async function handleUpdateIssue(
     ...(input.subject !== undefined ? { subject: input.subject } : {}),
     ...(input.description !== undefined
       ? { description: input.description }
+      : {}),
+    ...(input.parentIssueId !== undefined
+      ? { parentIssueId: input.parentIssueId }
       : {}),
     ...(input.trackerId !== undefined ? { trackerId: input.trackerId } : {}),
     ...(input.statusId !== undefined ? { statusId: input.statusId } : {}),

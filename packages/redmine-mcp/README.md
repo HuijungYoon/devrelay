@@ -93,7 +93,8 @@ This Redmine uses **HTML bodies**. Pass plain text and the client converts it.
 | `redmine_list_project_members` | List project members (for assignee / watchers) |
 | `redmine_search_users` | Search all users (may require permission) |
 | `redmine_search_issues` | Search issues (default: open; supports `assignedTo: "me"`) |
-| `redmine_get_issue` | Issue detail (includes journals, etc.) |
+| `redmine_get_issue` | Issue detail (includes journals, children, etc.) |
+| `redmine_list_issue_relations` | Related issues with their `relationId` (needed to update/remove one) |
 
 ## Write APIs
 
@@ -104,6 +105,22 @@ This Redmine uses **HTML bodies**. Pass plain text and the client converts it.
 | `redmine_add_comment` | Add comment (plain text only; Textile/Markdown blocked) |
 | `redmine_add_attachment` | Attach a local file to an existing issue |
 | `redmine_update_status` | Change issue status (`statusId`) only |
+| `redmine_add_issue_relation` | Link two issues (`relationType`; `delay` for `precedes`/`follows`) |
+| `redmine_update_issue_relation` | Change a relation by `relationId` (remove + re-create) |
+| `redmine_remove_issue_relation` | Remove a relation by `relationId` — both issues stay |
+
+### Subtasks (하위일감)
+
+There is no separate subtask tool — the parent link is a field:
+
+| Call | Effect |
+| --- | --- |
+| `redmine_create_issue` + `parentIssueId` | Create a new subtask under that parent |
+| `redmine_update_issue` + `parentIssueId: <id>` | Attach an existing issue / move it to another parent |
+| `redmine_update_issue` + `parentIssueId: null` | Detach the subtask — the issue itself is never deleted |
+| `redmine_search_issues` + `parentIssueId` | List a parent's children |
+
+This server has no issue-delete tool by design; deleting an issue in Redmine is irreversible and cascades to its descendants.
 
 ### Optional create / update fields
 

@@ -42,7 +42,8 @@ dry-run 응답의 `previewToken` 없이는 적용할 수 없습니다 (TTL 10분
 | `redmine_list_project_members` | 프로젝트 멤버 목록 (담당자·관리자 선택용) |
 | `redmine_search_users` | 전체 사용자 검색 (권한 필요할 수 있음) |
 | `redmine_search_issues` | 이슈 검색 (기본: 열린 이슈, `assignedTo: "me"` 지원) |
-| `redmine_get_issue` | 이슈 상세 조회 (journals 등 include) |
+| `redmine_get_issue` | 이슈 상세 조회 (journals·children 등 include) |
+| `redmine_list_issue_relations` | 연결된 일감 목록 (수정·삭제에 필요한 `relationId` 확인) |
 
 ## 쓰기 API
 
@@ -53,6 +54,22 @@ dry-run 응답의 `previewToken` 없이는 적용할 수 없습니다 (TTL 10분
 | `redmine_add_comment` | 이슈 댓글 추가 (평문만; Textile/Markdown 차단) |
 | `redmine_add_attachment` | 기존 이슈에 로컬 파일 첨부 |
 | `redmine_update_status` | 이슈 상태(`statusId`)만 변경 |
+| `redmine_add_issue_relation` | 연결된 일감 추가 (`relationType`; `delay`는 `precedes`/`follows`만) |
+| `redmine_update_issue_relation` | `relationId`로 연결 수정 (삭제 후 재생성) |
+| `redmine_remove_issue_relation` | `relationId`로 연결 삭제 — 두 일감은 그대로 |
+
+### 하위일감
+
+하위일감 전용 도구는 없다. 부모 연결은 필드로 관리한다.
+
+| 호출 | 동작 |
+| --- | --- |
+| `redmine_create_issue` + `parentIssueId` | 해당 부모의 하위일감으로 새로 생성 |
+| `redmine_update_issue` + `parentIssueId: <id>` | 기존 일감을 하위로 편입 / 부모 변경 |
+| `redmine_update_issue` + `parentIssueId: null` | 하위 연결 해제 — 일감 자체는 삭제되지 않음 |
+| `redmine_search_issues` + `parentIssueId` | 특정 부모의 하위일감 목록 |
+
+일감 자체를 삭제하는 도구는 의도적으로 넣지 않았다 (Redmine의 이슈 삭제는 되돌릴 수 없고 하위 트리까지 함께 지워짐).
 
 ### create / update 선택 필드
 
