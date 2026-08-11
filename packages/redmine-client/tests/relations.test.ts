@@ -38,6 +38,7 @@ describe("issue relations (연결된 일감)", () => {
     expect(result).toEqual({
       issueId: 100,
       totalCount: 2,
+      via: "relations",
       relations: [
         {
           id: 7,
@@ -60,7 +61,45 @@ describe("issue relations (연결된 일감)", () => {
   it("listIssueRelations tolerates an empty body", async () => {
     const getJson = vi.fn().mockResolvedValue({});
     const result = await clientWith({ getJson }).listIssueRelations(100);
-    expect(result).toEqual({ issueId: 100, relations: [], totalCount: 0 });
+    expect(result).toEqual({
+      issueId: 100,
+      relations: [],
+      totalCount: 0,
+      via: "relations",
+    });
+  });
+
+  it("listIssueRelations falls back to the issue when the index is denied", async () => {
+    const denied = new RedmineError({
+      code: "REDMINE_PERMISSION_DENIED",
+      message: "Redmine permission denied",
+      httpStatus: 403,
+    });
+    const getJson = vi
+      .fn()
+      .mockRejectedValueOnce(denied)
+      .mockResolvedValueOnce({ issue: { relations: [rawRelation] } });
+
+    const result = await clientWith({ getJson }).listIssueRelations(100);
+    expect(getJson).toHaveBeenNthCalledWith(2, "/issues/100.json", {
+      include: "relations",
+    });
+    expect(result).toMatchObject({ via: "issue-include", totalCount: 1 });
+    expect(result.relations[0].id).toBe(7);
+  });
+
+  it("listIssueRelations does not swallow other errors", async () => {
+    const getJson = vi.fn().mockRejectedValue(
+      new RedmineError({
+        code: "REDMINE_ISSUE_NOT_FOUND",
+        message: "nope",
+        httpStatus: 404,
+      })
+    );
+    await expect(
+      clientWith({ getJson }).listIssueRelations(100)
+    ).rejects.toMatchObject({ code: "REDMINE_ISSUE_NOT_FOUND" });
+    expect(getJson).toHaveBeenCalledTimes(1);
   });
 
   it("addIssueRelation POSTs relation payload", async () => {

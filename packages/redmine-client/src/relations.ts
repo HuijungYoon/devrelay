@@ -66,15 +66,37 @@ export async function listIssueRelations(
   http: RedmineHttp,
   issueId: number
 ): Promise<ListIssueRelationsResult> {
-  const data = await http.getJson<RawRelationsResponse>(
-    `/issues/${issueId}/relations.json`
-  );
-  const relations = (data?.relations ?? []).map(normalizeRelation);
-  return {
-    issueId,
-    relations,
-    totalCount: data?.total_count ?? relations.length,
-  };
+  try {
+    const data = await http.getJson<RawRelationsResponse>(
+      `/issues/${issueId}/relations.json`
+    );
+    const relations = (data?.relations ?? []).map(normalizeRelation);
+    return {
+      issueId,
+      relations,
+      totalCount: data?.total_count ?? relations.length,
+      via: "relations",
+    };
+  } catch (err) {
+    // Some projects deny the relations index yet still expose the same
+    // relations (ids included) on the issue itself.
+    if (
+      err instanceof RedmineError &&
+      err.code === "REDMINE_PERMISSION_DENIED"
+    ) {
+      const data = await http.getJson<{
+        issue?: { relations?: RawRelation[] };
+      }>(`/issues/${issueId}.json`, { include: "relations" });
+      const relations = (data?.issue?.relations ?? []).map(normalizeRelation);
+      return {
+        issueId,
+        relations,
+        totalCount: relations.length,
+        via: "issue-include",
+      };
+    }
+    throw err;
+  }
 }
 
 export async function getIssueRelation(

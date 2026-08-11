@@ -144,6 +144,11 @@ export type ListIssueRelationsResult = {
   issueId: number;
   relations: IssueRelation[];
   totalCount: number;
+  /**
+   * Which endpoint answered: the relations index, or the issue itself when
+   * the project denies that index (read works, writes will still 403).
+   */
+  via?: "relations" | "issue-include";
 };
 
 export type AddIssueRelationInput = {
