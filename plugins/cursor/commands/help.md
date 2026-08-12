@@ -16,6 +16,9 @@ Show a short markdown table of available Redmine DevRelay slash commands and one
 | `/create-issue` | 이슈 생성 (유형·상태·우선순위·시작일·진척도 포함 미리보기) |
 | `/update-issue` | 이슈 수정 (이전→이후 미리보기 후 확인) |
 | `/add-comment` | 댓글 추가 (dry-run 후 확인) |
+| `/add-attachment` | 파일 첨부 (dry-run 후 확인) |
 | `/update-status` | 상태 변경 statusId (dry-run 후 확인) |
+| `/relate-issue` | 연결된 일감 추가·수정·삭제 (dry-run 후 확인) |
+| `/subtask` | 하위일감 생성·부모 변경·연결 해제 (dry-run 후 확인) |
 
 Remind: write commands always dry-run first; only apply after user confirms (`confirm=true`).

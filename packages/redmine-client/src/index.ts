@@ -1,4 +1,8 @@
-export { loadConfig, type RedmineConfig } from "./config.js";
+export {
+  configFromCredentials,
+  loadConfig,
+  type RedmineConfig,
+} from "./config.js";
 export { RedmineError, type RedmineErrorCode } from "./errors.js";
 export { maskSecret } from "./mask.js";
 export { RedmineHttp, type RedmineHttpOptions } from "./http.js";
@@ -11,6 +15,13 @@ export {
   updateIssue,
   updateIssueStatus,
 } from "./writes.js";
+export {
+  addIssueRelation,
+  getIssueRelation,
+  listIssueRelations,
+  removeIssueRelation,
+  replaceIssueRelation,
+} from "./relations.js";
 export { searchUsers, normalizeListedUser } from "./users.js";
 export { listProjectMembers, matchMemberByName } from "./memberships.js";
 export {
@@ -21,6 +32,8 @@ export {
 export {
   ATTACHMENT_MAX_BYTES,
   ATTACHMENT_MAX_FILES,
+  DELAY_RELATION_TYPES,
+  ISSUE_RELATION_TYPES,
 } from "./types.js";
 export {
   detectNotesMarkup,

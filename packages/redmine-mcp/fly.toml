@@ -1,0 +1,17 @@
+# Deploy FROM monorepo root:
+#   fly deploy --config packages/redmine-mcp/fly.toml `
+#     --dockerfile packages/redmine-mcp/Dockerfile `
+#     --ignorefile packages/redmine-mcp/.dockerignore
+#
+# (--config alone resolves Dockerfile relative to this file's directory, which
+# breaks monorepo-root COPY paths — always pass --dockerfile/--ignorefile.)
+app = "devrelay-redmine-mcp"
+primary_region = "nrt"
+
+[env]
+  HTTP_ALLOW_ENV_FALLBACK = "0"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = false

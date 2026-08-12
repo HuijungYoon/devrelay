@@ -1,6 +1,6 @@
 # Claude Code — Redmine plugin
 
-Redmine 조회·쓰기 via `redmine-devrelay@0.5.0` (dry-run → 확인 후 적용).
+Redmine read/write via `redmine-devrelay@0.6.0` (dry-run → confirm → apply).
 
 **Breaking:** plugin id is `redmine-devrelay` (was `redmine`). Slash commands are `/redmine-devrelay:…` (was `/redmine:…`).
 
@@ -13,11 +13,9 @@ export REDMINE_API_KEY=...
 
 Optional: `REDMINE_ALLOWED_HOSTS`, `REDMINE_CA_CERT_PATH` (see `docs/installation.md`).
 
-`.mcp.json` uses `npx -y redmine-devrelay@0.5.0`.
+`.mcp.json` uses `npx -y redmine-devrelay@0.6.0`.
 
 ## Install from marketplace (recommended)
-
-From Claude Code (after this repo is on GitHub with `.claude-plugin/marketplace.json`):
 
 ```text
 /plugin marketplace add HuijungYoon/devrelay
@@ -65,17 +63,19 @@ Build first: `pnpm --filter redmine-devrelay build`
 
 ## Slash commands
 
-| 명령 | 동작 |
+| Command | Action |
 | --- | --- |
-| `/redmine-devrelay:help` | 명령 목록 |
-| `/redmine-devrelay:test-connection` | 연결 확인 |
-| `/redmine-devrelay:list-projects` | 프로젝트 목록 |
-| `/redmine-devrelay:my-issues` | 내 열린 이슈 |
-| `/redmine-devrelay:issue` | 이슈 상세 |
-| `/redmine-devrelay:create-issue` | 이슈 생성 (dry-run → 확인) |
-| `/redmine-devrelay:update-issue` | 이슈 수정 (dry-run → 확인) |
-| `/redmine-devrelay:add-comment` | 댓글 (dry-run → 확인) |
-| `/redmine-devrelay:add-attachment` | 첨부 (dry-run → 확인) |
-| `/redmine-devrelay:update-status` | 상태 변경 (dry-run → 확인) |
+| `/redmine-devrelay:help` | Command list |
+| `/redmine-devrelay:test-connection` | Connection check |
+| `/redmine-devrelay:list-projects` | Project list |
+| `/redmine-devrelay:my-issues` | My open issues |
+| `/redmine-devrelay:issue` | Issue detail |
+| `/redmine-devrelay:create-issue` | Create issue (dry-run → confirm) |
+| `/redmine-devrelay:update-issue` | Update issue (dry-run → confirm) |
+| `/redmine-devrelay:add-comment` | Comment (dry-run → confirm) |
+| `/redmine-devrelay:add-attachment` | Attachment (dry-run → confirm) |
+| `/redmine-devrelay:update-status` | Status change (dry-run → confirm) |
+| `/redmine-devrelay:relate-issue` | Related issues — add / change / remove (dry-run → confirm) |
+| `/redmine-devrelay:subtask` | Subtasks — create / move / detach (dry-run → confirm) |
 
 Community marketplace submission checklist: `docs/claude-code-marketplace-submit.md`.

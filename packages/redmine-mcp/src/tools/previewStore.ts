@@ -6,7 +6,10 @@ export type PreviewTool =
   | "redmine_update_issue"
   | "redmine_add_comment"
   | "redmine_add_attachment"
-  | "redmine_update_status";
+  | "redmine_update_status"
+  | "redmine_add_issue_relation"
+  | "redmine_update_issue_relation"
+  | "redmine_remove_issue_relation";
 
 type PreviewEntry = {
   tool: PreviewTool;
@@ -124,4 +127,30 @@ export function consumePreviewToken(
   }
 
   store.delete(token);
+}
+
+export function asPayload(input: object): Record<string, unknown> {
+  return input as Record<string, unknown>;
+}
+
+/** Attach a fresh previewToken to a dry-run payload. */
+export function withIssuedToken<T extends Record<string, unknown>>(
+  tool: PreviewTool,
+  input: object,
+  preview: T
+): T & { previewToken: string } {
+  return {
+    ...preview,
+    previewToken: issuePreviewToken(tool, asPayload(input)),
+  };
+}
+
+/** Consume the token when the caller passed confirm=true. */
+export function consumeIfConfirm(
+  tool: PreviewTool,
+  input: { confirm?: boolean; previewToken?: string }
+): void {
+  if (input.confirm) {
+    consumePreviewToken(tool, input.previewToken, asPayload(input));
+  }
 }

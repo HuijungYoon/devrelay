@@ -24,6 +24,8 @@ function applyOptionalIssueFields(
   issue: Record<string, unknown>,
   input: {
     description?: string;
+    /** number attaches to a parent, null detaches (Redmine wants "") */
+    parentIssueId?: number | null;
     trackerId?: number;
     statusId?: number;
     priorityId?: number;
@@ -39,6 +41,10 @@ function applyOptionalIssueFields(
 ): void {
   if (input.description !== undefined) {
     issue.description = formatDescriptionForRedmine(input.description);
+  }
+  if (input.parentIssueId !== undefined) {
+    issue.parent_issue_id =
+      input.parentIssueId === null ? "" : input.parentIssueId;
   }
   if (input.trackerId !== undefined) issue.tracker_id = input.trackerId;
   if (input.statusId !== undefined) issue.status_id = input.statusId;
@@ -102,6 +108,9 @@ export async function updateIssue(
     issueId: input.issueId,
     subject: data?.issue?.subject ?? input.subject,
     status: data?.issue?.status ?? null,
+    ...(input.parentIssueId !== undefined
+      ? { parentIssueId: input.parentIssueId }
+      : {}),
   };
 }
 

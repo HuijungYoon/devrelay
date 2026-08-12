@@ -153,6 +153,50 @@ describe("write methods", () => {
     });
   });
 
+  it("createIssue sends parent_issue_id for a 하위일감", async () => {
+    const postJson = vi.fn().mockResolvedValue({
+      issue: { id: 44, subject: "Sub", project: null, status: null },
+    });
+    const http = { postJson, putJson: vi.fn() } as unknown as RedmineHttp;
+    const client = new RedmineClient(http, config);
+    await client.createIssue({
+      projectId: 1,
+      subject: "Sub",
+      parentIssueId: 40,
+    });
+    expect(postJson).toHaveBeenCalledWith("/issues.json", {
+      issue: { project_id: 1, subject: "Sub", parent_issue_id: 40 },
+    });
+  });
+
+  it("updateIssue moves a 하위일감 to another parent", async () => {
+    const putJson = vi.fn().mockResolvedValue({});
+    const http = { postJson: vi.fn(), putJson } as unknown as RedmineHttp;
+    const client = new RedmineClient(http, config);
+    const result = await client.updateIssue({
+      issueId: 44,
+      parentIssueId: 41,
+    });
+    expect(putJson).toHaveBeenCalledWith("/issues/44.json", {
+      issue: { parent_issue_id: 41 },
+    });
+    expect(result.parentIssueId).toBe(41);
+  });
+
+  it("updateIssue detaches a 하위일감 with an empty parent_issue_id", async () => {
+    const putJson = vi.fn().mockResolvedValue({});
+    const http = { postJson: vi.fn(), putJson } as unknown as RedmineHttp;
+    const client = new RedmineClient(http, config);
+    const result = await client.updateIssue({
+      issueId: 44,
+      parentIssueId: null,
+    });
+    expect(putJson).toHaveBeenCalledWith("/issues/44.json", {
+      issue: { parent_issue_id: "" },
+    });
+    expect(result.parentIssueId).toBeNull();
+  });
+
   it("addComment PUTs notes", async () => {
     const putJson = vi.fn().mockResolvedValue({});
     const http = { postJson: vi.fn(), putJson } as unknown as RedmineHttp;

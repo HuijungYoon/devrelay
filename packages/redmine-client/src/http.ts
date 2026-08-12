@@ -70,6 +70,10 @@ export class RedmineHttp {
     return this.sendJson<T>("PUT", path, body);
   }
 
+  async deleteJson<T>(path: string): Promise<T | undefined> {
+    return this.sendJson<T>("DELETE", path);
+  }
+
   async postBinary<T>(
     path: string,
     body: Buffer | Uint8Array,
@@ -96,16 +100,16 @@ export class RedmineHttp {
   }
 
   private async sendJson<T>(
-    method: "POST" | "PUT",
+    method: "POST" | "PUT" | "DELETE",
     path: string,
-    body: unknown
+    body?: unknown
   ): Promise<T | undefined> {
     const url = this.buildUrl(path);
     try {
       const response = await this.request(
         url,
         method,
-        JSON.stringify(body)
+        body === undefined ? undefined : JSON.stringify(body)
       );
       const bodyText = await response.text();
       if (!response.ok) {
