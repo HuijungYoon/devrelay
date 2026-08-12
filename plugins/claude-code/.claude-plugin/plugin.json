@@ -1,7 +1,7 @@
 {
   "name": "redmine-devrelay",
   "description": "Redmine read/write via redmine-devrelay MCP (dry-run → confirm) and slash skills for Claude Code.",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "author": { "name": "M2I" },
   "homepage": "https://github.com/HuijungYoon/devrelay",
   "repository": "https://github.com/HuijungYoon/devrelay",

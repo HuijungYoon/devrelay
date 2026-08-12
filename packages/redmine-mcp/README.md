@@ -4,7 +4,7 @@
 
 **Redmine MCP server** for Cursor · Claude Code · Codex.
 
-- **Version:** `0.6.0`
+- **Version:** `0.7.0`
 - **GitHub:** https://github.com/HuijungYoon/devrelay
 - **Client:** [redmine-devrelay-client](https://www.npmjs.com/package/redmine-devrelay-client) (same version)
 
@@ -13,7 +13,7 @@
 STDIO is the default transport. Local IDE plugins use this path.
 
 ```bash
-npx -y redmine-devrelay@0.6.0
+npx -y redmine-devrelay@0.7.0
 ```
 
 | Env var | Description |
@@ -28,7 +28,7 @@ npx -y redmine-devrelay@0.6.0
 For remote / Streamable HTTP deployments. The Codex Git marketplace keeps STDIO `npx` and does **not** switch to a remote URL.
 
 ```bash
-npx -y redmine-devrelay@0.6.0 --http
+npx -y redmine-devrelay@0.7.0 --http
 # or after build
 pnpm --filter redmine-devrelay start:http
 # port: --port 9090 or PORT (default 8080)
@@ -144,7 +144,7 @@ This server has no issue-delete tool by design; deleting an issue in Redmine is 
 
 | Version | Notes |
 | --- | --- |
-| **0.7.0** | (unreleased) Names accepted for status/tracker/priority/version/category, `redmine_list_metadata`, `fixedVersionId`/`categoryId` |
+| **0.7.0** | Names accepted for status/tracker/priority/version/category, `redmine_list_metadata`, `fixedVersionId`/`categoryId` |
 | **0.6.0** | Issue relations (list/add/update/remove) and subtasks via `parentIssueId`; Streamable HTTP + BYOK headers, `--http` CLI, OpenAI Apps challenge, demo-only env fallback |
 | **0.5.2** | English npm README; Claude Code marketplace install (`redmine-devrelay` plugin id) |
 | 0.5.1 | Codex marketplace install CLI alignment (`ON_USE`, `plugin add`) + pin |
