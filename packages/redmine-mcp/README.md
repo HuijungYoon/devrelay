@@ -4,7 +4,7 @@
 
 **Redmine MCP server** for Cursor · Claude Code · Codex.
 
-- **Version:** `0.7.0`
+- **Version:** `0.7.1`
 - **GitHub:** https://github.com/HuijungYoon/devrelay
 - **Client:** [redmine-devrelay-client](https://www.npmjs.com/package/redmine-devrelay-client) (same version)
 
@@ -13,7 +13,7 @@
 STDIO is the default transport. Local IDE plugins use this path.
 
 ```bash
-npx -y redmine-devrelay@0.7.0
+npx -y redmine-devrelay@0.7.1
 ```
 
 | Env var | Description |
@@ -28,7 +28,7 @@ npx -y redmine-devrelay@0.7.0
 For remote / Streamable HTTP deployments. The Codex Git marketplace keeps STDIO `npx` and does **not** switch to a remote URL.
 
 ```bash
-npx -y redmine-devrelay@0.7.0 --http
+npx -y redmine-devrelay@0.7.1 --http
 # or after build
 pnpm --filter redmine-devrelay start:http
 # port: --port 9090 or PORT (default 8080)
