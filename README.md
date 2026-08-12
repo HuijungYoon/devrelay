@@ -247,6 +247,7 @@ docs/superpowers/          # Phase designs and implementation plans
 
 | Doc | Contents |
 | --- | --- |
+| [AGENTS.md](AGENTS.md) | **Working in this repo with a coding agent** — path map, commands, invariants, release order (Claude Code reads it through [CLAUDE.md](CLAUDE.md), Cursor through `.cursor/rules/`) |
 | [packages/redmine-mcp/README.md](packages/redmine-mcp/README.md) | MCP tools, writes, HTML rules |
 | [docs/installation.md](docs/installation.md) | Install, env vars, plugins |
 | [docs/security.md](docs/security.md) | API key, hosts, audit |

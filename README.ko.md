@@ -247,6 +247,7 @@ docs/superpowers/          # Phase 설계·구현 계획
 
 | 문서 | 내용 |
 | --- | --- |
+| [AGENTS.md](AGENTS.md) | **에이전트로 이 레포 작업하기** — 경로 지도·명령어·불변 규칙·릴리즈 순서 (Claude Code는 [CLAUDE.md](CLAUDE.md), Cursor는 `.cursor/rules/`를 통해 읽음) |
 | [packages/redmine-mcp/README.md](packages/redmine-mcp/README.md) | MCP 도구·쓰기·HTML 규칙 |
 | [docs/installation.md](docs/installation.md) | 설치·환경변수·플러그인 |
 | [docs/security.md](docs/security.md) | API Key·호스트·감사 |
