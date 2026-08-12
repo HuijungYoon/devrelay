@@ -7,7 +7,10 @@ description: Update Redmine issue fields after before/after dry-run confirmation
 
 **미리보기 → 확인 → 적용.** 원시 REST 우회 금지.
 
-1. 이슈 번호 + 바꿀 필드 수집 (유형/상태/우선순위/날짜/진척도/담당자/일감관리자/제목 등)
+1. 이슈 번호 + 바꿀 필드 수집 (유형/상태/우선순위/대상 버전/범주/날짜/진척도/담당자/일감관리자/제목 등)
+   - `trackerId`·`statusId`·`priorityId`·`fixedVersionId`·`categoryId`는 **이름을 그대로** 넘겨도 됩니다 (`"진행"`, `"2026-Q3"`). 안 맞으면 에러 `check`의 후보 이름으로 재시도 — id 추측 금지
+   - `fixedVersionId`/`categoryId`에 `null`을 넣으면 **비웁니다**. 생략하면 유지
+   - 목록 확인이 필요하면 `redmine_list_metadata { projectId }`
 2. `description`은 **일반 텍스트 줄바꿈**으로 넣으면 됨 (`<p>` 자동 변환). HTML을 직접 쓰지 않아도 됨
 3. `notes`(댓글)는 **평문만**. Textile/Markdown (`h3.`, `*`, `# ` 등) 금지 — dry-run에서 `blocked` 되면 평문으로 재작성
 4. `redmine_update_issue` with `confirm` false → `changes[]` **이전→이후** + `previewToken`

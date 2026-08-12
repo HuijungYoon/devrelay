@@ -22,7 +22,7 @@ redmine-devrelay-client     packages/redmine-client  REST·인증·HTML 변환·
 Redmine REST API
 ```
 
-- npm 배포 버전: **0.6.0** (두 패키지 동일 버전으로 맞춤)
+- npm 배포 버전: **0.6.0**. 레포의 `package.json`은 **0.7.0**(미배포) — 플러그인 pin은 publish 후에 올립니다 (§8)
 - pnpm workspace (`pnpm-workspace.yaml`), TypeScript ESM, vitest
 - 언어: 스킬 문서와 사용자 대화는 한국어, 코드·커밋은 영어
 
@@ -60,6 +60,7 @@ Redmine REST API
 | `packages/redmine-client/src/writes.ts` | 이슈 생성·수정·댓글·상태·첨부 payload 조립 (`parent_issue_id` 포함) |
 | `packages/redmine-client/src/relations.ts` | 연결된 일감 목록·조회·추가·삭제·교체(삭제+재생성) |
 | `packages/redmine-client/src/memberships.ts` | 프로젝트 멤버 (담당자·일감관리자 후보), 이름 매칭 |
+| `packages/redmine-client/src/metadata.ts` | 유형·상태·우선순위·대상 버전·범주 목록 + `matchNamedByName` (이름 → id) |
 | `packages/redmine-client/src/users.ts` | 전체 사용자 검색 (권한 필요할 수 있음) |
 | `packages/redmine-client/src/attachments.ts` | 파일 검사·업로드 토큰 (최대 5개, 10MiB/파일) |
 | `packages/redmine-client/src/textile.ts` | `formatDescriptionForRedmine`(→`<p>`), `formatNotesForRedmine`(→`<br />`), `detectNotesMarkup` |
@@ -82,6 +83,7 @@ Redmine REST API
 | `packages/redmine-mcp/src/tools/previewStore.ts` | previewToken 발급·소비, `asPayload` / `withIssuedToken` / `consumeIfConfirm` 공용 헬퍼 |
 | `packages/redmine-mcp/src/tools/writes.ts` | 생성·수정·댓글·첨부·상태 핸들러 (담당자·일감관리자 해석 포함) |
 | `packages/redmine-mcp/src/tools/relations.ts` | 연결된 일감 핸들러 |
+| `packages/redmine-mcp/src/tools/metadata.ts` | `redmine_list_metadata` 핸들러 + `resolveNamedRef`/`resolveIssueMetadata` (쓰기 도구가 이름을 id로 해석할 때 쓰는 공용 함수) |
 | `packages/redmine-mcp/src/tools/` 의 `issues.ts` · `projects.ts` · `members.ts` · `users.ts` · `connection.ts` | 읽기 핸들러 |
 | `packages/redmine-mcp/src/errors.ts`, `packages/redmine-mcp/src/logging.ts` | MCP 에러 payload, 감사 로그(`logAudit`) |
 | `packages/redmine-mcp/static/privacy.html`, `packages/redmine-mcp/static/terms.html` | HTTP 모드에서 서빙하는 정책 페이지 |
@@ -120,7 +122,7 @@ Redmine REST API
 ```bash
 pnpm install
 pnpm -r run build     # client → mcp 순서로 빌드
-pnpm -r run test      # vitest (client 72 + mcp 69)
+pnpm -r run test      # vitest (client 79 + mcp 96)
 pnpm -r run lint      # tsc --noEmit
 ```
 

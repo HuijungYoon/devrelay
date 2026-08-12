@@ -18,6 +18,14 @@ Agents do not call the Redmine REST API directly. They go through the shared MCP
 | 4 | Issue **attachments** (create + `add_attachment`) | 0.4.x |
 | 5 | Plain-text notes enforcement, **`previewToken` confirm gate** | 0.5.x |
 | 6 | **Issue relations and subtasks**, Streamable HTTP + BYOK | **0.6.x** |
+| 7 | **Names instead of ids** (status/tracker/priority), target version and category | 0.7.x (unreleased) |
+
+### 0.7.x highlights (unreleased — not on npm yet)
+
+- `statusId`/`trackerId`/`priorityId`/`fixedVersionId`/`categoryId` accept a **name** as well as an id, so "set it to 진행" works without knowing that 진행 is 2
+- A miss returns the real candidates (`2:진행, 4:테스트 …`) instead of guessing; ambiguity is refused
+- `redmine_list_metadata` lists trackers/statuses/priorities (+ versions/categories per project); kinds a project forbids come back under `unavailable` instead of failing the call
+- New `fixedVersionId` (대상 버전) and `categoryId` (범주) on create/update; `null` clears them
 
 ### 0.6.x highlights
 
@@ -48,7 +56,7 @@ Agents do not call the Redmine REST API directly. They go through the shared MCP
   - description: plain lines → `<p>…</p>`
   - notes/comments: `\n` → `<br />` (plain text only; Textile/Markdown blocked in dry-run)
 
-Not yet: custom fields, tracker/status name resolution, bulk updates.
+Not yet: custom-field writes, time entries, bulk updates.
 
 ## What can you do?
 
@@ -110,12 +118,13 @@ Claude Code / Codex / Cursor / Antigravity  (plugins + skills)
 | `redmine_search_issues` | Search issues (`assignedTo: "me"`, open by default) |
 | `redmine_get_issue` | Issue detail (includes `journals`, `children`, etc.) |
 | `redmine_list_issue_relations` | Related issues with their `relationId` |
+| `redmine_list_metadata` | Trackers / statuses / priorities / versions / categories (id + name) |
 
 **Write** (`confirm` defaults to `false` = preview)
 
 | Tool | Description |
 | --- | --- |
-| `redmine_create_issue` | Create · `wouldApply` preview (optional `attachments`, `parentIssueId` for a subtask) |
+| `redmine_create_issue` | Create · `wouldApply` preview (status/tracker/version **by name**, `attachments`, `parentIssueId` for a subtask) |
 | `redmine_update_issue` | Update · before→after `changes[]` (`parentIssueId: null` detaches a subtask) |
 | `redmine_add_comment` | Comment (`\n` → `<br />`) |
 | `redmine_add_attachment` | Attach a local file to an existing issue |

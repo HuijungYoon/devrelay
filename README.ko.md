@@ -18,6 +18,14 @@ Codex · Claude Code · Cursor · Antigravity에서 **자연어와 슬래시 명
 | 4 | 이슈 **첨부파일** (create + `add_attachment`) | 0.4.x |
 | 5 | notes 평문 강제, **`previewToken` confirm 게이트** | 0.5.x |
 | 6 | **연결된 일감·하위일감**, Streamable HTTP + BYOK | **0.6.x** |
+| 7 | **id 대신 이름** (상태·유형·우선순위), 대상 버전·범주 | 0.7.x (미배포) |
+
+### 0.7.x 하이라이트 (아직 npm 미배포)
+
+- `statusId`·`trackerId`·`priorityId`·`fixedVersionId`·`categoryId`가 **이름**을 받습니다 — "진행으로 바꿔줘"가 id 없이 동작
+- 이름이 안 맞으면 실제 후보(`2:진행, 4:테스트 …`)를 돌려줍니다. 추측하지 않고, 애매하면 거절
+- `redmine_list_metadata`로 유형·상태·우선순위(+프로젝트별 대상 버전·범주) 목록. 권한이 막힌 종류는 호출 전체를 실패시키지 않고 `unavailable`로 표시
+- `fixedVersionId`(대상 버전)·`categoryId`(범주) 필드 추가, `null`이면 비움
 
 ### 0.6.x 하이라이트
 
@@ -48,7 +56,7 @@ Codex · Claude Code · Cursor · Antigravity에서 **자연어와 슬래시 명
   - description: 평문 줄 → `<p>…</p>`
   - notes/댓글: `\n` → `<br />` (평문만; Textile/Markdown은 dry-run에서 차단)
 
-아직 없는 것: 커스텀 필드, tracker/status 이름 해석, 일괄 수정.
+아직 없는 것: 커스텀 필드 쓰기, 시간 기록, 일괄 수정.
 
 ## 무엇을 할 수 있나요?
 
@@ -110,12 +118,13 @@ Claude Code / Codex / Cursor / Antigravity  (플러그인 + 스킬)
 | `redmine_search_issues` | 이슈 검색 (`assignedTo: "me"`, 기본 열린 이슈) |
 | `redmine_get_issue` | 이슈 상세 (`journals`·`children` 등 include) |
 | `redmine_list_issue_relations` | 연결된 일감 목록 (+ `relationId`) |
+| `redmine_list_metadata` | 유형·상태·우선순위·대상 버전·범주 (id + 이름) |
 
 **쓰기** (`confirm` 기본 `false` = 미리보기)
 
 | 도구 | 설명 |
 | --- | --- |
-| `redmine_create_issue` | 생성 · `wouldApply` 미리보기 (선택 `attachments`, `parentIssueId`로 하위일감 생성) |
+| `redmine_create_issue` | 생성 · `wouldApply` 미리보기 (상태·유형·버전 **이름으로 지정 가능**, `attachments`, `parentIssueId`로 하위일감 생성) |
 | `redmine_update_issue` | 수정 · `changes[]` 이전→이후 (`parentIssueId: null`이면 하위 연결 해제) |
 | `redmine_add_comment` | 댓글 (`\n` → `<br />`) |
 | `redmine_add_attachment` | 기존 이슈에 로컬 파일 첨부 |

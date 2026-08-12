@@ -44,6 +44,7 @@ dry-run 응답의 `previewToken` 없이는 적용할 수 없습니다 (TTL 10분
 | `redmine_search_issues` | 이슈 검색 (기본: 열린 이슈, `assignedTo: "me"` 지원) |
 | `redmine_get_issue` | 이슈 상세 조회 (journals·children 등 include) |
 | `redmine_list_issue_relations` | 연결된 일감 목록 (수정·삭제에 필요한 `relationId` 확인) |
+| `redmine_list_metadata` | 유형·상태·우선순위 (+ `projectId`면 대상 버전·범주) id+이름 목록 |
 
 ## 쓰기 API
 
@@ -75,9 +76,11 @@ dry-run 응답의 `previewToken` 없이는 적용할 수 없습니다 (TTL 10분
 
 | 필드 | 의미 |
 | --- | --- |
-| `trackerId` | 유형 |
-| `statusId` | 상태 |
-| `priorityId` | 우선순위 |
+| `trackerId` | 유형 — **id 또는 이름** (`2`, `"기능추가"`) |
+| `statusId` | 상태 — **id 또는 이름** (`2`, `"진행"`) |
+| `priorityId` | 우선순위 — **id 또는 이름** (`4`, `"긴급"`) |
+| `fixedVersionId` | 대상 버전 — id·이름, `null`이면 비움 (update) |
+| `categoryId` | 범주 — id·이름, `null`이면 비움 (update) |
 | `startDate` / `dueDate` | 시작일 / 완료기한 (`YYYY-MM-DD`) |
 | `doneRatio` | 진척도 (0–100) |
 | `assignedTo` | 담당자 (`"me"` / id / 이름) |
@@ -90,6 +93,7 @@ dry-run 응답의 `previewToken` 없이는 적용할 수 없습니다 (TTL 10분
 
 | 버전 | 내용 |
 | --- | --- |
+| **0.7.0** | (미배포) 상태·유형·우선순위·버전·범주를 이름으로 지정, `redmine_list_metadata`, `fixedVersionId`·`categoryId` |
 | **0.6.0** | 연결된 일감 조회·추가·수정·삭제, `parentIssueId`로 하위일감 관리 · Streamable HTTP + BYOK 헤더, `--http` CLI |
 | 0.5.2 | 영문 npm README · Claude Code marketplace 설치 (`redmine-devrelay` 플러그인 id) |
 | 0.5.1 | Codex marketplace 설치 CLI 정합 (`ON_USE`, `plugin add`) + pin |

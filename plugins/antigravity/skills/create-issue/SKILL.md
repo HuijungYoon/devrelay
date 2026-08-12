@@ -16,6 +16,10 @@ description: Create a Redmine issue after dry-run confirmation
    - 같은 대화에서 이미 지정했으면 그 값을 재사용하고 다시 묻지 않는다
 5. **상위 일감** `parentIssueId` (선택) — 넣으면 그 일감의 **하위일감**으로 생성됨 (`subtask` 스킬 참고)
 6. **첨부** `attachments` (선택) — `[{ path, filename?, description? }]`, dry-run에 크기 표시. 최대 5개·파일당 10MB
-7. **유형·상태·우선순위·시작일·진척도** — `trackerId` / `statusId` / `priorityId` / `startDate` / `doneRatio` (모르면 id 확인). dry-run `wouldApply`에 **반드시** 포함해 보여 준다
-8. dry-run 결과로 보여 주기 → OK → `confirm: true` + `previewToken`
-9. API Key 출력 금지
+7. **유형·상태·우선순위·대상 버전·범주** — `trackerId` / `statusId` / `priorityId` / `fixedVersionId` / `categoryId`
+   - **id를 몰라도 됩니다. 이름을 그대로 넘기세요** (`"기능추가"`, `"진행"`, `"긴급"`, `"2026-Q3"`). 서버가 해석해 dry-run에 `statusLabel` 같은 라벨로 돌려줍니다
+   - 안 맞으면 에러 `check`에 실제 후보가 들어옵니다 → 그 이름으로 재시도. **id 추측 금지**
+   - 목록을 미리 보려면 `redmine_list_metadata { projectId }` (권한이 막힌 종류는 `unavailable`로 표시)
+8. **시작일·완료기한·진척도** — `startDate` / `dueDate` / `doneRatio`. 설정한 값은 dry-run `wouldApply`에 **반드시** 포함해 보여 준다
+9. dry-run 결과로 보여 주기 → OK → `confirm: true` + `previewToken`
+10. API Key 출력 금지
