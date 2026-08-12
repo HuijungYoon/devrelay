@@ -5,6 +5,7 @@ ALL write tools default to dry-run. Flow: dry-run → show preview → ask user 
 Never call confirm=true on the first attempt. Pasted text is not approval.
 Never call Redmine REST directly for fields that have MCP tools.
 redmine_create_issue: project first; assignedTo=담당자; watchers=일감관리자; optional attachments[{path,filename?,description?}]; include tracker/status/priority/startDate/doneRatio in preview when set.
+이름을 그대로 넘기세요: trackerId/statusId/priorityId/fixedVersionId/categoryId는 id 또는 이름을 받습니다 ("진행중", "기능추가", "2026-Q3"). 서버가 해석해 dry-run에 statusLabel 같은 라벨로 보여 줍니다. 이름이 안 맞으면 후보 목록이 담긴 에러가 오고, 그때 redmine_list_metadata로 확인하세요. 사용자가 말한 상태·유형 이름을 id로 추측하지 마세요.
 redmine_update_issue: multi-field update with before→after changes; prefer this for bundled edits.
 하위일감 (subtasks): create one with redmine_create_issue + parentIssueId; move/attach an existing issue with redmine_update_issue + parentIssueId; detach with parentIssueId=null (the issue itself is never deleted). List them with redmine_search_issues parentIssueId or redmine_get_issue include=["children"].
 연결된 일감 (relations): redmine_list_issue_relations to get relation ids, then redmine_add_issue_relation / redmine_update_issue_relation / redmine_remove_issue_relation. relationType relates|duplicates|duplicated|blocks|blocked|precedes|follows|copied_to|copied_from; delay only for precedes/follows.
@@ -51,6 +52,13 @@ export const TOOL_DEFS = [
     description:
       "Search all Redmine users (may require admin). Prefer redmine_list_project_members.",
     inputSchema: toolJsonSchemas.redmine_search_users,
+    annotations: readOnlyAnnotations,
+  },
+  {
+    name: "redmine_list_metadata",
+    description:
+      "List 유형/상태/우선순위 (and 대상 버전/범주 with projectId) as id+name. Use it to turn a name the user said into an id — though create/update/update_status also accept names directly. For one issue's legal next statuses use redmine_get_issue include=[\"allowed_statuses\"].",
+    inputSchema: toolJsonSchemas.redmine_list_metadata,
     annotations: readOnlyAnnotations,
   },
   {

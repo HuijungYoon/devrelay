@@ -13,6 +13,7 @@ import type {
   UpdateStatusInput,
 } from "./schemas.js";
 import { consumeIfConfirm, withIssuedToken } from "./previewStore.js";
+import { resolveIssueMetadata, resolveNamedRef } from "./metadata.js";
 
 type NotesMarkupBlock = {
   blocked: true;
@@ -228,6 +229,7 @@ export async function handleCreateIssue(
     input.watchers,
     assignee?.members
   );
+  const meta = await resolveIssueMetadata(client, input.projectId, input);
 
   const wouldApply = {
     projectId: input.projectId,
@@ -238,9 +240,7 @@ export async function handleCreateIssue(
     ...(input.parentIssueId !== undefined
       ? { parentIssueId: input.parentIssueId }
       : {}),
-    ...(input.trackerId !== undefined ? { trackerId: input.trackerId } : {}),
-    ...(input.statusId !== undefined ? { statusId: input.statusId } : {}),
-    ...(input.priorityId !== undefined ? { priorityId: input.priorityId } : {}),
+    ...meta,
     ...(input.startDate !== undefined ? { startDate: input.startDate } : {}),
     ...(input.dueDate !== undefined ? { dueDate: input.dueDate } : {}),
     ...(input.doneRatio !== undefined ? { doneRatio: input.doneRatio } : {}),
@@ -293,6 +293,12 @@ export async function handleCreateIssue(
       : {}),
     ...(wouldApply.priorityId !== undefined
       ? { priorityId: wouldApply.priorityId }
+      : {}),
+    ...(wouldApply.fixedVersionId != null
+      ? { fixedVersionId: wouldApply.fixedVersionId }
+      : {}),
+    ...(wouldApply.categoryId != null
+      ? { categoryId: wouldApply.categoryId }
       : {}),
     ...(wouldApply.startDate !== undefined
       ? { startDate: wouldApply.startDate }
@@ -368,6 +374,8 @@ export async function handleUpdateIssue(
     assignee?.members
   );
 
+  const meta = await resolveIssueMetadata(client, projectId, input);
+
   const changes: FieldChange[] = [];
   const push = (field: string, from: unknown, to: unknown) => {
     if (from === to) return;
@@ -394,14 +402,24 @@ export async function handleUpdateIssue(
     }
     push("parentIssueId", current.parent?.id ?? null, input.parentIssueId);
   }
-  if (input.trackerId !== undefined) {
-    push("trackerId", current.tracker?.id ?? null, input.trackerId);
+  if (meta.trackerId !== undefined) {
+    push("trackerId", current.tracker?.id ?? null, meta.trackerId);
   }
-  if (input.statusId !== undefined) {
-    push("statusId", current.status?.id ?? null, input.statusId);
+  if (meta.statusId !== undefined) {
+    push("statusId", current.status?.id ?? null, meta.statusId);
   }
-  if (input.priorityId !== undefined) {
-    push("priorityId", current.priority?.id ?? null, input.priorityId);
+  if (meta.priorityId !== undefined) {
+    push("priorityId", current.priority?.id ?? null, meta.priorityId);
+  }
+  if (meta.fixedVersionId !== undefined) {
+    push(
+      "fixedVersionId",
+      current.fixedVersion?.id ?? null,
+      meta.fixedVersionId
+    );
+  }
+  if (meta.categoryId !== undefined) {
+    push("categoryId", current.category?.id ?? null, meta.categoryId);
   }
   if (input.startDate !== undefined) {
     push("startDate", current.startDate, input.startDate);
@@ -436,6 +454,13 @@ export async function handleUpdateIssue(
       changes,
       ...(assignee?.label ? { assignedToLabel: assignee.label } : {}),
       ...(watchers ? { watcherLabels: watchers.watcherLabels } : {}),
+      ...(meta.trackerLabel ? { trackerLabel: meta.trackerLabel } : {}),
+      ...(meta.statusLabel ? { statusLabel: meta.statusLabel } : {}),
+      ...(meta.priorityLabel ? { priorityLabel: meta.priorityLabel } : {}),
+      ...(meta.fixedVersionLabel
+        ? { fixedVersionLabel: meta.fixedVersionLabel }
+        : {}),
+      ...(meta.categoryLabel ? { categoryLabel: meta.categoryLabel } : {}),
     });
   }
 
@@ -450,9 +475,13 @@ export async function handleUpdateIssue(
     ...(input.parentIssueId !== undefined
       ? { parentIssueId: input.parentIssueId }
       : {}),
-    ...(input.trackerId !== undefined ? { trackerId: input.trackerId } : {}),
-    ...(input.statusId !== undefined ? { statusId: input.statusId } : {}),
-    ...(input.priorityId !== undefined ? { priorityId: input.priorityId } : {}),
+    ...(meta.trackerId !== undefined ? { trackerId: meta.trackerId } : {}),
+    ...(meta.statusId !== undefined ? { statusId: meta.statusId } : {}),
+    ...(meta.priorityId !== undefined ? { priorityId: meta.priorityId } : {}),
+    ...(meta.fixedVersionId !== undefined
+      ? { fixedVersionId: meta.fixedVersionId }
+      : {}),
+    ...(meta.categoryId !== undefined ? { categoryId: meta.categoryId } : {}),
     ...(input.startDate !== undefined ? { startDate: input.startDate } : {}),
     ...(input.dueDate !== undefined ? { dueDate: input.dueDate } : {}),
     ...(input.doneRatio !== undefined ? { doneRatio: input.doneRatio } : {}),
@@ -525,9 +554,17 @@ export async function handleUpdateStatus(
     }
   }
 
+  const status = await resolveNamedRef(
+    client,
+    "statuses",
+    input.statusId,
+    "statusId"
+  );
+
   const wouldApply = {
     issueId: input.issueId,
-    statusId: input.statusId,
+    statusId: status.id,
+    ...(status.label ? { statusLabel: status.label } : {}),
     ...(input.notes !== undefined ? { notes: input.notes } : {}),
   };
   if (!input.confirm) {
@@ -539,7 +576,7 @@ export async function handleUpdateStatus(
   consumeIfConfirm("redmine_update_status", input);
   const result = await client.updateIssueStatus(
     input.issueId,
-    input.statusId,
+    status.id,
     input.notes
   );
   return { dryRun: false as const, result };

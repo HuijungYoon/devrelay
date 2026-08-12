@@ -8,6 +8,7 @@ import { toMcpError } from "./errors.js";
 import { logAudit } from "./logging.js";
 import { handleTestConnection } from "./tools/connection.js";
 import { handleGetIssue, handleSearchIssues } from "./tools/issues.js";
+import { handleListMetadata } from "./tools/metadata.js";
 import { handleListProjects } from "./tools/projects.js";
 import {
   handleAddAttachment,
@@ -32,6 +33,7 @@ import {
   safeParseCreateIssue,
   safeParseGetIssue,
   safeParseListIssueRelations,
+  safeParseListMetadata,
   safeParseListProjectMembers,
   safeParseListProjects,
   safeParseRemoveIssueRelation,
@@ -99,6 +101,12 @@ export function createRedmineMcpServer(client: RedmineClient): Server {
           const parsed = safeParseListProjects(req.params.arguments);
           if (!parsed.success) throw validationError(parsed.error.message);
           result = await handleListProjects(client, parsed.data);
+          break;
+        }
+        case "redmine_list_metadata": {
+          const parsed = safeParseListMetadata(req.params.arguments);
+          if (!parsed.success) throw validationError(parsed.error.message);
+          result = await handleListMetadata(client, parsed.data);
           break;
         }
         case "redmine_search_issues": {

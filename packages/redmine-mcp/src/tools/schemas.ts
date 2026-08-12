@@ -76,6 +76,10 @@ export const getIssueInputSchema = z
 const ymd = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const doneRatio = z.number().int().min(0).max(100);
 const userRef = z.union([z.literal("me"), positiveInt, z.string().min(1)]);
+/** id 또는 이름 (유형·상태·우선순위·버전·범주) */
+const namedRef = z.union([positiveInt, z.string().min(1)]);
+/** id·이름, 또는 null(비우기) */
+const nullableNamedRef = z.union([positiveInt, z.string().min(1), z.null()]);
 
 export const attachmentInputSchema = z
   .object({
@@ -115,9 +119,11 @@ export const createIssueInputSchema = z
     subject: z.string().min(1),
     description: z.string().optional(),
     parentIssueId: positiveInt.optional(),
-    trackerId: positiveInt.optional(),
-    statusId: positiveInt.optional(),
-    priorityId: positiveInt.optional(),
+    trackerId: namedRef.optional(),
+    statusId: namedRef.optional(),
+    priorityId: namedRef.optional(),
+    fixedVersionId: namedRef.optional(),
+    categoryId: namedRef.optional(),
     startDate: ymd.optional(),
     dueDate: ymd.optional(),
     doneRatio: doneRatio.optional(),
@@ -137,9 +143,11 @@ export const updateIssueInputSchema = z
     description: z.string().optional(),
     /** number = 하위일감으로 편입/부모 변경, null = 부모 연결 해제 */
     parentIssueId: z.union([positiveInt, z.null()]).optional(),
-    trackerId: positiveInt.optional(),
-    statusId: positiveInt.optional(),
-    priorityId: positiveInt.optional(),
+    trackerId: namedRef.optional(),
+    statusId: namedRef.optional(),
+    priorityId: namedRef.optional(),
+    fixedVersionId: nullableNamedRef.optional(),
+    categoryId: nullableNamedRef.optional(),
     startDate: ymd.optional(),
     dueDate: ymd.optional(),
     doneRatio: doneRatio.optional(),
@@ -158,6 +166,8 @@ export const updateIssueInputSchema = z
       v.trackerId !== undefined ||
       v.statusId !== undefined ||
       v.priorityId !== undefined ||
+      v.fixedVersionId !== undefined ||
+      v.categoryId !== undefined ||
       v.startDate !== undefined ||
       v.dueDate !== undefined ||
       v.doneRatio !== undefined ||
@@ -204,12 +214,35 @@ export const addAttachmentInputSchema = z
 export const updateStatusInputSchema = z
   .object({
     issueId: positiveInt,
-    statusId: positiveInt,
+    statusId: namedRef,
     notes: z.string().optional(),
     ...confirmFields,
   })
   .strict()
   .superRefine(requirePreviewTokenWhenConfirm);
+
+export const listMetadataInputSchema = z
+  .object({
+    projectId: positiveInt.optional(),
+    kinds: z
+      .array(
+        z.enum(["trackers", "statuses", "priorities", "versions", "categories"])
+      )
+      .optional(),
+  })
+  .strict()
+  .superRefine((v, ctx) => {
+    const needsProject = (v.kinds ?? []).filter(
+      (k) => k === "versions" || k === "categories"
+    );
+    if (needsProject.length > 0 && v.projectId === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `${needsProject.join("/")} requires projectId`,
+        path: ["projectId"],
+      });
+    }
+  });
 
 const relationType = z.enum(ISSUE_RELATION_TYPES);
 const relationDelay = z.number().int();
@@ -274,6 +307,7 @@ export type ListProjectMembersInput = z.infer<
 export type AddCommentInput = z.infer<typeof addCommentInputSchema>;
 export type AddAttachmentInput = z.infer<typeof addAttachmentInputSchema>;
 export type UpdateStatusInput = z.infer<typeof updateStatusInputSchema>;
+export type ListMetadataInput = z.infer<typeof listMetadataInputSchema>;
 export type ListIssueRelationsInput = z.infer<
   typeof listIssueRelationsInputSchema
 >;
@@ -329,6 +363,10 @@ export function safeParseAddAttachment(input: unknown) {
 
 export function safeParseUpdateStatus(input: unknown) {
   return updateStatusInputSchema.safeParse(input ?? {});
+}
+
+export function safeParseListMetadata(input: unknown) {
+  return listMetadataInputSchema.safeParse(input ?? {});
 }
 
 export function safeParseListIssueRelations(input: unknown) {
@@ -456,19 +494,39 @@ export const toolJsonSchemas = {
           "상위 일감 id — set to create this issue as a 하위일감 (subtask)",
       },
       trackerId: {
-        type: "integer",
-        minimum: 1,
-        description: "유형 (tracker id)",
+        description: '유형 — tracker id 또는 이름 (예: 2, "기능추가")',
+        oneOf: [
+          { type: "integer", minimum: 1 },
+          { type: "string", minLength: 1 },
+        ],
       },
       statusId: {
-        type: "integer",
-        minimum: 1,
-        description: "상태 (status id)",
+        description: '상태 — status id 또는 이름 (예: 2, "진행중")',
+        oneOf: [
+          { type: "integer", minimum: 1 },
+          { type: "string", minLength: 1 },
+        ],
       },
       priorityId: {
-        type: "integer",
-        minimum: 1,
-        description: "우선순위 (priority id)",
+        description: '우선순위 — priority id 또는 이름 (예: 4, "높음")',
+        oneOf: [
+          { type: "integer", minimum: 1 },
+          { type: "string", minLength: 1 },
+        ],
+      },
+      fixedVersionId: {
+        description: '대상 버전 — version id 또는 이름 (예: "2026-Q3")',
+        oneOf: [
+          { type: "integer", minimum: 1 },
+          { type: "string", minLength: 1 },
+        ],
+      },
+      categoryId: {
+        description: "범주 — category id 또는 이름",
+        oneOf: [
+          { type: "integer", minimum: 1 },
+          { type: "string", minLength: 1 },
+        ],
       },
       startDate: {
         type: "string",
@@ -551,19 +609,43 @@ export const toolJsonSchemas = {
         oneOf: [{ type: "integer", minimum: 1 }, { type: "null" }],
       },
       trackerId: {
-        type: "integer",
-        minimum: 1,
-        description: "유형 (tracker id)",
+        description: '유형 — tracker id 또는 이름 (예: 2, "기능추가")',
+        oneOf: [
+          { type: "integer", minimum: 1 },
+          { type: "string", minLength: 1 },
+        ],
       },
       statusId: {
-        type: "integer",
-        minimum: 1,
-        description: "상태 (status id)",
+        description: '상태 — status id 또는 이름 (예: 2, "진행중")',
+        oneOf: [
+          { type: "integer", minimum: 1 },
+          { type: "string", minLength: 1 },
+        ],
       },
       priorityId: {
-        type: "integer",
-        minimum: 1,
-        description: "우선순위 (priority id)",
+        description: '우선순위 — priority id 또는 이름 (예: 4, "높음")',
+        oneOf: [
+          { type: "integer", minimum: 1 },
+          { type: "string", minLength: 1 },
+        ],
+      },
+      fixedVersionId: {
+        description:
+          '대상 버전 — id·이름, 또는 null로 비우기 (예: "2026-Q3"). Omit to leave unchanged.',
+        oneOf: [
+          { type: "integer", minimum: 1 },
+          { type: "string", minLength: 1 },
+          { type: "null" },
+        ],
+      },
+      categoryId: {
+        description:
+          "범주 — id·이름, 또는 null로 비우기. Omit to leave unchanged.",
+        oneOf: [
+          { type: "integer", minimum: 1 },
+          { type: "string", minLength: 1 },
+          { type: "null" },
+        ],
       },
       startDate: {
         type: "string",
@@ -708,6 +790,27 @@ export const toolJsonSchemas = {
     required: ["issueId", "attachments"],
     additionalProperties: false,
   },
+  redmine_list_metadata: {
+    type: "object",
+    properties: {
+      projectId: {
+        type: "integer",
+        minimum: 1,
+        description:
+          "Required for versions/categories (they are per project); optional otherwise",
+      },
+      kinds: {
+        description:
+          "Defaults to trackers+statuses+priorities, plus versions+categories when projectId is given",
+        type: "array",
+        items: {
+          type: "string",
+          enum: ["trackers", "statuses", "priorities", "versions", "categories"],
+        },
+      },
+    },
+    additionalProperties: false,
+  },
   redmine_list_issue_relations: {
     type: "object",
     properties: {
@@ -810,7 +913,13 @@ export const toolJsonSchemas = {
     type: "object",
     properties: {
       issueId: { type: "integer", minimum: 1 },
-      statusId: { type: "integer", minimum: 1 },
+      statusId: {
+        description: '상태 — status id 또는 이름 (예: 2, "진행중")',
+        oneOf: [
+          { type: "integer", minimum: 1 },
+          { type: "string", minLength: 1 },
+        ],
+      },
       notes: {
         type: "string",
         description:

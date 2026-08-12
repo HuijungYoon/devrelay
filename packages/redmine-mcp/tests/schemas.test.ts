@@ -7,6 +7,7 @@ import {
   safeParseCreateIssue,
   safeParseGetIssue,
   safeParseListIssueRelations,
+  safeParseListMetadata,
   safeParseRemoveIssueRelation,
   safeParseSearch,
   safeParseUpdateIssue,
@@ -198,5 +199,54 @@ describe("tool schemas", () => {
   it("removeIssueRelation takes a relationId", () => {
     expect(safeParseRemoveIssueRelation({ relationId: 7 }).success).toBe(true);
     expect(safeParseRemoveIssueRelation({ issueId: 7 }).success).toBe(false);
+  });
+
+  it("createIssue accepts a status name as well as an id", () => {
+    expect(
+      safeParseCreateIssue({ projectId: 1, subject: "S", statusId: 2 }).success
+    ).toBe(true);
+    expect(
+      safeParseCreateIssue({ projectId: 1, subject: "S", statusId: "\uc9c4\ud589\uc911" })
+        .success
+    ).toBe(true);
+    expect(
+      safeParseCreateIssue({ projectId: 1, subject: "S", statusId: "" }).success
+    ).toBe(false);
+  });
+
+  it("createIssue accepts fixedVersionId and categoryId by name", () => {
+    expect(
+      safeParseCreateIssue({
+        projectId: 1,
+        subject: "S",
+        fixedVersionId: "2026-Q3",
+        categoryId: 2,
+      }).success
+    ).toBe(true);
+  });
+
+  it("updateIssue takes fixedVersionId null to clear it, on its own", () => {
+    expect(
+      safeParseUpdateIssue({ issueId: 5, fixedVersionId: null }).success
+    ).toBe(true);
+    expect(safeParseUpdateIssue({ issueId: 5, categoryId: null }).success).toBe(
+      true
+    );
+  });
+
+  it("updateStatus accepts a status name", () => {
+    expect(safeParseUpdateStatus({ issueId: 5, statusId: "\uc644\ub8cc" }).success).toBe(
+      true
+    );
+  });
+
+  it("listMetadata needs projectId for versions/categories", () => {
+    expect(safeParseListMetadata({}).success).toBe(true);
+    expect(safeParseListMetadata({ kinds: ["statuses"] }).success).toBe(true);
+    expect(safeParseListMetadata({ kinds: ["versions"] }).success).toBe(false);
+    expect(
+      safeParseListMetadata({ kinds: ["versions"], projectId: 11 }).success
+    ).toBe(true);
+    expect(safeParseListMetadata({ kinds: ["nope"] }).success).toBe(false);
   });
 });
