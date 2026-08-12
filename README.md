@@ -115,7 +115,7 @@ Claude Code / Codex / Cursor / Antigravity  (plugins + skills)
 | `redmine_list_projects` | List accessible projects |
 | `redmine_list_project_members` | Project members (pick assignee/watchers) |
 | `redmine_search_users` | Search all users (may require permission) |
-| `redmine_search_issues` | Search issues (`assignedTo: "me"`, open by default) |
+| `redmine_search_issues` | Search issues (`assignedTo: "me"`, open by default; rows carry `dueDate`/`doneRatio`) |
 | `redmine_get_issue` | Issue detail (includes `journals`, `children`, etc.) |
 | `redmine_list_issue_relations` | Related issues with their `relationId` |
 | `redmine_list_metadata` | Trackers / statuses / priorities / versions / categories (id + name) |

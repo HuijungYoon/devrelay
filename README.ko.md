@@ -115,7 +115,7 @@ Claude Code / Codex / Cursor / Antigravity  (플러그인 + 스킬)
 | `redmine_list_projects` | 접근 가능한 프로젝트 목록 |
 | `redmine_list_project_members` | 프로젝트 멤버 (담당자·관리자 선택) |
 | `redmine_search_users` | 전체 사용자 검색 (권한 필요할 수 있음) |
-| `redmine_search_issues` | 이슈 검색 (`assignedTo: "me"`, 기본 열린 이슈) |
+| `redmine_search_issues` | 이슈 검색 (`assignedTo: "me"`, 기본 열린 이슈; 각 행에 `dueDate`·`doneRatio`) |
 | `redmine_get_issue` | 이슈 상세 (`journals`·`children` 등 include) |
 | `redmine_list_issue_relations` | 연결된 일감 목록 (+ `relationId`) |
 | `redmine_list_metadata` | 유형·상태·우선순위·대상 버전·범주 (id + 이름) |

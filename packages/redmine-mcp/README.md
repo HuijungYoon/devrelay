@@ -92,7 +92,7 @@ This Redmine uses **HTML bodies**. Pass plain text and the client converts it.
 | `redmine_list_projects` | List accessible projects |
 | `redmine_list_project_members` | List project members (for assignee / watchers) |
 | `redmine_search_users` | Search all users (may require permission) |
-| `redmine_search_issues` | Search issues (default: open; supports `assignedTo: "me"`) |
+| `redmine_search_issues` | Search issues (default: open; supports `assignedTo: "me"`). Rows include `dueDate` and `doneRatio` |
 | `redmine_get_issue` | Issue detail (includes journals, children, etc.) |
 | `redmine_list_issue_relations` | Related issues with their `relationId` (needed to update/remove one) |
 | `redmine_list_metadata` | Trackers / statuses / priorities (+ versions, categories with `projectId`) as id+name |
@@ -144,6 +144,7 @@ This server has no issue-delete tool by design; deleting an issue in Redmine is 
 
 | Version | Notes |
 | --- | --- |
+| **0.7.1** | `dueDate`/`doneRatio` in search results, so a due-date column needs no per-issue fetch |
 | **0.7.0** | Names accepted for status/tracker/priority/version/category, `redmine_list_metadata`, `fixedVersionId`/`categoryId` |
 | **0.6.0** | Issue relations (list/add/update/remove) and subtasks via `parentIssueId`; Streamable HTTP + BYOK headers, `--http` CLI, OpenAI Apps challenge, demo-only env fallback |
 | **0.5.2** | English npm README; Claude Code marketplace install (`redmine-devrelay` plugin id) |

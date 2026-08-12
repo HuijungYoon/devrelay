@@ -41,7 +41,7 @@ dry-run 응답의 `previewToken` 없이는 적용할 수 없습니다 (TTL 10분
 | `redmine_list_projects` | 접근 가능한 프로젝트 목록 |
 | `redmine_list_project_members` | 프로젝트 멤버 목록 (담당자·관리자 선택용) |
 | `redmine_search_users` | 전체 사용자 검색 (권한 필요할 수 있음) |
-| `redmine_search_issues` | 이슈 검색 (기본: 열린 이슈, `assignedTo: "me"` 지원) |
+| `redmine_search_issues` | 이슈 검색 (기본: 열린 이슈, `assignedTo: "me"` 지원). 각 행에 `dueDate`·`doneRatio` 포함 |
 | `redmine_get_issue` | 이슈 상세 조회 (journals·children 등 include) |
 | `redmine_list_issue_relations` | 연결된 일감 목록 (수정·삭제에 필요한 `relationId` 확인) |
 | `redmine_list_metadata` | 유형·상태·우선순위 (+ `projectId`면 대상 버전·범주) id+이름 목록 |
@@ -93,6 +93,7 @@ dry-run 응답의 `previewToken` 없이는 적용할 수 없습니다 (TTL 10분
 
 | 버전 | 내용 |
 | --- | --- |
+| **0.7.1** | 검색 결과에 `dueDate`·`doneRatio` 포함 — 완료기한 컬럼을 위해 이슈마다 조회할 필요 없음 |
 | **0.7.0** | 상태·유형·우선순위·버전·범주를 이름으로 지정, `redmine_list_metadata`, `fixedVersionId`·`categoryId` |
 | **0.6.0** | 연결된 일감 조회·추가·수정·삭제, `parentIssueId`로 하위일감 관리 · Streamable HTTP + BYOK 헤더, `--http` CLI |
 | 0.5.2 | 영문 npm README · Claude Code marketplace 설치 (`redmine-devrelay` 플러그인 id) |
