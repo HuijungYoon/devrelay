@@ -31,6 +31,45 @@ describe("buildIssueQuery", () => {
 });
 
 describe("searchIssues", () => {
+  it("carries dueDate and doneRatio in the summary (no per-issue fetch)", async () => {
+    const http = {
+      getJson: vi.fn().mockResolvedValue({
+        issues: [
+          {
+            id: 23858,
+            subject: "License batch screen",
+            project: { id: 11, name: "CLOUD-HMI" },
+            tracker: { id: 2, name: "Feature" },
+            status: { id: 2, name: "In progress" },
+            priority: { id: 2, name: "Normal" },
+            assigned_to: { id: 164, name: "Me" },
+            due_date: "2026-08-14",
+            done_ratio: 70,
+            updated_on: "2026-08-10T00:00:00Z",
+            created_on: "2026-07-27T00:00:00Z",
+          },
+          { id: 24032, subject: "No dates", project: null },
+        ],
+        total_count: 2,
+        offset: 0,
+        limit: 100,
+      }),
+    };
+    const client = RedmineClient.fromEnv();
+    const withHttp = new (Object.getPrototypeOf(client).constructor)(
+      http as never,
+      client.config
+    );
+    const result = await withHttp.searchIssues({ assignedTo: "me" });
+    expect(result.issues[0]).toMatchObject({
+      id: 23858,
+      dueDate: "2026-08-14",
+      doneRatio: 70,
+    });
+    expect(result.issues[1]).toMatchObject({ dueDate: null, doneRatio: null });
+    expect(http.getJson).toHaveBeenCalledTimes(1);
+  });
+
   it("paginates beyond 100 and caps by maxResultCount", async () => {
     process.env.REDMINE_MAX_RESULT_COUNT = "150";
     const page1 = {

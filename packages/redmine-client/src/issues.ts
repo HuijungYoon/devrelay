@@ -111,6 +111,8 @@ function normalizeSummary(raw: RawIssue): NormalizedIssueSummary {
     status: raw.status ?? null,
     priority: raw.priority ?? null,
     assignedTo: raw.assigned_to ?? null,
+    dueDate: raw.due_date ?? null,
+    doneRatio: raw.done_ratio ?? null,
     updatedOn: raw.updated_on ?? null,
     createdOn: raw.created_on ?? null,
   };
@@ -122,8 +124,6 @@ function normalizeDetail(raw: RawIssue): NormalizedIssueDetail {
     description: raw.description ?? "",
     author: raw.author ?? null,
     startDate: raw.start_date ?? null,
-    dueDate: raw.due_date ?? null,
-    doneRatio: raw.done_ratio ?? null,
     estimatedHours: raw.estimated_hours ?? null,
     parent: raw.parent ?? null,
     fixedVersion: raw.fixed_version ?? null,

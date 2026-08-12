@@ -59,6 +59,10 @@ export type NormalizedIssueSummary = {
   status: { id: number; name: string } | null;
   priority: { id: number; name: string } | null;
   assignedTo: { id: number; name: string } | null;
+  /** 완료기한 — 목록 응답에도 들어오므로 요약에 포함 */
+  dueDate: string | null;
+  /** 진척도 */
+  doneRatio: number | null;
   updatedOn: string | null;
   createdOn: string | null;
 };
@@ -67,8 +71,6 @@ export type NormalizedIssueDetail = NormalizedIssueSummary & {
   description: string;
   author: { id: number; name: string } | null;
   startDate: string | null;
-  dueDate: string | null;
-  doneRatio: number | null;
   estimatedHours: number | null;
   parent: { id: number } | null;
   /** 대상 버전 */
