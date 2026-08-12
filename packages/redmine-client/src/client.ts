@@ -10,10 +10,15 @@ import type {
   AttachmentPreview,
   CreateIssueInput,
   CreateIssueResult,
+  IssueCategoryOption,
   IssueInclude,
+  IssuePriorityOption,
   IssueRelation,
+  IssueStatusOption,
   ListIssueRelationsResult,
   ListProjectMembersResult,
+  ProjectVersionOption,
+  RedmineNamed,
   ListProjectsResult,
   NormalizedIssueDetail,
   RedmineProject,
@@ -30,6 +35,13 @@ import type {
   UploadedAttachment,
 } from "./types.js";
 import { getIssue, searchIssues } from "./issues.js";
+import {
+  listIssueCategories,
+  listIssuePriorities,
+  listIssueStatuses,
+  listProjectVersions,
+  listTrackers,
+} from "./metadata.js";
 import {
   addIssueRelation,
   getIssueRelation,
@@ -194,6 +206,31 @@ export class RedmineClient {
 
   updateIssue(input: UpdateIssueInput): Promise<UpdateIssueResult> {
     return updateIssue(this.http, input);
+  }
+
+  /** 유형 목록 (이름 → id 해석용) */
+  listTrackers(): Promise<RedmineNamed[]> {
+    return listTrackers(this.http);
+  }
+
+  /** 상태 목록 */
+  listIssueStatuses(): Promise<IssueStatusOption[]> {
+    return listIssueStatuses(this.http);
+  }
+
+  /** 우선순위 목록 */
+  listIssuePriorities(): Promise<IssuePriorityOption[]> {
+    return listIssuePriorities(this.http);
+  }
+
+  /** 대상 버전 목록 (프로젝트별) */
+  listProjectVersions(projectId: number): Promise<ProjectVersionOption[]> {
+    return listProjectVersions(this.http, projectId);
+  }
+
+  /** 범주 목록 (프로젝트별) */
+  listIssueCategories(projectId: number): Promise<IssueCategoryOption[]> {
+    return listIssueCategories(this.http, projectId);
   }
 
   /** 연결된 일감 목록 (GET /issues/:id/relations.json) */

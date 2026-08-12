@@ -25,6 +25,14 @@ export {
 export { searchUsers, normalizeListedUser } from "./users.js";
 export { listProjectMembers, matchMemberByName } from "./memberships.js";
 export {
+  listIssueCategories,
+  listIssuePriorities,
+  listIssueStatuses,
+  listProjectVersions,
+  listTrackers,
+  matchNamedByName,
+} from "./metadata.js";
+export {
   inspectAttachments,
   uploadAttachments,
   uploadFile,

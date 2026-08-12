@@ -33,6 +33,9 @@ function applyOptionalIssueFields(
     dueDate?: string;
     doneRatio?: number;
     estimatedHours?: number;
+    /** number sets, null clears (Redmine wants "") */
+    fixedVersionId?: number | null;
+    categoryId?: number | null;
     assignedTo?: "me" | number;
     watcherUserIds?: number[];
     notes?: string;
@@ -54,6 +57,13 @@ function applyOptionalIssueFields(
   if (input.doneRatio !== undefined) issue.done_ratio = input.doneRatio;
   if (input.estimatedHours !== undefined) {
     issue.estimated_hours = input.estimatedHours;
+  }
+  if (input.fixedVersionId !== undefined) {
+    issue.fixed_version_id =
+      input.fixedVersionId === null ? "" : input.fixedVersionId;
+  }
+  if (input.categoryId !== undefined) {
+    issue.category_id = input.categoryId === null ? "" : input.categoryId;
   }
   if (input.assignedTo !== undefined) issue.assigned_to_id = input.assignedTo;
   if (input.watcherUserIds !== undefined) {

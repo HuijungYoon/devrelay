@@ -26,6 +26,8 @@ type RawIssue = {
   done_ratio?: number | null;
   estimated_hours?: number | null;
   parent?: { id: number } | null;
+  fixed_version?: RawNamed | null;
+  category?: RawNamed | null;
   custom_fields?: Array<{ id: number; name: string; value: unknown }>;
   journals?: Array<{
     id: number;
@@ -124,6 +126,8 @@ function normalizeDetail(raw: RawIssue): NormalizedIssueDetail {
     doneRatio: raw.done_ratio ?? null,
     estimatedHours: raw.estimated_hours ?? null,
     parent: raw.parent ?? null,
+    fixedVersion: raw.fixed_version ?? null,
+    category: raw.category ?? null,
     customFields: (raw.custom_fields ?? []).map((f) => ({
       id: f.id,
       name: f.name,

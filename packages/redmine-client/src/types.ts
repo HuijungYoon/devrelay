@@ -21,6 +21,29 @@ export type ListProjectsResult = {
   hasMore: boolean;
 };
 
+/** id + 이름만 있는 Redmine 선택 항목 (유형 등) */
+export type RedmineNamed = {
+  id: number;
+  name: string;
+};
+
+export type IssueStatusOption = RedmineNamed & { isClosed: boolean };
+
+export type IssuePriorityOption = RedmineNamed & { isDefault: boolean };
+
+export type ProjectVersionOption = RedmineNamed & {
+  /** open | locked | closed */
+  status: string;
+  dueDate: string | null;
+};
+
+export type IssueCategoryOption = RedmineNamed & {
+  assignedTo: RedmineNamed | null;
+};
+
+/** 이름 또는 id로 지정할 수 있는 필드 값 */
+export type NamedRef = number | string;
+
 export type IssueInclude =
   | "journals"
   | "attachments"
@@ -48,6 +71,10 @@ export type NormalizedIssueDetail = NormalizedIssueSummary & {
   doneRatio: number | null;
   estimatedHours: number | null;
   parent: { id: number } | null;
+  /** 대상 버전 */
+  fixedVersion: RedmineNamed | null;
+  /** 범주 */
+  category: RedmineNamed | null;
   customFields: Array<{ id: number; name: string; value: unknown }>;
   journals?: Array<{
     id: number;
@@ -188,6 +215,10 @@ export type CreateIssueInput = {
   dueDate?: string;
   doneRatio?: number;
   estimatedHours?: number;
+  /** 대상 버전 (fixed_version_id) */
+  fixedVersionId?: number;
+  /** 범주 (category_id) */
+  categoryId?: number;
   /** "me", numeric user id (담당자) */
   assignedTo?: "me" | number;
   /** 일감관리자 — Redmine watcher_user_ids */
@@ -219,6 +250,10 @@ export type UpdateIssueInput = {
   dueDate?: string;
   doneRatio?: number;
   estimatedHours?: number;
+  /** 대상 버전 — number sets it, null clears it */
+  fixedVersionId?: number | null;
+  /** 범주 — number sets it, null clears it */
+  categoryId?: number | null;
   assignedTo?: "me" | number;
   /** replace-all when provided (including empty) */
   watcherUserIds?: number[];
