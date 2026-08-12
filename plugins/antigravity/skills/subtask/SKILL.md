@@ -1,5 +1,5 @@
 ---
-name: subtask
+name: redmine:subtask
 description: Add, move, or detach Redmine subtasks (하위일감) after dry-run confirmation
 ---
 

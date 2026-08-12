@@ -13,6 +13,6 @@ description: Update Redmine issue fields after before/after dry-run confirmation
 4. `redmine_update_issue` with `confirm` false → `changes[]` **이전→이후** + `previewToken`
 5. 사용자 OK 후에만 `confirm: true` + **동일 필드** + **`previewToken`** (첫 호출에 confirm=true 불가)
 6. 일감관리자(`watchers`)를 넣으면 **전체 교체**; 생략하면 유지
-7. **상위 일감** `parentIssueId` — id를 넣으면 하위일감으로 편입/부모 변경, `null`이면 부모 연결 해제(일감은 삭제되지 않음). 자세한 흐름은 `/subtask`
-8. 연결된 일감(relations)은 이 도구가 아니라 `/relate-issue`
+7. **상위 일감** `parentIssueId` — id를 넣으면 하위일감으로 편입/부모 변경, `null`이면 부모 연결 해제(일감은 삭제되지 않음). 자세한 흐름은 `subtask` 스킬
+8. 연결된 일감(relations)은 이 도구가 아니라 `relate-issue` 스킬
 9. 상태만 바꿀 때는 `redmine_update_status`도 가능하나, 여러 필드면 `update_issue` 사용

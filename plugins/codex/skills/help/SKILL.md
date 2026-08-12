@@ -33,5 +33,7 @@ Env: `REDMINE_URL`, `REDMINE_API_KEY`. Details: plugin README.
 | `add-comment` | 댓글 추가 (dry-run 후 확인) |
 | `add-attachment` | 파일 첨부 (dry-run 후 확인) |
 | `update-status` | 상태 변경 statusId (dry-run 후 확인) |
+| `relate-issue` | 연결된 일감 추가·수정·삭제 (dry-run 후 확인) |
+| `subtask` | 하위일감 생성·부모 변경·연결 해제 (dry-run 후 확인) |
 
 Note: write skills require dry-run then explicit user confirmation before `confirm=true` + `previewToken`.

@@ -1,5 +1,5 @@
 ---
-name: relate-issue
+name: redmine:relate-issue
 description: Add, change, or remove Redmine issue relations (연결된 일감) after dry-run confirmation
 ---
 
