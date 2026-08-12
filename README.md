@@ -6,7 +6,7 @@ MCP integration that lets you query, create, and update Redmine issues with **na
 
 Agents do not call the Redmine REST API directly. They go through the shared MCP server [`redmine-devrelay`](https://www.npmjs.com/package/redmine-devrelay). Write APIs enforce a **dry-run → confirm → `confirm=true` + `previewToken`** gate.
 
-**Current release: `0.5.2`** (`redmine-devrelay` / `redmine-devrelay-client`)
+**Current release: `0.6.0`** (`redmine-devrelay` / `redmine-devrelay-client`)
 
 ## Shipped so far (Phase 1–5)
 
@@ -16,7 +16,15 @@ Agents do not call the Redmine REST API directly. They go through the shared MCP
 | 2 | Create issue / comment / status change (+ assignee & watchers) | 0.2.x |
 | 3 | `update_issue`, expanded create fields, HTML body line breaks | 0.3.x |
 | 4 | Issue **attachments** (create + `add_attachment`) | 0.4.x |
-| 5 | Plain-text notes enforcement, **`previewToken` confirm gate** | **0.5.x** |
+| 5 | Plain-text notes enforcement, **`previewToken` confirm gate** | 0.5.x |
+| 6 | **Issue relations and subtasks**, Streamable HTTP + BYOK | **0.6.x** |
+
+### 0.6.x highlights
+
+- `redmine_list_issue_relations` / `add` / `update` / `remove` — 연결된 일감 with the same dry-run gate
+- Subtasks through `parentIssueId`: set it to create or move, `null` to detach (the issue is never deleted)
+- Relation "update" is a remove + re-create, since Redmine has no relation update endpoint
+- Falls back to `include=relations` on the issue when a project denies the relations index
 
 ### 0.5.x highlights
 
@@ -71,10 +79,10 @@ Slash examples (Cursor):
 Claude Code / Codex / Cursor / Antigravity  (plugins + skills)
         │ MCP STDIO
         ▼
-   redmine-devrelay@0.5.2   (tool schemas, STDIO, npm)
+   redmine-devrelay@0.6.0   (tool schemas, STDIO, npm)
         │
         ▼
-   redmine-devrelay-client@0.5.2  (REST, auth, HTML formatting, writes)
+   redmine-devrelay-client@0.6.0  (REST, auth, HTML formatting, writes)
         │ HTTPS or private-IP HTTP
         ▼
    Redmine REST API
@@ -82,8 +90,8 @@ Claude Code / Codex / Cursor / Antigravity  (plugins + skills)
 
 | Path | Role |
 | --- | --- |
-| `packages/redmine-client` | npm: `redmine-devrelay-client@0.5.2` |
-| `packages/redmine-mcp` | npm: `redmine-devrelay@0.5.2` |
+| `packages/redmine-client` | npm: `redmine-devrelay-client@0.6.0` |
+| `packages/redmine-mcp` | npm: `redmine-devrelay@0.6.0` |
 | `plugins/cursor` | Cursor plugin |
 | `plugins/claude-code` | Claude Code plugin + skills |
 | `plugins/codex` | Codex plugin + skills |
@@ -131,7 +139,7 @@ See [`packages/redmine-mcp/README.md`](packages/redmine-mcp/README.md) for field
 ### 1. Run via npm (recommended)
 
 ```bash
-npx -y redmine-devrelay@0.5.2
+npx -y redmine-devrelay@0.6.0
 ```
 
 Local build:
@@ -174,7 +182,7 @@ Local Docker: `http://localhost:3000` + `REDMINE_ALLOWED_HOSTS=localhost` (`dock
 /add-plugin redmine-devrelay
 ```
 
-Or connect `npx -y redmine-devrelay@0.5.2` in `plugins/cursor/mcp.json` / MCP settings, then set `REDMINE_URL` / `REDMINE_API_KEY`.
+Or connect `npx -y redmine-devrelay@0.6.0` in `plugins/cursor/mcp.json` / MCP settings, then set `REDMINE_URL` / `REDMINE_API_KEY`.
 
 ### 4. Claude Code
 
@@ -228,8 +236,8 @@ npx @modelcontextprotocol/inspector node packages/redmine-mcp/dist/index.js
 ## Repository layout
 
 ```
-packages/redmine-client/   # npm: redmine-devrelay-client@0.5.2
-packages/redmine-mcp/      # npm: redmine-devrelay@0.5.2
+packages/redmine-client/   # npm: redmine-devrelay-client@0.6.0
+packages/redmine-mcp/      # npm: redmine-devrelay@0.6.0
 plugins/cursor|claude-code|codex|antigravity/
 docker/redmine/            # Redmine for integration tests
 docs/superpowers/          # Phase designs and implementation plans
@@ -250,4 +258,4 @@ docs/superpowers/          # Phase designs and implementation plans
 
 ## License / publish
 
-MIT · npm: [`redmine-devrelay@0.5.2`](https://www.npmjs.com/package/redmine-devrelay), [`redmine-devrelay-client@0.5.2`](https://www.npmjs.com/package/redmine-devrelay-client)
+MIT · npm: [`redmine-devrelay@0.6.0`](https://www.npmjs.com/package/redmine-devrelay), [`redmine-devrelay-client@0.6.0`](https://www.npmjs.com/package/redmine-devrelay-client)

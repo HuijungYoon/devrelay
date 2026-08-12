@@ -6,7 +6,7 @@ Codex · Claude Code · Cursor · Antigravity에서 **자연어와 슬래시 명
 
 에이전트는 Redmine REST를 직접 호출하지 않고, 공통 MCP 서버 [`redmine-devrelay`](https://www.npmjs.com/package/redmine-devrelay)를 통합니다. 쓰기 API는 **dry-run → 확인 → `confirm=true` + `previewToken`** 게이트를 강제합니다.
 
-**현재 배포 버전: `0.5.2`** (`redmine-devrelay` / `redmine-devrelay-client`)
+**현재 배포 버전: `0.6.0`** (`redmine-devrelay` / `redmine-devrelay-client`)
 
 ## 현재까지 (Phase 1–5)
 
@@ -16,7 +16,15 @@ Codex · Claude Code · Cursor · Antigravity에서 **자연어와 슬래시 명
 | 2 | 이슈 생성 / 댓글 / 상태 변경 (+ 담당자·관리자) | 0.2.x |
 | 3 | `update_issue`, 생성 필드 확장, HTML 본문 줄바꿈 | 0.3.x |
 | 4 | 이슈 **첨부파일** (create + `add_attachment`) | 0.4.x |
-| 5 | notes 평문 강제, **`previewToken` confirm 게이트** | **0.5.x** |
+| 5 | notes 평문 강제, **`previewToken` confirm 게이트** | 0.5.x |
+| 6 | **연결된 일감·하위일감**, Streamable HTTP + BYOK | **0.6.x** |
+
+### 0.6.x 하이라이트
+
+- `redmine_list_issue_relations` / `add` / `update` / `remove` — 연결된 일감도 같은 dry-run 게이트
+- 하위일감은 `parentIssueId`로: id를 넣으면 생성·편입, `null`이면 연결 해제 (일감 자체는 삭제되지 않음)
+- Redmine에 관계 수정 API가 없어 "수정"은 삭제 후 재생성
+- 프로젝트가 관계 목록 조회를 막아 두면 이슈의 `include=relations`로 자동 폴백
 
 ### 0.5.x 하이라이트
 
@@ -71,10 +79,10 @@ Codex · Claude Code · Cursor · Antigravity에서 **자연어와 슬래시 명
 Claude Code / Codex / Cursor / Antigravity  (플러그인 + 스킬)
         │ MCP STDIO
         ▼
-   redmine-devrelay@0.5.2   (도구 스키마, STDIO, npm)
+   redmine-devrelay@0.6.0   (도구 스키마, STDIO, npm)
         │
         ▼
-   redmine-devrelay-client@0.5.2  (REST, 인증, HTML 포맷, 쓰기)
+   redmine-devrelay-client@0.6.0  (REST, 인증, HTML 포맷, 쓰기)
         │ HTTPS 또는 사설 IP HTTP
         ▼
    Redmine REST API
@@ -82,8 +90,8 @@ Claude Code / Codex / Cursor / Antigravity  (플러그인 + 스킬)
 
 | 경로 | 역할 |
 | --- | --- |
-| `packages/redmine-client` | npm: `redmine-devrelay-client@0.5.2` |
-| `packages/redmine-mcp` | npm: `redmine-devrelay@0.5.2` |
+| `packages/redmine-client` | npm: `redmine-devrelay-client@0.6.0` |
+| `packages/redmine-mcp` | npm: `redmine-devrelay@0.6.0` |
 | `plugins/cursor` | Cursor 플러그인 |
 | `plugins/claude-code` | Claude Code 플러그인 + 스킬 |
 | `plugins/codex` | Codex 플러그인 + 스킬 |
@@ -131,7 +139,7 @@ Claude Code / Codex / Cursor / Antigravity  (플러그인 + 스킬)
 ### 1. npm으로 실행 (권장)
 
 ```bash
-npx -y redmine-devrelay@0.5.2
+npx -y redmine-devrelay@0.6.0
 ```
 
 로컬 빌드:
@@ -174,7 +182,7 @@ export REDMINE_API_KEY=your-api-key
 /add-plugin redmine-devrelay
 ```
 
-또는 `plugins/cursor/mcp.json` / MCP 설정에서 `npx -y redmine-devrelay@0.5.2` 연결 후 `REDMINE_URL` / `REDMINE_API_KEY` 설정.
+또는 `plugins/cursor/mcp.json` / MCP 설정에서 `npx -y redmine-devrelay@0.6.0` 연결 후 `REDMINE_URL` / `REDMINE_API_KEY` 설정.
 
 ### 4. Claude Code
 
@@ -228,8 +236,8 @@ npx @modelcontextprotocol/inspector node packages/redmine-mcp/dist/index.js
 ## 저장소 구조
 
 ```
-packages/redmine-client/   # npm: redmine-devrelay-client@0.5.2
-packages/redmine-mcp/      # npm: redmine-devrelay@0.5.2
+packages/redmine-client/   # npm: redmine-devrelay-client@0.6.0
+packages/redmine-mcp/      # npm: redmine-devrelay@0.6.0
 plugins/cursor|claude-code|codex|antigravity/
 docker/redmine/            # 통합 테스트용 Redmine
 docs/superpowers/          # Phase 설계·구현 계획
@@ -250,4 +258,4 @@ docs/superpowers/          # Phase 설계·구현 계획
 
 ## 라이선스 / 배포
 
-MIT · npm: [`redmine-devrelay@0.5.2`](https://www.npmjs.com/package/redmine-devrelay), [`redmine-devrelay-client@0.5.2`](https://www.npmjs.com/package/redmine-devrelay-client)
+MIT · npm: [`redmine-devrelay@0.6.0`](https://www.npmjs.com/package/redmine-devrelay), [`redmine-devrelay-client@0.6.0`](https://www.npmjs.com/package/redmine-devrelay-client)

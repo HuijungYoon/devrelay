@@ -4,14 +4,14 @@
 
 Cursor · Claude Code · Codex용 **Redmine MCP 서버**입니다.
 
-- **버전:** `0.5.2`
+- **버전:** `0.6.0`
 - **GitHub:** https://github.com/HuijungYoon/devrelay
 - **Client:** [redmine-devrelay-client](https://www.npmjs.com/package/redmine-devrelay-client) (동일 버전)
 
 ## 빠른 시작
 
 ```bash
-npx -y redmine-devrelay@0.5.2
+npx -y redmine-devrelay@0.6.0
 ```
 
 | 환경변수 | 설명 |
@@ -90,7 +90,8 @@ dry-run 응답의 `previewToken` 없이는 적용할 수 없습니다 (TTL 10분
 
 | 버전 | 내용 |
 | --- | --- |
-| **0.5.2** | 영문 npm README · Claude Code marketplace 설치 (`redmine-devrelay` 플러그인 id) |
+| **0.6.0** | 연결된 일감 조회·추가·수정·삭제, `parentIssueId`로 하위일감 관리 · Streamable HTTP + BYOK 헤더, `--http` CLI |
+| 0.5.2 | 영문 npm README · Claude Code marketplace 설치 (`redmine-devrelay` 플러그인 id) |
 | 0.5.1 | Codex marketplace 설치 CLI 정합 (`ON_USE`, `plugin add`) + pin |
 | 0.5.0 | notes Textile/Markdown 차단, `previewToken` confirm 게이트 |
 | 0.4.1 | 문서·예시 IP 정리, Antigravity 플러그인 핀 |

@@ -141,7 +141,7 @@ This server has no issue-delete tool by design; deleting an issue in Redmine is 
 
 | Version | Notes |
 | --- | --- |
-| **0.6.0** | Streamable HTTP + BYOK headers, `--http` CLI, OpenAI Apps challenge, demo-only env fallback |
+| **0.6.0** | Issue relations (list/add/update/remove) and subtasks via `parentIssueId`; Streamable HTTP + BYOK headers, `--http` CLI, OpenAI Apps challenge, demo-only env fallback |
 | **0.5.2** | English npm README; Claude Code marketplace install (`redmine-devrelay` plugin id) |
 | 0.5.1 | Codex marketplace install CLI alignment (`ON_USE`, `plugin add`) + pin |
 | 0.5.0 | Block Textile/Markdown in notes, `previewToken` confirm gate |
