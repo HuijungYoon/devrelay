@@ -1,6 +1,6 @@
 ---
 name: issue
-description: Show Redmine issue detail and recent comments via redmine-devrelay MCP
+description: Show Redmine issue detail and recent comments
 ---
 
 # Redmine issue detail

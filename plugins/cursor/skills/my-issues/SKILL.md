@@ -1,6 +1,6 @@
 ---
 name: my-issues
-description: List open Redmine issues assigned to me via redmine-devrelay MCP
+description: List open Redmine issues assigned to me
 ---
 
 # My open Redmine issues
