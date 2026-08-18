@@ -74,6 +74,15 @@ describe("formatNotesForRedmine", () => {
       "if (a &lt; b) &amp; c<br />"
     );
   });
+  it("keeps line breaks when only one line carries markup", () => {
+    const input = ["배포 완료", "로그: <code>deploy.log</code>"].join("\n");
+    expect(formatNotesForRedmine(input)).toBe(
+      [
+        "배포 완료<br />",
+        "로그: <code>deploy.log</code><br />",
+      ].join("\n")
+    );
+  });
 });
 
 describe("formatDescriptionForRedmine", () => {
@@ -128,5 +137,11 @@ describe("formatDescriptionForRedmine", () => {
   it("still leaves a real HTML body alone", () => {
     const html = "<p>첫 줄</p>\n<p>Appearance &gt; Behavior</p>";
     expect(formatDescriptionForRedmine(html)).toBe(html);
+  });
+
+  it("passes through tags Redmine renders but <p> does not wrap", () => {
+    const html = "<del>취소된 항목</del>";
+    expect(formatDescriptionForRedmine(html)).toBe(html);
+    expect(formatDescriptionForRedmine("x<sup>2</sup>")).toBe("x<sup>2</sup>");
   });
 });

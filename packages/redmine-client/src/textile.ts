@@ -47,12 +47,12 @@ export function detectNotesMarkup(notes: string): string[] {
 }
 
 /**
- * Tags this Redmine emits in issue bodies. Deliberately narrow: treating any
- * "<word>" as HTML made plain text such as "List<String>" skip both the <p>
+ * Tags Redmine renders in issue bodies (its sanitizer allowlist). Matching any
+ * "<word>" instead made plain text such as "List<String>" skip both the <p>
  * wrapping and the escaping, which rendered the whole body as one blob.
  */
 const HTML_TAGS =
-  "p|br|div|span|strong|em|b|i|u|s|ul|ol|li|dl|dt|dd|h[1-6]|pre|code|a|img|hr|table|thead|tbody|tr|td|th|blockquote";
+  "blockquote|figcaption|colgroup|details|section|article|summary|caption|figure|header|footer|strong|thead|tbody|tfoot|small|table|aside|abbr|cite|code|samp|kbd|mark|span|main|nav|time|dfn|del|ins|sup|sub|div|pre|big|var|img|col|h[1-6]|ul|ol|li|dl|dt|dd|tr|td|th|hr|br|em|tt|wbr|p|a|b|i|u|s|q";
 
 const HTML_TAG = new RegExp(
   "<" + "\\/?(?:" + HTML_TAGS + ")(?:\\s[^<>]*)?\\/?>",
@@ -77,14 +77,18 @@ function escapeHtml(text: string): string {
  */
 export function formatNotesForRedmine(notes: string): string {
   const normalized = normalizeNewlines(notes);
-  // Caller already sent HTML — leave their tags alone.
-  if (looksLikeHtml(normalized)) return normalized;
   return normalized
     .split("\n")
     .map((line) => {
       const trimmedEnd = line.replace(/\s+$/u, "");
-      // Notes render as HTML too, so "if (a < b)" has to be escaped.
-      return `${escapeHtml(trimmedEnd)}<br />`;
+      // Already terminated — leave it exactly as the caller wrote it.
+      if (/<br\s*\/?>\s*$/i.test(trimmedEnd)) return trimmedEnd;
+      // A line carrying its own markup keeps it; only plain lines are escaped,
+      // because notes land in an HTML body where "if (a < b)" would be eaten.
+      const body = looksLikeHtml(trimmedEnd)
+        ? trimmedEnd
+        : escapeHtml(trimmedEnd);
+      return `${body}<br />`;
     })
     .join("\n");
 }

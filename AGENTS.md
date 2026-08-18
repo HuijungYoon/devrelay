@@ -162,7 +162,9 @@ MCP Inspector / 통합 테스트는 [docs/development.md](docs/development.md) �
 
 ```js
 // node "C:/Program Files/nodejs/node.exe" script.mjs  (PATH의 node는 v14라 안 됩니다)
-import { RedmineClient } from "./packages/redmine-client/dist/index.js";
+// import 경로는 스크립트 위치 기준으로 풀립니다. 스크래치 폴더에 두면 상대경로가
+// 깨지므로 절대 file:// URL을 쓰세요.
+import { RedmineClient } from "file:///C:/Users/User/Desktop/M2I/DevRelay/packages/redmine-client/dist/index.js";
 const client = RedmineClient.fromEnv();          // .env의 REDMINE_URL / REDMINE_API_KEY
 const issues = await client.searchIssues({ assignedTo: "me", status: "open" });
 ```

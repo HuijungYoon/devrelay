@@ -13,6 +13,7 @@ description: Create a Redmine issue after dry-run confirmation
 4. **일감관리자** `watchers` — 필드에 요구됨. **dry-run 전에 반드시 한 번 물어본다** (기본값 없음, 임의 추측 금지)
    - `redmine_list_project_members`로 후보를 뽑아 이름과 함께 질문 (후보 3~4명이면 `AskUserQuestion`으로 제시)
    - 결과의 `source`가 `issues`면 멤버 API가 막혀 **최근 이슈 담당자에서 추린 목록**입니다. 원하는 사람이 없으면 사용자에게 이름이나 user id를 직접 물어보세요 (이름 추측 금지)
+   - `source: issues`인 목록에는 **그룹이 섞일 수 있습니다** (이슈 담당자가 그룹일 수 있음). 팀/그룹 이름 같으면 사용자에게 확인하세요 — 그룹 id는 일감관리자로 들어가지 않습니다
    - "없음/모름/생략" 답이면 `watchers` 비우고 dry-run에 `일감관리자: 미지정`으로 표기
    - 같은 대화에서 이미 지정했으면 그 값을 재사용하고 다시 묻지 않는다
 5. **상위 일감** `parentIssueId` (선택) — 넣으면 그 일감의 **하위일감**으로 생성됨 (`subtask` 스킬 참고)

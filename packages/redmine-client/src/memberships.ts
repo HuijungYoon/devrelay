@@ -87,6 +87,10 @@ export function matchMemberByName(
  * 담당자·일감관리자 후보. 이 Redmine처럼 멤버 목록(그리고 전체 사용자 검색)이
  * 403인 인스턴스도 있어서, 막히면 최근 이슈의 담당자에서 후보를 추립니다.
  * 읽을 수 있는 것만 쓰므로 권한이 좁은 계정에서도 이름 해석이 동작합니다.
+ *
+ * 한계: 이슈의 assigned_to는 사용자와 그룹을 구분해 주지 않습니다. 그룹 할당을
+ * 허용한 인스턴스라면 그룹이 후보에 섞일 수 있고, 그 id를 watcher로 넣으면
+ * Redmine이 거부합니다 (watcher는 사용자만). source가 issues면 사용자에게 확인하세요.
  */
 export async function listProjectPeople(
   http: RedmineHttp,
