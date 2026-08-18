@@ -49,7 +49,7 @@ import {
   removeIssueRelation,
   replaceIssueRelation,
 } from "./relations.js";
-import { listProjectMembers } from "./memberships.js";
+import { listProjectMembers, listProjectPeople } from "./memberships.js";
 import { searchUsers } from "./users.js";
 import {
   inspectAttachments,
@@ -191,6 +191,15 @@ export class RedmineClient {
     limit?: number;
   }): Promise<ListProjectMembersResult> {
     return listProjectMembers(this.http, this.config, opts);
+  }
+
+  /** 담당자·일감관리자 후보. 멤버 목록이 403이면 최근 이슈에서 추립니다. */
+  listProjectPeople(opts: {
+    projectId: number;
+    query?: string;
+    limit?: number;
+  }): Promise<ListProjectMembersResult> {
+    return listProjectPeople(this.http, this.config, opts);
   }
 
   getIssue(

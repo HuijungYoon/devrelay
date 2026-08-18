@@ -1,4 +1,6 @@
 import type { RedmineHttp } from "./http.js";
+import { RedmineError } from "./errors.js";
+import { searchIssues } from "./issues.js";
 import type { RedmineConfig } from "./config.js";
 import type {
   ListProjectMembersResult,
@@ -79,4 +81,57 @@ export function matchMemberByName(
   const exact = members.filter((u) => compact(u.name) === q);
   if (exact.length > 0) return exact;
   return members.filter((u) => compact(u.name).includes(q));
+}
+
+/**
+ * 담당자·일감관리자 후보. 이 Redmine처럼 멤버 목록(그리고 전체 사용자 검색)이
+ * 403인 인스턴스도 있어서, 막히면 최근 이슈의 담당자에서 후보를 추립니다.
+ * 읽을 수 있는 것만 쓰므로 권한이 좁은 계정에서도 이름 해석이 동작합니다.
+ */
+export async function listProjectPeople(
+  http: RedmineHttp,
+  config: RedmineConfig,
+  opts: { projectId: number; query?: string; limit?: number }
+): Promise<ListProjectMembersResult> {
+  try {
+    const result = await listProjectMembers(http, config, opts);
+    return { ...result, source: "memberships" };
+  } catch (err) {
+    if (
+      !(err instanceof RedmineError) ||
+      err.code !== "REDMINE_PERMISSION_DENIED"
+    ) {
+      throw err;
+    }
+  }
+
+  const { issues } = await searchIssues(http, config, {
+    projectId: opts.projectId,
+    status: "all",
+    limit: 100,
+  });
+  const byId = new Map<number, RedmineUser>();
+  for (const issue of issues) {
+    if (!issue.assignedTo) continue;
+    byId.set(issue.assignedTo.id, {
+      id: issue.assignedTo.id,
+      login: String(issue.assignedTo.id),
+      name: issue.assignedTo.name,
+    });
+  }
+
+  let people = [...byId.values()];
+  if (opts.query?.trim()) {
+    const q = compact(opts.query);
+    people = people.filter((u) => compact(u.name).includes(q));
+  }
+  if (opts.limit) people = people.slice(0, opts.limit);
+
+  return {
+    projectId: opts.projectId,
+    members: people,
+    totalCount: byId.size,
+    returnedCount: people.length,
+    source: "issues",
+  };
 }

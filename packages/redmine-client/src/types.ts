@@ -280,6 +280,11 @@ export type ListProjectMembersResult = {
   members: RedmineUser[];
   totalCount: number;
   returnedCount: number;
+  /**
+   * Where the names came from: the memberships API, or — when that is
+   * forbidden — the assignees of recent issues in the project.
+   */
+  source?: "memberships" | "issues";
 };
 
 export type CreateIssueResult = {

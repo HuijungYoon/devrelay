@@ -23,7 +23,11 @@ export {
   replaceIssueRelation,
 } from "./relations.js";
 export { searchUsers, normalizeListedUser } from "./users.js";
-export { listProjectMembers, matchMemberByName } from "./memberships.js";
+export {
+  listProjectMembers,
+  listProjectPeople,
+  matchMemberByName,
+} from "./memberships.js";
 export {
   listIssueCategories,
   listIssuePriorities,
