@@ -93,6 +93,7 @@ dry-run 응답의 `previewToken` 없이는 적용할 수 없습니다 (TTL 10분
 
 | 버전 | 내용 |
 | --- | --- |
+| **0.7.2** | 본문 HTML 변환 수정: 꺾쇠 포함 평문도 `<p>` 래핑·이스케이프, 댓글 줄바꿈 유지, 태그 allowlist를 Redmine 기준으로 확장. 멤버 API가 403이면 최근 이슈 담당자에서 후보 추림 |
 | **0.7.1** | 검색 결과에 `dueDate`·`doneRatio` 포함 — 완료기한 컬럼을 위해 이슈마다 조회할 필요 없음 |
 | **0.7.0** | 상태·유형·우선순위·버전·범주를 이름으로 지정, `redmine_list_metadata`, `fixedVersionId`·`categoryId` |
 | **0.6.0** | 연결된 일감 조회·추가·수정·삭제, `parentIssueId`로 하위일감 관리 · Streamable HTTP + BYOK 헤더, `--http` CLI |

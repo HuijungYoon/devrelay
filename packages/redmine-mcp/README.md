@@ -144,6 +144,7 @@ This server has no issue-delete tool by design; deleting an issue in Redmine is 
 
 | Version | Notes |
 | --- | --- |
+| **0.7.2** | Fix HTML body conversion: plain text with angle brackets is wrapped and escaped again, notes keep every line break, and the tag allowlist matches what Redmine renders. People lookup falls back to recent assignees when the memberships API is forbidden |
 | **0.7.1** | `dueDate`/`doneRatio` in search results, so a due-date column needs no per-issue fetch |
 | **0.7.0** | Names accepted for status/tracker/priority/version/category, `redmine_list_metadata`, `fixedVersionId`/`categoryId` |
 | **0.6.0** | Issue relations (list/add/update/remove) and subtasks via `parentIssueId`; Streamable HTTP + BYOK headers, `--http` CLI, OpenAI Apps challenge, demo-only env fallback |
