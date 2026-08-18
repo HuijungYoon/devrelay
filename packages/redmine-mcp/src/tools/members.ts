@@ -4,5 +4,5 @@ export async function handleListProjectMembers(
   client: RedmineClient,
   input: { projectId: number; query?: string; limit?: number }
 ) {
-  return client.listProjectMembers(input);
+  return client.listProjectPeople(input);
 }

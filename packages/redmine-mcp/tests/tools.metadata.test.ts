@@ -38,7 +38,7 @@ function metaClient(extra: Record<string, unknown> = {}) {
     listIssuePriorities: vi.fn().mockResolvedValue(PRIORITIES),
     listProjectVersions: vi.fn().mockResolvedValue(VERSIONS),
     listIssueCategories: vi.fn().mockResolvedValue(CATEGORIES),
-    listProjectMembers: vi.fn(),
+    listProjectPeople: vi.fn(),
     searchUsers: vi.fn(),
     getCurrentUser: vi.fn(),
     ...extra,

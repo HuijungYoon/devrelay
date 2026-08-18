@@ -18,7 +18,7 @@ describe("write handlers confirm gate", () => {
     const result = await handleCreateIssue(
       {
         createIssue,
-        listProjectMembers: vi.fn(),
+        listProjectPeople: vi.fn(),
         searchUsers: vi.fn(),
         getCurrentUser: vi.fn(),
       } as never,
@@ -40,7 +40,7 @@ describe("write handlers confirm gate", () => {
     const result = await handleCreateIssue(
       {
         createIssue,
-        listProjectMembers: vi.fn(),
+        listProjectPeople: vi.fn(),
         searchUsers: vi.fn(),
         getCurrentUser: vi.fn(),
       } as never,
@@ -65,7 +65,7 @@ describe("write handlers confirm gate", () => {
   });
 
   it("createIssue resolves watchers from project members", async () => {
-    const listProjectMembers = vi.fn().mockResolvedValue({
+    const listProjectPeople = vi.fn().mockResolvedValue({
       members: [
         { id: 99, login: "99", name: "윤 석준" },
         { id: 1, login: "1", name: "윤 희중" },
@@ -78,7 +78,7 @@ describe("write handlers confirm gate", () => {
     const dry = await handleCreateIssue(
       {
         createIssue,
-        listProjectMembers,
+        listProjectPeople,
         searchUsers: vi.fn(),
         getCurrentUser: vi.fn(),
       } as never,
@@ -118,7 +118,7 @@ describe("write handlers confirm gate", () => {
       {
         getIssue,
         updateIssue,
-        listProjectMembers: vi.fn(),
+        listProjectPeople: vi.fn(),
         getCurrentUser: vi.fn(),
         searchUsers: vi.fn(),
       } as never,
@@ -157,7 +157,7 @@ describe("write handlers confirm gate", () => {
     const client = {
       getIssue,
       updateIssue,
-      listProjectMembers: vi.fn(),
+      listProjectPeople: vi.fn(),
       getCurrentUser: vi.fn(),
       searchUsers: vi.fn(),
     } as never;
@@ -252,7 +252,7 @@ describe("write handlers confirm gate", () => {
       {
         getIssue,
         updateIssue,
-        listProjectMembers: vi.fn(),
+        listProjectPeople: vi.fn(),
         getCurrentUser: vi.fn(),
         searchUsers: vi.fn(),
       } as never,
@@ -319,7 +319,7 @@ describe("write handlers confirm gate", () => {
         createIssue,
         inspectAttachments,
         uploadAttachments,
-        listProjectMembers: vi.fn(),
+        listProjectPeople: vi.fn(),
         searchUsers: vi.fn(),
         getCurrentUser: vi.fn(),
       } as never,

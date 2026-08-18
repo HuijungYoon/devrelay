@@ -66,7 +66,9 @@ async function loadMembers(
   client: RedmineClient,
   projectId: number
 ): Promise<RedmineUser[]> {
-  const { members } = await client.listProjectMembers({
+  // listProjectPeople falls back to recent assignees when the memberships
+  // API is forbidden, which is the case on some Redmine instances.
+  const { members } = await client.listProjectPeople({
     projectId,
     limit: 500,
   });
