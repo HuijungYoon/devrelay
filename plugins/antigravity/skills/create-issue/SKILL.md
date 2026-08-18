@@ -12,6 +12,7 @@ description: Create a Redmine issue after dry-run confirmation
 3. **담당자(작업자)** `assignedTo` — **기본값 `"me"`**. 따로 묻지 않고 요청자 본인으로 넣는다. 사용자가 다른 사람을 명시한 경우에만 그 값 사용
 4. **일감관리자** `watchers` — 필드에 요구됨. **dry-run 전에 반드시 한 번 물어본다** (기본값 없음, 임의 추측 금지)
    - `redmine_list_project_members`로 후보를 뽑아 이름과 함께 질문 (후보 3~4명이면 `AskUserQuestion`으로 제시)
+   - 결과의 `source`가 `issues`면 멤버 API가 막혀 **최근 이슈 담당자에서 추린 목록**입니다. 원하는 사람이 없으면 사용자에게 이름이나 user id를 직접 물어보세요 (이름 추측 금지)
    - "없음/모름/생략" 답이면 `watchers` 비우고 dry-run에 `일감관리자: 미지정`으로 표기
    - 같은 대화에서 이미 지정했으면 그 값을 재사용하고 다시 묻지 않는다
 5. **상위 일감** `parentIssueId` (선택) — 넣으면 그 일감의 **하위일감**으로 생성됨 (`subtask` 스킬 참고)

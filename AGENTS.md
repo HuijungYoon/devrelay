@@ -22,7 +22,7 @@ redmine-devrelay-client     packages/redmine-client  REST·인증·HTML 변환·
 Redmine REST API
 ```
 
-- npm 배포 버전: **0.7.0** (두 패키지 동일 버전으로 맞춤). 플러그인 pin은 publish 후에 올립니다 (§8)
+- npm 배포 버전: **0.7.1** (두 패키지 동일 버전으로 맞춤). 플러그인 pin은 publish 후에 올립니다 (§8)
 - pnpm workspace (`pnpm-workspace.yaml`), TypeScript ESM, vitest
 - 언어: 스킬 문서와 사용자 대화는 한국어, 코드·커밋은 영어
 
@@ -145,8 +145,43 @@ MCP Inspector / 통합 테스트는 [docs/development.md](docs/development.md) �
 - **`python`은 Python 2**입니다. 임시 스크립트는 PowerShell을 쓰는 편이 안전합니다.
 - **Git Bash가 `rev:path` 인자를 망깁니다** (`origin/main:file` → `origin\main;file`). `git cat-file`/`git show`에 `rev:path`를 넘길 때는 PowerShell을 쓰거나 `MSYS_NO_PATHCONV=1`.
 - **Bash 도구에서 PowerShell here-string(`@'…'@`)을 쓰지 마세요.** 커밋 메시지는 heredoc(`git commit -F -`)으로.
+- **Bash heredoc 안에서 역슬래시 2개(`\\n`, `\\/`)가 1개로 줄어듭니다.** 정규식·`\n` 문자열을 그렇게 넣으면 코드가 조용히 깨집니다.
+  Node 스크립트로 파일을 고칠 때는 `const BS = String.fromCharCode(92)`로 조립하거나 Write/Edit 도구를 쓰세요.
 - 파일은 **UTF-8(BOM 없음)**, 줄바꿈은 CRLF가 기본. **CP949로 저장하지 마세요** (과거에 스킬 3개가 깨졌던 원인).
 - 이 레포에는 **worktree가 여러 개** 있습니다 (`git worktree list`). 브랜치 체크아웃이 거부되면 다른 worktree가 물고 있는 것이니 그쪽에서 작업하세요.
+
+---
+
+## 4-1. MCP 서버가 안 붙어 있을 때 (중요)
+
+플러그인을 업데이트한 뒤 재시작 전이거나 `npx`가 실패하면 `redmine_*` 도구가 세션에 없습니다.
+그때 **Redmine REST를 손으로 호출하지 마세요.** 실제로 그렇게 일감을 만들었다가 본문이 한 덩어리로
+붙어서 다시 고친 적이 있습니다 (이 Redmine은 본문을 HTML로 저장합니다).
+
+대신 **레포의 빌드된 클라이언트**를 쓰면 변환·이스케이프·마스킹이 그대로 적용됩니다:
+
+```js
+// node "C:/Program Files/nodejs/node.exe" script.mjs  (PATH의 node는 v14라 안 됩니다)
+import { RedmineClient } from "./packages/redmine-client/dist/index.js";
+const client = RedmineClient.fromEnv();          // .env의 REDMINE_URL / REDMINE_API_KEY
+const issues = await client.searchIssues({ assignedTo: "me", status: "open" });
+```
+
+- `pnpm -r run build`를 먼저 돌려 `dist`를 최신화하세요.
+- **조회는 자유롭게, 쓰기는 사용자 승인 후에만.** MCP의 dry-run 게이트가 없으니 계획을 먼저 보여 주세요.
+- 본문 규칙은 클라이언트가 처리합니다 — `description`은 줄마다 `<p>`, `notes`는 줄 끝에 `<br />`,
+  `<` `>` `&` `"`는 이스케이프. 직접 문자열을 만들지 말고 `createIssue` / `addComment`에 평문을 넘기세요.
+- 사람 이름 → id는 `listProjectPeople()`을 쓰세요. 멤버 목록 API가 403이면 최근 이슈의 담당자에서
+  후보를 추립니다 (`source: "issues"`).
+
+이 인스턴스에서 확인된 권한 제약 (읽기 전용 계정 기준):
+
+| 엔드포인트 | 결과 | 대안 |
+| --- | --- | --- |
+| `/projects/:id/memberships.json` | 403 | `listProjectPeople` (최근 이슈 담당자) |
+| `/users.json` (전체 검색) | 403 | `/users/:id.json`은 개별 조회 가능 |
+| `/projects/:id/issue_categories.json` | 403 | `categoryId`에 숫자 id 사용 |
+| `/issues/:id/relations.json` | 일부 프로젝트 403 | 이슈의 `include=relations`로 자동 폴백 |
 
 ---
 
