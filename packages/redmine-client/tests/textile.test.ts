@@ -69,6 +69,11 @@ describe("formatNotesForRedmine", () => {
   it("normalizes CRLF", () => {
     expect(formatNotesForRedmine("a\r\nb\rc")).toBe("a<br />\nb<br />\nc<br />");
   });
+  it("escapes markup characters so notes are not eaten by the HTML body", () => {
+    expect(formatNotesForRedmine("if (a < b) & c")).toBe(
+      "if (a &lt; b) &amp; c<br />"
+    );
+  });
 });
 
 describe("formatDescriptionForRedmine", () => {
@@ -106,5 +111,22 @@ describe("formatDescriptionForRedmine", () => {
     expect(formatDescriptionForRedmine('a < b & "c"')).toBe(
       "<p>a &lt; b &amp; &quot;c&quot;</p>"
     );
+  });
+
+  it("wraps plain text that merely contains angle brackets", () => {
+    // "Map<String, Object>" used to look like HTML, which skipped wrapping
+    // AND escaping and rendered the whole description as one blob.
+    const input = ["Map<String, Object> 사용", "두 번째 줄"].join("\n");
+    expect(formatDescriptionForRedmine(input)).toBe(
+      [
+        "<p>Map&lt;String, Object&gt; 사용</p>",
+        "<p>두 번째 줄</p>",
+      ].join("\n")
+    );
+  });
+
+  it("still leaves a real HTML body alone", () => {
+    const html = "<p>첫 줄</p>\n<p>Appearance &gt; Behavior</p>";
+    expect(formatDescriptionForRedmine(html)).toBe(html);
   });
 });

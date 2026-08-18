@@ -46,8 +46,21 @@ export function detectNotesMarkup(notes: string): string[] {
   return [...found];
 }
 
+/**
+ * Tags this Redmine emits in issue bodies. Deliberately narrow: treating any
+ * "<word>" as HTML made plain text such as "List<String>" skip both the <p>
+ * wrapping and the escaping, which rendered the whole body as one blob.
+ */
+const HTML_TAGS =
+  "p|br|div|span|strong|em|b|i|u|s|ul|ol|li|dl|dt|dd|h[1-6]|pre|code|a|img|hr|table|thead|tbody|tr|td|th|blockquote";
+
+const HTML_TAG = new RegExp(
+  "<" + "\\/?(?:" + HTML_TAGS + ")(?:\\s[^<>]*)?\\/?>",
+  "i"
+);
+
 function looksLikeHtml(text: string): boolean {
-  return /<\/?[a-z][\s\S]*>/i.test(text.trim());
+  return HTML_TAG.test(text.trim());
 }
 
 function escapeHtml(text: string): string {
@@ -64,12 +77,14 @@ function escapeHtml(text: string): string {
  */
 export function formatNotesForRedmine(notes: string): string {
   const normalized = normalizeNewlines(notes);
+  // Caller already sent HTML — leave their tags alone.
+  if (looksLikeHtml(normalized)) return normalized;
   return normalized
     .split("\n")
     .map((line) => {
       const trimmedEnd = line.replace(/\s+$/u, "");
-      if (/<br\s*\/?>\s*$/i.test(trimmedEnd)) return trimmedEnd;
-      return `${trimmedEnd}<br />`;
+      // Notes render as HTML too, so "if (a < b)" has to be escaped.
+      return `${escapeHtml(trimmedEnd)}<br />`;
     })
     .join("\n");
 }
