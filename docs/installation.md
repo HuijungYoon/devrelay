@@ -26,15 +26,15 @@ export REDMINE_CA_CERT_PATH=/path/to/company-ca.pem
 
 ## 4. Install MCP package (npm)
 
-현재 배포 버전: **`0.7.1`**
+현재 배포 버전: **`0.7.2`**
 
 ```bash
-npm install -g redmine-devrelay@0.7.1
+npm install -g redmine-devrelay@0.7.2
 ```
 
-Or rely on `npx -y redmine-devrelay@0.7.1` from plugin `.mcp.json` / `mcp.json`.
+Or rely on `npx -y redmine-devrelay@0.7.2` from plugin `.mcp.json` / `mcp.json`.
 
-Client 패키지(라이브러리): `redmine-devrelay-client@0.7.1`.
+Client 패키지(라이브러리): `redmine-devrelay-client@0.7.2`.
 
 ## 5. Claude Code
 
@@ -92,7 +92,7 @@ Details: `plugins/codex/README.md`.
 ## 7. Cursor
 
 After Marketplace listing: `/add-plugin redmine-devrelay`.  
-로컬: `plugins/cursor/mcp.json`이 `redmine-devrelay@0.7.1`를 가리킴.  
+로컬: `plugins/cursor/mcp.json`이 `redmine-devrelay@0.7.2`를 가리킴.  
 See `plugins/cursor/README.md`.
 
 ## 8. Antigravity
@@ -119,5 +119,5 @@ Slash 예: `/redmine:help`, `/redmine:my-issues`, `/redmine:create-issue`.
 Ask the agent to call `redmine_test_connection`, or use MCP Inspector:
 
 ```bash
-npx @modelcontextprotocol/inspector npx -y redmine-devrelay@0.7.1
+npx @modelcontextprotocol/inspector npx -y redmine-devrelay@0.7.2
 ```

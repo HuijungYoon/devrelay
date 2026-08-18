@@ -37,7 +37,7 @@ Expected: validation success (no errors). If `homepage`/`repository` fields are 
 | Plugin name | `redmine-devrelay` |
 | One-line description | Redmine MCP for Claude Code: list/search issues and create/update/comment/attach with dry-run confirm gate. |
 | Env required | `REDMINE_URL`, `REDMINE_API_KEY` (optional `REDMINE_ALLOWED_HOSTS`, `REDMINE_CA_CERT_PATH`) |
-| MCP | `npx -y redmine-devrelay@0.7.1` via plugin `.mcp.json` |
+| MCP | `npx -y redmine-devrelay@0.7.2` via plugin `.mcp.json` |
 
 ## After submit
 
