@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { TOOL_DEFS } from "../src/toolDefs.js";
+import { INSTRUCTIONS, TOOL_DEFS } from "../src/toolDefs.js";
 
 describe("TOOL_DEFS annotations", () => {
   it("marks search read-only", () => {
@@ -34,5 +34,12 @@ describe("TOOL_DEFS annotations", () => {
       openWorldHint: true,
       destructiveHint: false,
     });
+  });
+
+  it("tells the model previewToken is not approval", () => {
+    // The gate proves a dry-run ran, not that a human said yes; the model
+    // has to wait for the user between the two calls.
+    expect(INSTRUCTIONS).toContain("NOT evidence the user approved");
+    expect(INSTRUCTIONS).toContain("same turn");
   });
 });

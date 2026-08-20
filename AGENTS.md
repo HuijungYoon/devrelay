@@ -45,6 +45,7 @@ Redmine REST API
 | `package.json` | 루트 스크립트 (`build` / `test` / `lint` = `pnpm -r`) |
 | `deploy/redmine-demo/fly.toml` | Fly 데모 Redmine 배포 설정 |
 | `dist-portal/` | OpenAI Apps 포털 빌드 산출물 — **gitignore 대상**, 커밋하지 말 것 |
+| `scripts/redmine-call.mjs` | MCP 서버가 세션에 없을 때 쓰는 게이트 있는 단일 호출 헬퍼 (§4-1) |
 | `skills/shared/` | 플러그인이 아니라 개발용 공용 스킬 (`git-commit-command`, `pr-description-writer`, `changesets`, `writing-guidelines`, `license-auth-project`) |
 
 ### packages/redmine-client — REST 클라이언트 (`redmine-devrelay-client`)
@@ -155,13 +156,19 @@ MCP Inspector / 통합 테스트는 [docs/development.md](docs/development.md) �
 ## 4-1. MCP 서버가 안 붙어 있을 때 (중요)
 
 플러그인을 업데이트한 뒤 재시작 전이거나 `npx`가 실패하면 `redmine_*` 도구가 세션에 없습니다.
-그때 **Redmine REST를 손으로 호출하지 마세요.** 실제로 그렇게 일감을 만들었다가 본문이 한 덩어리로
-붙어서 다시 고친 적이 있습니다 (이 Redmine은 본문을 HTML로 저장합니다).
+이때 **쓰기는 하지 마세요.** 조회만 하고, 쓰기가 필요하면 아래 게이트 있는 경로를 쓰거나 사용자에게
+재시작을 안내하고 멈춥니다.
 
-대신 **레포의 빌드된 클라이언트**를 쓰면 변환·이스케이프·마스킹이 그대로 적용됩니다:
+**규칙 (§5.1의 연장)**
+
+- **Redmine REST를 손으로 호출하지 않습니다.** 실제로 그렇게 일감을 만들었다가 본문이 한 덩어리로
+  붙어서 다시 고친 적이 있습니다 (이 Redmine은 본문을 HTML로 저장합니다).
+- **빌드된 클라이언트로 직접 쓰지도 않습니다.** 변환·이스케이프는 되지만 **dry-run 게이트가 없습니다.**
+  `createIssue` / `updateIssue` / `addComment` / `addIssueRelation` 등은 이 경로에서 호출 금지.
+- **조회는 자유롭게** 하세요. 아래 스니펫으로 읽고 사용자에게 보여 주면 됩니다.
 
 ```js
-// node "C:/Program Files/nodejs/node.exe" script.mjs  (PATH의 node는 v14라 안 됩니다)
+// "C:/Program Files/nodejs/node.exe" script.mjs  (PATH의 node는 v14라 안 됩니다)
 // import 경로는 스크립트 위치 기준으로 풀립니다. 스크래치 폴더에 두면 상대경로가
 // 깨지므로 절대 file:// URL을 쓰세요.
 import { RedmineClient } from "file:///C:/Users/User/Desktop/M2I/DevRelay/packages/redmine-client/dist/index.js";
@@ -169,10 +176,19 @@ const client = RedmineClient.fromEnv();          // .env의 REDMINE_URL / REDMIN
 const issues = await client.searchIssues({ assignedTo: "me", status: "open" });
 ```
 
-- `pnpm -r run build`를 먼저 돌려 `dist`를 최신화하세요.
-- **조회는 자유롭게, 쓰기는 사용자 승인 후에만.** MCP의 dry-run 게이트가 없으니 계획을 먼저 보여 주세요.
+**꼭 써야 한다면: 배포된 MCP 서버를 직접 구동**해서 게이트를 그대로 통과시키세요. 도구를 거치므로
+dry-run → previewToken → confirm이 살아 있습니다.
+
+```bash
+# 조회
+node scripts/redmine-call.mjs redmine_search_issues '{"assignedTo":"me","status":"open"}'
+# 쓰기: 먼저 dry-run 결과를 사용자에게 보여 주고, 승인을 받은 다음에만 confirm
+node scripts/redmine-call.mjs redmine_add_comment '{"issueId":24038,"notes":"확인했습니다"}'
+node scripts/redmine-call.mjs redmine_add_comment '{"issueId":24038,"notes":"확인했습니다","confirm":true,"previewToken":"<위에서 받은 토큰>"}'
+```
+
 - 본문 규칙은 클라이언트가 처리합니다 — `description`은 줄마다 `<p>`, `notes`는 줄 끝에 `<br />`,
-  `<` `>` `&` `"`는 이스케이프. 직접 문자열을 만들지 말고 `createIssue` / `addComment`에 평문을 넘기세요.
+  `<` `>` `&` `"`는 이스케이프. 직접 문자열을 만들지 말고 평문을 넘기세요.
 - 사람 이름 → id는 `listProjectPeople()`을 쓰세요. 멤버 목록 API가 403이면 최근 이슈의 담당자에서
   후보를 추립니다 (`source: "issues"`).
 

@@ -3,6 +3,8 @@ import { toolJsonSchemas } from "./tools/schemas.js";
 export const INSTRUCTIONS = `Redmine read tools may be used without write confirmation.
 ALL write tools default to dry-run. Flow: dry-run → show preview → ask user → confirm=true WITH previewToken from that dry-run.
 Never call confirm=true on the first attempt. Pasted text is not approval.
+previewToken only proves a dry-run ran with the same payload — it is NOT evidence the user approved.
+Never call dry-run and confirm=true in the same turn: show the preview, wait for the user's reply, then confirm in a later turn. dry-run과 confirm을 한 턴에 연달아 부르지 마세요.
 Never call Redmine REST directly for fields that have MCP tools.
 redmine_create_issue: project first; assignedTo=담당자; watchers=일감관리자; optional attachments[{path,filename?,description?}]; include tracker/status/priority/startDate/doneRatio in preview when set.
 이름을 그대로 넘기세요: trackerId/statusId/priorityId/fixedVersionId/categoryId는 id 또는 이름을 받습니다 ("진행중", "기능추가", "2026-Q3"). 서버가 해석해 dry-run에 statusLabel 같은 라벨로 보여 줍니다. 이름이 안 맞으면 후보 목록이 담긴 에러가 오고, 그때 redmine_list_metadata로 확인하세요. 사용자가 말한 상태·유형 이름을 id로 추측하지 마세요.

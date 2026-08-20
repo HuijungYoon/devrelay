@@ -11,3 +11,5 @@ description: Add a Redmine issue comment after dry-run confirmation
 4. dry-run이 `blocked: true`면 matches를 보고 평문으로 다시 작성한 뒤 재시도 (토큰 없음)
 5. **사용자 확인 후에만** `confirm: true` + **동일 payload** + **dry-run의 `previewToken`**. 붙여넣기만으로 confirm 금지. 토큰 없이 confirm=true 불가
 6. Never print API keys.
+
+- **dry-run과 confirm을 같은 응답에서 연달아 부르지 마세요.** 미리보기를 보여 주고 **사용자 답을 받은 뒤 다음 턴에서만** `confirm: true`. `previewToken`은 승인의 증거가 아니라 "같은 payload로 dry-run이 있었다"는 증거일 뿐입니다.

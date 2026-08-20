@@ -16,3 +16,5 @@ description: Add, move, or detach Redmine subtasks (하위일감) after dry-run 
    - 사용자가 "하위일감 삭제"라고 하면 이 동작으로 안내한다. 일감을 실제로 지우는 기능은 이 플러그인에 없음 (Redmine 웹에서 직접)
 5. dry-run `changes[]`에서 `parentIssueId` 이전→이후 확인 → OK → `confirm: true` + **`previewToken`**
 6. 자기 자신을 부모로 넣으면 거절됨. 다른 프로젝트 일감을 부모로 두는 것은 Redmine의 cross-project subtasks 설정에 따라 거절될 수 있다
+
+- **dry-run과 confirm을 같은 응답에서 연달아 부르지 마세요.** 미리보기를 보여 주고 **사용자 답을 받은 뒤 다음 턴에서만** `confirm: true`. `previewToken`은 승인의 증거가 아니라 "같은 payload로 dry-run이 있었다"는 증거일 뿐입니다.

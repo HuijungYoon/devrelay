@@ -19,3 +19,5 @@ description: Update Redmine issue fields after before/after dry-run confirmation
 7. **상위 일감** `parentIssueId` — id를 넣으면 하위일감으로 편입/부모 변경, `null`이면 부모 연결 해제(일감은 삭제되지 않음). 자세한 흐름은 `subtask` 스킬
 8. 연결된 일감(relations)은 이 도구가 아니라 `relate-issue` 스킬
 9. 상태만 바꿀 때는 `redmine_update_status`도 가능하나, 여러 필드면 `update_issue` 사용
+
+- **dry-run과 confirm을 같은 응답에서 연달아 부르지 마세요.** 미리보기를 보여 주고 **사용자 답을 받은 뒤 다음 턴에서만** `confirm: true`. `previewToken`은 승인의 증거가 아니라 "같은 payload로 dry-run이 있었다"는 증거일 뿐입니다.

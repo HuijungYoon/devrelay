@@ -19,3 +19,5 @@ description: Add, change, or remove Redmine issue relations (연결된 일감) a
 4. **삭제** `redmine_remove_issue_relation { relationId }` — **링크만 끊고 두 일감은 그대로 남는다**
 5. dry-run 결과로 보여 주기 → OK → `confirm: true` + **`previewToken`** (첫 호출에 confirm=true 불가)
 6. 상위/하위(부모-자식)는 relation이 아니라 `parentIssueId` — `subtask` 스킬 참고
+
+- **dry-run과 confirm을 같은 응답에서 연달아 부르지 마세요.** 미리보기를 보여 주고 **사용자 답을 받은 뒤 다음 턴에서만** `confirm: true`. `previewToken`은 승인의 증거가 아니라 "같은 payload로 dry-run이 있었다"는 증거일 뿐입니다.

@@ -25,3 +25,5 @@ description: Create a Redmine issue after dry-run confirmation
 8. **시작일·완료기한·진척도** — `startDate` / `dueDate` / `doneRatio`. 설정한 값은 dry-run `wouldApply`에 **반드시** 포함해 보여 준다
 9. dry-run 결과로 보여 주기 → OK → `confirm: true` + `previewToken`
 10. API Key 출력 금지
+
+- **dry-run과 confirm을 같은 응답에서 연달아 부르지 마세요.** 미리보기를 보여 주고 **사용자 답을 받은 뒤 다음 턴에서만** `confirm: true`. `previewToken`은 승인의 증거가 아니라 "같은 payload로 dry-run이 있었다"는 증거일 뿐입니다.
