@@ -22,7 +22,7 @@ redmine-devrelay-client     packages/redmine-client  REST·인증·HTML 변환·
 Redmine REST API
 ```
 
-- npm 배포 버전: **0.7.2** (두 패키지 동일 버전으로 맞춤). 플러그인 pin은 publish 후에 올립니다 (§8)
+- npm 배포 버전: **0.7.3** (두 패키지 동일 버전으로 맞춤). 플러그인 pin은 publish 후에 올립니다 (§8)
 - pnpm workspace (`pnpm-workspace.yaml`), TypeScript ESM, vitest
 - 언어: 스킬 문서와 사용자 대화는 한국어, 코드·커밋은 영어
 

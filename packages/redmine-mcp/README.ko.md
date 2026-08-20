@@ -4,14 +4,14 @@
 
 Cursor · Claude Code · Codex용 **Redmine MCP 서버**입니다.
 
-- **버전:** `0.7.2`
+- **버전:** `0.7.3`
 - **GitHub:** https://github.com/HuijungYoon/devrelay
 - **Client:** [redmine-devrelay-client](https://www.npmjs.com/package/redmine-devrelay-client) (동일 버전)
 
 ## 빠른 시작
 
 ```bash
-npx -y redmine-devrelay@0.7.2
+npx -y redmine-devrelay@0.7.3
 ```
 
 | 환경변수 | 설명 |
