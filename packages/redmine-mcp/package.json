@@ -1,6 +1,6 @@
 {
   "name": "redmine-devrelay",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "description": "Redmine MCP server for Cursor/Claude/Codex ??read issues and create/comment/update with confirm gate (DevRelay)",
   "type": "module",
   "bin": {
@@ -34,6 +34,7 @@
     "devrelay"
   ],
   "scripts": {
+    "prebuild": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",
     "lint": "tsc -p tsconfig.json --noEmit",

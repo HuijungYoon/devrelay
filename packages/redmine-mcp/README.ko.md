@@ -4,14 +4,14 @@
 
 Cursor · Claude Code · Codex용 **Redmine MCP 서버**입니다.
 
-- **버전:** `0.7.3`
+- **버전:** `0.7.4`
 - **GitHub:** https://github.com/HuijungYoon/devrelay
 - **Client:** [redmine-devrelay-client](https://www.npmjs.com/package/redmine-devrelay-client) (동일 버전)
 
 ## 빠른 시작
 
 ```bash
-npx -y redmine-devrelay@0.7.3
+npx -y redmine-devrelay@0.7.4
 ```
 
 | 환경변수 | 설명 |
@@ -32,6 +32,18 @@ dry-run 응답의 `previewToken` 없이는 적용할 수 없습니다 (TTL 10분
 | --- | --- |
 | `description` | 일반 텍스트 줄 → `<p>…</p>` (이미 HTML이면 그대로) |
 | `notes` / 댓글 | 줄바꿈 → `<br />`. **평문만** — Textile/Markdown은 dry-run에서 `blocked` |
+
+## 원시 REST 차단
+
+confirm 게이트는 이 도구를 거친 호출만 보호합니다. 우회로를 막는 장치가 레포에 둘 있습니다.
+
+| 경로 | 내용 |
+| --- | --- |
+| `scripts/redmine-call.mjs` | 터미널에서 실제 서버를 거쳐 한 번의 도구 호출 — MCP 도구가 없는 세션도 dry-run -> previewToken -> confirm을 그대로 탄다 |
+| `plugins/claude-code/hooks/` | Claude Code 플러그인이 함께 설치하는 PreToolUse 훅. Redmine에 직접 POST/PUT/DELETE 하는 셸 명령과 파일 작성을 거부한다. 조회는 막지 않는다 |
+
+`previewToken`은 같은 payload로 dry-run이 있었다는 증거일 뿐 **사용자 승인의 증거가 아닙니다.**
+dry-run과 `confirm=true`를 같은 턴에 부르지 마세요.
 
 ## 조회 API
 
@@ -93,6 +105,7 @@ dry-run 응답의 `previewToken` 없이는 적용할 수 없습니다 (TTL 10분
 
 | 버전 | 내용 |
 | --- | --- |
+| **0.7.4** | Redmine 쓰기 가드를 Claude Code 플러그인과 함께 배포 (PreToolUse 훅) · `scripts/redmine-call.mjs` 문서화 |
 | **0.7.3** | previewToken은 사용자 승인의 증거가 아님을 규칙에 명시 — dry-run과 confirm을 같은 턴에 부르지 않도록 |
 | **0.7.2** | 본문 HTML 변환 수정: 꺾쇠 포함 평문도 `<p>` 래핑·이스케이프, 댓글 줄바꿈 유지, 태그 allowlist를 Redmine 기준으로 확장. 멤버 API가 403이면 최근 이슈 담당자에서 후보 추림 |
 | **0.7.1** | 검색 결과에 `dueDate`·`doneRatio` 포함 — 완료기한 컬럼을 위해 이슈마다 조회할 필요 없음 |

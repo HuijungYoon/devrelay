@@ -4,7 +4,7 @@
 
 **Redmine MCP server** for Cursor · Claude Code · Codex.
 
-- **Version:** `0.7.3`
+- **Version:** `0.7.4`
 - **GitHub:** https://github.com/HuijungYoon/devrelay
 - **Client:** [redmine-devrelay-client](https://www.npmjs.com/package/redmine-devrelay-client) (same version)
 
@@ -13,7 +13,7 @@
 STDIO is the default transport. Local IDE plugins use this path.
 
 ```bash
-npx -y redmine-devrelay@0.7.3
+npx -y redmine-devrelay@0.7.4
 ```
 
 | Env var | Description |
@@ -28,7 +28,7 @@ npx -y redmine-devrelay@0.7.3
 For remote / Streamable HTTP deployments. The Codex Git marketplace keeps STDIO `npx` and does **not** switch to a remote URL.
 
 ```bash
-npx -y redmine-devrelay@0.7.3 --http
+npx -y redmine-devrelay@0.7.4 --http
 # or after build
 pnpm --filter redmine-devrelay start:http
 # port: --port 9090 or PORT (default 8080)
@@ -83,6 +83,19 @@ This Redmine uses **HTML bodies**. Pass plain text and the client converts it.
 | --- | --- |
 | `description` | Plain text lines → `<p>…</p>` (left as-is if already HTML) |
 | `notes` / comments | Newlines → `<br />`. **Plain text only** — Textile/Markdown is `blocked` in dry-run |
+
+## Keeping raw REST out
+
+The confirm gate only protects calls that go through these tools. Two things in
+the repo close the ways around it:
+
+| Path | What it is |
+| --- | --- |
+| `scripts/redmine-call.mjs` | One tool call from a terminal, through the real server — so a session without the MCP tools still gets dry-run -> previewToken -> confirm |
+| `plugins/claude-code/hooks/` | A PreToolUse hook shipped with the Claude Code plugin. It refuses shell commands and file writes that POST/PUT/DELETE to Redmine directly. Reads are untouched |
+
+`previewToken` proves a dry-run ran with the same payload — it is **not** evidence
+the user approved. Never call dry-run and `confirm=true` in the same turn.
 
 ## Read APIs
 
@@ -144,6 +157,7 @@ This server has no issue-delete tool by design; deleting an issue in Redmine is 
 
 | Version | Notes |
 | --- | --- |
+| **0.7.4** | Ships the Redmine write guard with the Claude Code plugin (PreToolUse hook) and documents `scripts/redmine-call.mjs` |
 | **0.7.3** | Instructions spell out that previewToken is not user approval: dry-run and confirm must not happen in the same turn |
 | **0.7.2** | Fix HTML body conversion: plain text with angle brackets is wrapped and escaped again, notes keep every line break, and the tag allowlist matches what Redmine renders. People lookup falls back to recent assignees when the memberships API is forbidden |
 | **0.7.1** | `dueDate`/`doneRatio` in search results, so a due-date column needs no per-issue fetch |

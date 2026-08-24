@@ -22,7 +22,7 @@ redmine-devrelay-client     packages/redmine-client  REST·인증·HTML 변환·
 Redmine REST API
 ```
 
-- npm 배포 버전: **0.7.3** (두 패키지 동일 버전으로 맞춤). 플러그인 pin은 publish 후에 올립니다 (§8)
+- npm 배포 버전: **0.7.4** (두 패키지 동일 버전으로 맞춤). 플러그인 pin은 publish 후에 올립니다 (§8)
 - pnpm workspace (`pnpm-workspace.yaml`), TypeScript ESM, vitest
 - 언어: 스킬 문서와 사용자 대화는 한국어, 코드·커밋은 영어
 
@@ -45,6 +45,7 @@ Redmine REST API
 | `package.json` | 루트 스크립트 (`build` / `test` / `lint` = `pnpm -r`) |
 | `deploy/redmine-demo/fly.toml` | Fly 데모 Redmine 배포 설정 |
 | `dist-portal/` | OpenAI Apps 포털 빌드 산출물 — **gitignore 대상**, 커밋하지 말 것 |
+| `plugins/claude-code/hooks/` | 플러그인이 함께 설치하는 PreToolUse 가드 (`hooks.json` + 스크립트). Redmine 직접 쓰기를 거부. 판정 회귀는 `scripts/tests/guard.test.mjs` |
 | `scripts/redmine-call.mjs` | MCP 서버가 세션에 없을 때 쓰는 게이트 있는 단일 호출 헬퍼 (§4-1) |
 | `skills/shared/` | 플러그인이 아니라 개발용 공용 스킬 (`git-commit-command`, `pr-description-writer`, `changesets`, `writing-guidelines`, `license-auth-project`) |
 
@@ -123,7 +124,7 @@ Redmine REST API
 ```bash
 pnpm install
 pnpm -r run build     # client → mcp 순서로 빌드
-pnpm -r run test      # vitest (client 79 + mcp 96)
+pnpm -r run test      # vitest (client 85 + mcp 97)
 pnpm -r run lint      # tsc --noEmit
 ```
 
@@ -158,6 +159,10 @@ MCP Inspector / 통합 테스트는 [docs/development.md](docs/development.md) �
 플러그인을 업데이트한 뒤 재시작 전이거나 `npx`가 실패하면 `redmine_*` 도구가 세션에 없습니다.
 이때 **쓰기는 하지 마세요.** 조회만 하고, 쓰기가 필요하면 아래 게이트 있는 경로를 쓰거나 사용자에게
 재시작을 안내하고 멈춥니다.
+
+이 규칙은 말로만 있는 게 아닙니다. Claude Code 플러그인이 **PreToolUse 가드**를 함께 설치해서
+Redmine에 직접 POST/PUT/DELETE 하는 셸 명령과 그런 스크립트 작성을 실제로 거부합니다
+(`plugins/claude-code/hooks/`). 조회는 막지 않습니다.
 
 **규칙 (§5.1의 연장)**
 
@@ -249,11 +254,12 @@ node scripts/redmine-call.mjs redmine_add_comment '{"issueId":24038,"notes":"확
 
 플러그인은 MCP 서버를 `npx -y redmine-devrelay@<버전>`으로 해결합니다. 그래서 **publish 전에 버전 pin을 push하면 신규 설치가 깨집니다.**
 
-1. 두 패키지 `package.json` 버전을 올린다 (항상 동일 버전)
+1. 두 패키지 `package.json` 버전 + **README 버전 문구**를 올린다 (항상 동일 버전).
+   README는 tarball에 포함되므로 **publish 전에** 올려야 배포본이 자기 버전과 맞습니다
 2. `pnpm -r run build && pnpm -r run test`
 3. `pnpm --filter redmine-devrelay-client publish --access public`
 4. `pnpm --filter redmine-devrelay publish --access public`
-5. pin을 올린 릴리즈 커밋을 push — 4개 플러그인 설정 + 3개 marketplace 카탈로그 + README 4개 + `docs/installation.md`
+5. **publish 후에** 플러그인 pin을 올려 push — 4개 플러그인 설정(`.mcp.json` 등) + 3개 marketplace 카탈로그. 이 pin만 순서를 지켜야 합니다 (없는 버전을 가리키면 신규 설치가 깨짐)
 6. 버전 이력 표에는 **새 행을 추가**합니다. 과거 행(`| **0.5.2** | …`)의 숫자는 바꾸지 않습니다
 
 `npm publish`는 되돌릴 수 없습니다. 사용자 승인 없이 실행하지 마세요.
