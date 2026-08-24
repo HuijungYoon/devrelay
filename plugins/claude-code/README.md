@@ -1,6 +1,6 @@
 # Claude Code — Redmine plugin
 
-Redmine read/write via `redmine-devrelay@0.7.3` (dry-run → confirm → apply).
+Redmine read/write via `redmine-devrelay@0.7.4` (dry-run → confirm → apply).
 
 **Breaking:** plugin id is `redmine-devrelay` (was `redmine`). Slash commands are `/redmine-devrelay:…` (was `/redmine:…`).
 
@@ -13,7 +13,13 @@ export REDMINE_API_KEY=...
 
 Optional: `REDMINE_ALLOWED_HOSTS`, `REDMINE_CA_CERT_PATH` (see `docs/installation.md`).
 
-`.mcp.json` uses `npx -y redmine-devrelay@0.7.3`.
+`.mcp.json` uses `npx -y redmine-devrelay@0.7.4`.
+
+## Write guard
+
+This plugin also installs a PreToolUse hook (`hooks/`) that refuses shell commands
+and file writes which POST/PUT/DELETE to Redmine directly — those bypass the
+dry-run confirm gate. Reads are untouched. Run `/reload-plugins` after updating.
 
 ## Install from marketplace (recommended)
 
