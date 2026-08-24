@@ -16,7 +16,8 @@
 
 - MCP 서버는 `npx -y redmine-devrelay@<version>`으로 받은 **npm 배포판**입니다. 레포에서 `packages/redmine-mcp`를 고쳐도 **이 세션의 `redmine_*` 도구는 바뀌지 않습니다.** 배포 후 플러그인을 업데이트해야 반영됩니다.
 - 스킬(SKILL.md)만 고친 경우도 캐시 사본이 갱신되어야 적용됩니다.
-- `/plugin` 같은 대화형 패널은 앱 세션에서 열 수 없습니다. 대화형 `claude` 터미널이나 `claude plugin update <plugin>@<marketplace>`로 업데이트하도록 안내하세요.
+- `/plugin`·`/reload-plugins` 같은 대화형 명령은 **앱 세션에 등록되지 않습니다** (대화형 `claude` 터미널 전용). 앱 세션에서는 `claude plugin update <plugin>@<marketplace>`로 갱신하고, **적용은 세션 재시작**입니다. 사용자에게 `/reload-plugins`를 안내하지 마세요.
+- 설치 상태는 `claude plugin details <plugin>@<marketplace>`로 확인할 수 있습니다 (스킬·훅·MCP 서버 목록).
 - **`redmine_*` 도구가 세션에 없으면 쓰기를 하지 마세요.** 조회는 `AGENTS.md` §4-1의 스니펫으로, 꼭 써야 하면 `node scripts/redmine-call.mjs`로 실제 MCP 서버를 거쳐 dry-run 게이트를 통과시키세요. 예전에 REST를 직접 불러 본문이 한 덩어리로 저장된 적이 있습니다.
 
 ### 스킬을 고칠 때
