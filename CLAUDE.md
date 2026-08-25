@@ -39,4 +39,5 @@ claude --plugin-dir ./plugins/claude-code
 ### 도구 사용 메모
 
 - 셸은 PowerShell이 기본이고 Bash 도구도 있습니다. **한 호출 안에서 두 문법을 섞지 마세요** (PowerShell here-string을 Bash에 넣으면 커밋 메시지가 깨집니다).
-- `node` / `npx`는 PATH에서 v14입니다. `pnpm`을 쓰거나 `"C:/Program Files/nodejs/node.exe"`를 직접 쓰세요.
+- node는 Volta가 기본 런타임을 정합니다 (현재 22.23.2). 기본이 20 미만이면 `npx`로 뜨는 MCP 서버가 조용히 죽어
+  `CONNECTION_CLOSED`만 남습니다 — 그때는 `volta list`부터 보세요.

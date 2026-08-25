@@ -143,7 +143,9 @@ MCP Inspector / 통합 테스트는 [docs/development.md](docs/development.md) �
 
 ## 4. 이 환경(Windows)의 함정
 
-- **`node`가 PATH에서 v14입니다.** 최신 문법(`??=`)이 깨집니다. `pnpm`을 통해 실행하거나 `"C:/Program Files/nodejs/node.exe"`(v22)를 직접 쓰세요. `npx`도 같은 이유로 실패합니다.
+- **node 런타임은 Volta가 정합니다** (`volta list`의 `runtime node@… (default)`). 2026-08-25에 기본을 14.20.0 → 22.23.2로 올렸습니다.
+  기본이 20 미만이면 `npx -y redmine-devrelay`가 파싱 단계에서 죽고, MCP 서버는 `CONNECTION_CLOSED`로만 보입니다 — 플러그인 문제로 오해하기 쉽습니다.
+  버전을 못 믿을 상황이면 `"C:/Program Files/nodejs/node.exe"`(v22)를 직접 쓰거나 `pnpm`을 통해 실행하세요.
 - **`python`은 Python 2**입니다. 임시 스크립트는 PowerShell을 쓰는 편이 안전합니다.
 - **Git Bash가 `rev:path` 인자를 망깁니다** (`origin/main:file` → `origin\main;file`). `git cat-file`/`git show`에 `rev:path`를 넘길 때는 PowerShell을 쓰거나 `MSYS_NO_PATHCONV=1`.
 - **Bash 도구에서 PowerShell here-string(`@'…'@`)을 쓰지 마세요.** 커밋 메시지는 heredoc(`git commit -F -`)으로.
@@ -173,7 +175,7 @@ Redmine에 직접 POST/PUT/DELETE 하는 셸 명령과 그런 스크립트 작�
 - **조회는 자유롭게** 하세요. 아래 스니펫으로 읽고 사용자에게 보여 주면 됩니다.
 
 ```js
-// "C:/Program Files/nodejs/node.exe" script.mjs  (PATH의 node는 v14라 안 됩니다)
+// node script.mjs  (PATH의 node가 20 미만이면 "C:/Program Files/nodejs/node.exe"를 직접)
 // import 경로는 스크립트 위치 기준으로 풀립니다. 스크래치 폴더에 두면 상대경로가
 // 깨지므로 절대 file:// URL을 쓰세요.
 import { RedmineClient } from "file:///C:/Users/User/Desktop/M2I/DevRelay/packages/redmine-client/dist/index.js";
