@@ -80,7 +80,7 @@ describe("write handlers confirm gate", () => {
         createIssue,
         listProjectPeople,
         searchUsers: vi.fn(),
-        getCurrentUser: vi.fn(),
+        getCurrentUser: vi.fn().mockResolvedValue({ id: 1, name: "윤 희중" }),
       } as never,
       {
         projectId: 1,
@@ -92,10 +92,37 @@ describe("write handlers confirm gate", () => {
     );
     expect(createIssue).not.toHaveBeenCalled();
     expect(dry.wouldApply).toMatchObject({
-      assignedTo: "me",
+      assignedTo: 1,
+      assignedToLabel: "윤 희중 (me)",
       watcherUserIds: [99],
       watcherLabels: ["윤 석준"],
     });
+  });
+
+  it("createIssue resolves assignedTo=me to the current user id on confirm", async () => {
+    const getCurrentUser = vi
+      .fn()
+      .mockResolvedValue({ id: 164, name: "윤 희중" });
+    const createIssue = vi.fn().mockResolvedValue({ id: 6, subject: "S" });
+    const deps = {
+      createIssue,
+      listProjectPeople: vi.fn(),
+      searchUsers: vi.fn(),
+      getCurrentUser,
+    } as never;
+    const input = { projectId: 1, subject: "S", assignedTo: "me" as const };
+
+    const dry = await handleCreateIssue(deps, { ...input, confirm: false });
+    expect(dry.wouldApply).toMatchObject({ assignedTo: 164 });
+
+    await handleCreateIssue(deps, {
+      ...input,
+      confirm: true,
+      previewToken: dry.previewToken,
+    });
+    expect(createIssue).toHaveBeenCalledWith(
+      expect.objectContaining({ assignedTo: 164 })
+    );
   });
 
   it("updateIssue dry-run returns before→after and does not PUT", async () => {

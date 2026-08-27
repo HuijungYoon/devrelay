@@ -149,13 +149,13 @@ async function resolveOneUser(
   };
 }
 
-/** Resolve assignedTo: "me" | userId | name → "me" | userId */
+/** Resolve assignedTo: "me" | userId | name → userId */
 export async function resolveAssignedTo(
   client: RedmineClient,
   projectId: number,
   assignedTo: CreateIssueInput["assignedTo"],
   membersCache?: RedmineUser[]
-): Promise<{ assignedTo: "me" | number; label?: string; members: RedmineUser[] } | undefined> {
+): Promise<{ assignedTo: number; label?: string; members: RedmineUser[] } | undefined> {
   if (assignedTo === undefined) {
     return undefined;
   }
@@ -166,6 +166,16 @@ export async function resolveAssignedTo(
     "assignedTo",
     membersCache
   );
+  // Redmine only honors assigned_to_id=me in query filters; writes need the
+  // numeric id, otherwise the issue is silently created unassigned.
+  if (resolved.id === "me") {
+    const me = await client.getCurrentUser();
+    return {
+      assignedTo: me.id,
+      label: `${me.name} (me)`,
+      members: resolved.members,
+    };
+  }
   return {
     assignedTo: resolved.id,
     label: resolved.label,
@@ -436,11 +446,7 @@ export async function handleUpdateIssue(
     push("estimatedHours", current.estimatedHours, input.estimatedHours);
   }
   if (assignee) {
-    push(
-      "assignedTo",
-      current.assignedTo?.id ?? null,
-      assignee.assignedTo === "me" ? "me" : assignee.assignedTo
-    );
+    push("assignedTo", current.assignedTo?.id ?? null, assignee.assignedTo);
   }
   if (watchers) {
     push("watchers", "(current)", watchers.watcherUserIds);
