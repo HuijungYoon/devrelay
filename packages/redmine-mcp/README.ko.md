@@ -4,14 +4,14 @@
 
 Cursor · Claude Code · Codex용 **Redmine MCP 서버**입니다.
 
-- **버전:** `0.7.4`
+- **버전:** `0.7.5`
 - **GitHub:** https://github.com/HuijungYoon/devrelay
 - **Client:** [redmine-devrelay-client](https://www.npmjs.com/package/redmine-devrelay-client) (동일 버전)
 
 ## 빠른 시작
 
 ```bash
-npx -y redmine-devrelay@0.7.4
+npx -y redmine-devrelay@0.7.5
 ```
 
 | 환경변수 | 설명 |
@@ -105,6 +105,7 @@ dry-run과 `confirm=true`를 같은 턴에 부르지 마세요.
 
 | 버전 | 내용 |
 | --- | --- |
+| **0.7.5** | 버그 수정: 생성·수정에서 `assignedTo="me"`를 현재 사용자 id로 해석 — Redmine이 쓰기에서 `me` 문자열을 무시해 담당자가 빈 채로 만들어지던 문제 |
 | **0.7.4** | Redmine 쓰기 가드를 Claude Code 플러그인과 함께 배포 (PreToolUse 훅) · `scripts/redmine-call.mjs` 문서화 |
 | **0.7.3** | previewToken은 사용자 승인의 증거가 아님을 규칙에 명시 — dry-run과 confirm을 같은 턴에 부르지 않도록 |
 | **0.7.2** | 본문 HTML 변환 수정: 꺾쇠 포함 평문도 `<p>` 래핑·이스케이프, 댓글 줄바꿈 유지, 태그 allowlist를 Redmine 기준으로 확장. 멤버 API가 403이면 최근 이슈 담당자에서 후보 추림 |
