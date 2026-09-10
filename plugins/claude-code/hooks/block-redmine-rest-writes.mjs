@@ -13,7 +13,7 @@
  * the real MCP server, so the gate still applies.
  */
 const REDMINE_TARGET =
-  /(redmine[^\s'"]*\/(issues|relations|projects|uploads)|\/(issues|relations|uploads)(\/\d+)?\.json|\/issues\/\d+\/relations)/i;
+  /(redmine[^\s'"]*\/(issues|relations|projects|uploads|time_entries)|\/(issues|relations|uploads|time_entries)(\/\d+)?\.json|\/issues\/\d+\/relations)/i;
 
 /** HTTP write verbs. Only meaningful next to a Redmine target. */
 const REST_VERB = [
@@ -28,7 +28,14 @@ const REST_VERB = [
 
 /** This client's own write methods — specific enough to count on their own. */
 const CLIENT_METHOD =
-  /\.(postJson|putJson|deleteJson|postBinary)\s*\(|\b(createIssue|updateIssue|addComment|updateIssueStatus|addIssueAttachments|addIssueRelation|removeIssueRelation|replaceIssueRelation)\s*\(/;
+  /\.(postJson|putJson|deleteJson|postBinary)\s*\(|\b(createIssue|updateIssue|addComment|updateIssueStatus|addIssueAttachments|addIssueRelation|removeIssueRelation|replaceIssueRelation|createTimeEntry)\s*\(/;
+
+/**
+ * This repo's own unit tests mock the client's write methods and assert the
+ * exact Redmine path, so they look like a write script. A vitest file under a
+ * tests/ directory is not a script anyone will run against Redmine.
+ */
+const TEST_FILE = /(^|[\\/])tests?[\\/].*\.test\.[cm]?[jt]sx?$/i;
 
 /**
  * Runners whose quoted argument IS code: the separators inside it are not shell
@@ -67,8 +74,9 @@ function bashWritesToRedmine(command) {
 }
 
 /** A Redmine path is required here: app code may legitimately define addComment(). */
-function fileWritesToRedmine(content) {
+function fileWritesToRedmine(content, filePath) {
   if (!content || ALLOWED.test(content)) return false;
+  if (TEST_FILE.test(String(filePath || ''))) return false;
   return (
     REDMINE_TARGET.test(content) &&
     (hasRestVerb(content) || CLIENT_METHOD.test(content))
@@ -100,7 +108,10 @@ process.stdin.on('end', () => {
   const blocked =
     payload.tool_name === 'Bash'
       ? bashWritesToRedmine(String(toolInput.command || ''))
-      : fileWritesToRedmine(String(toolInput.content || toolInput.new_string || ''));
+      : fileWritesToRedmine(
+          String(toolInput.content || toolInput.new_string || ''),
+          toolInput.file_path,
+        );
 
   if (!blocked) process.exit(0);
 

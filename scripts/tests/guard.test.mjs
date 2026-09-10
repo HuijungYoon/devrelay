@@ -26,13 +26,17 @@ const decide = (payload) => {
 };
 
 const bash = (command) => ({ tool_name: 'Bash', tool_input: { command } });
-const write = (content) => ({ tool_name: 'Write', tool_input: { file_path: 'x', content } });
+const write = (content, file_path = 'x') => ({ tool_name: 'Write', tool_input: { file_path, content } });
 
 const cases = [
   ['BLOCK', 'curl POST to an issue', bash("curl -X POST http://192.168.1.20/redmine/issues/24067.json -d @b.json")],
   ['BLOCK', 'python -c with requests.put', bash("python -c \"import requests; requests.put('http://192.168.1.20/redmine/issues/1.json', json=p)\"")],
   ['BLOCK', 'writing a python script that PUTs', write("import requests\nrequests.put('http://192.168.1.20/redmine/issues/24067.json', json={'issue':{'notes':'x'}})")],
   ['BLOCK', 'writing a node script using the client', write("await client.addComment(24067, 'hi') // /issues/24067.json")],
+  ['BLOCK', 'curl POST of a time entry', bash("curl -X POST http://192.168.1.20/redmine/time_entries.json -d @t.json")],
+  ['BLOCK', 'writing a script that logs time through the client', write("await client.createTimeEntry({ issueId: 1, hours: 2 }) // POST /time_entries.json")],
+  ['ALLOW', 'a vitest file exercising a client write', write("await client.createTimeEntry({ issueId: 1, hours: 2 }); expect(postJson).toHaveBeenCalledWith('/time_entries.json', expect.anything());", 'packages/redmine-client/tests/timeEntries.test.ts')],
+  ['BLOCK', 'the same content outside a tests directory', write("await client.createTimeEntry({ issueId: 1, hours: 2 }); expect(postJson).toHaveBeenCalledWith('/time_entries.json', expect.anything());", 'scripts/log.mjs')],
   ['ALLOW', 'GET read', bash('curl -s http://192.168.1.20/redmine/issues/24067.json')],
   ['ALLOW', 'echo printing a write command', bash('echo \'{"cmd":"curl -X POST http://192.168.1.20/redmine/issues/1.json"}\' | node check.mjs')],
   ['ALLOW', 'the gated helper', bash('node scripts/redmine-call.mjs redmine_add_comment \'{"issueId":1,"notes":"x"}\'')],
