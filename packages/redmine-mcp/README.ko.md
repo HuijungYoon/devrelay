@@ -56,7 +56,8 @@ dry-run과 `confirm=true`를 같은 턴에 부르지 마세요.
 | `redmine_search_issues` | 이슈 검색 (기본: 열린 이슈, `assignedTo: "me"` 지원). 각 행에 `dueDate`·`doneRatio` 포함 |
 | `redmine_get_issue` | 이슈 상세 조회 (journals·children 등 include) |
 | `redmine_list_issue_relations` | 연결된 일감 목록 (수정·삭제에 필요한 `relationId` 확인) |
-| `redmine_list_metadata` | 유형·상태·우선순위 (+ `projectId`면 대상 버전·범주·사용자 정의 필드) id+이름 목록 |
+| `redmine_list_metadata` | 유형·상태·우선순위·작업 분류 (+ `projectId`면 대상 버전·범주·사용자 정의 필드) id+이름 목록 |
+| `redmine_list_time_entries` | 작업시간 조회 — 일감 / 프로젝트 / 사용자(`"me"`, 일감·프로젝트가 없으면 기본) / `spentFrom`–`spentTo`. 돌려준 행의 `totalHours` 포함 |
 
 ## 쓰기 API
 
@@ -67,6 +68,7 @@ dry-run과 `confirm=true`를 같은 턴에 부르지 마세요.
 | `redmine_add_comment` | 이슈 댓글 추가 (평문만; Textile/Markdown 차단) |
 | `redmine_add_attachment` | 기존 이슈에 로컬 파일 첨부 |
 | `redmine_update_status` | 이슈 상태(`statusId`)만 변경 |
+| `redmine_log_time` | 작업시간 기록: `issueId` 또는 `projectId`, `hours`, `spentOn`(기본 오늘), `activityId`(id·이름), `comments`. dry-run에 일감 제목 표시 |
 | `redmine_add_issue_relation` | 연결된 일감 추가 (`relationType`; `delay`는 `precedes`/`follows`만) |
 | `redmine_update_issue_relation` | `relationId`로 연결 수정 (삭제 후 재생성) |
 | `redmine_remove_issue_relation` | `relationId`로 연결 삭제 — 두 일감은 그대로 |

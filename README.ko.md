@@ -93,6 +93,7 @@ Codex · Claude Code · Cursor · Antigravity에서 **자연어와 슬래시 명
 | `/add-comment` | 댓글 (dry-run → 확인) |
 | `/add-attachment` | 파일 첨부 (dry-run → 확인) |
 | `/update-status` | 상태만 변경 (dry-run → 확인) |
+| `/log-time` | 작업시간 기록 (dry-run → 확인)·조회 |
 
 ## 구성
 
@@ -131,7 +132,8 @@ Claude Code / Codex / Cursor / Antigravity  (플러그인 + 스킬)
 | `redmine_search_issues` | 이슈 검색 (`assignedTo: "me"`, 기본 열린 이슈; 각 행에 `dueDate`·`doneRatio`) |
 | `redmine_get_issue` | 이슈 상세 (`journals`·`children` 등 include) |
 | `redmine_list_issue_relations` | 연결된 일감 목록 (+ `relationId`) |
-| `redmine_list_metadata` | 유형·상태·우선순위·대상 버전·범주·사용자 정의 필드 (id + 이름) |
+| `redmine_list_metadata` | 유형·상태·우선순위·대상 버전·범주·사용자 정의 필드·작업 분류 (id + 이름) |
+| `redmine_list_time_entries` | 작업시간 조회 — 일감 / 프로젝트 / 사용자(`"me"`) / 기간, `totalHours` 포함 |
 
 **쓰기** (`confirm` 기본 `false` = 미리보기)
 
@@ -142,6 +144,7 @@ Claude Code / Codex / Cursor / Antigravity  (플러그인 + 스킬)
 | `redmine_add_comment` | 댓글 (`\n` → `<br />`) |
 | `redmine_add_attachment` | 기존 이슈에 로컬 파일 첨부 |
 | `redmine_update_status` | `statusId`만 변경 |
+| `redmine_log_time` | 일감·프로젝트에 작업시간 기록 (`spentOn` 기본 오늘, `activityId`는 이름 가능) |
 | `redmine_add_issue_relation` | 연결된 일감 추가 (`relates`·`blocks`·`precedes` 등) |
 | `redmine_update_issue_relation` | 연결된 일감 수정 (삭제 후 재생성) |
 | `redmine_remove_issue_relation` | 연결된 일감 삭제 — 링크만 끊고 일감은 유지 |

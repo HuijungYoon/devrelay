@@ -83,5 +83,6 @@ Build first: `pnpm --filter redmine-devrelay build`
 | `/redmine-devrelay:update-status` | Status change (dry-run → confirm) |
 | `/redmine-devrelay:relate-issue` | Related issues — add / change / remove (dry-run → confirm) |
 | `/redmine-devrelay:subtask` | Subtasks — create / move / detach (dry-run → confirm) |
+| `/redmine-devrelay:log-time` | Time entries — log hours (dry-run → confirm) / list |
 
 Community marketplace submission checklist: `docs/claude-code-marketplace-submit.md`.

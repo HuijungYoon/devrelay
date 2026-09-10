@@ -93,6 +93,7 @@ Slash examples (Cursor):
 | `/add-comment` | Comment (dry-run → confirm) |
 | `/add-attachment` | Attach file (dry-run → confirm) |
 | `/update-status` | Status only (dry-run → confirm) |
+| `/log-time` | Time entries — log hours (dry-run → confirm) / list |
 
 ## Architecture
 
@@ -131,7 +132,8 @@ Claude Code / Codex / Cursor / Antigravity  (plugins + skills)
 | `redmine_search_issues` | Search issues (`assignedTo: "me"`, open by default; rows carry `dueDate`/`doneRatio`) |
 | `redmine_get_issue` | Issue detail (includes `journals`, `children`, etc.) |
 | `redmine_list_issue_relations` | Related issues with their `relationId` |
-| `redmine_list_metadata` | Trackers / statuses / priorities / versions / categories / custom fields (id + name) |
+| `redmine_list_metadata` | Trackers / statuses / priorities / versions / categories / custom fields / activities (id + name) |
+| `redmine_list_time_entries` | Time entries by issue / project / user (`"me"`) / date range, with `totalHours` |
 
 **Write** (`confirm` defaults to `false` = preview)
 
@@ -142,6 +144,7 @@ Claude Code / Codex / Cursor / Antigravity  (plugins + skills)
 | `redmine_add_comment` | Comment (`\n` → `<br />`) |
 | `redmine_add_attachment` | Attach a local file to an existing issue |
 | `redmine_update_status` | Change `statusId` only |
+| `redmine_log_time` | Log hours on an issue or project (`spentOn` defaults to today, `activityId` by name) |
 | `redmine_add_issue_relation` | Link two issues (`relates`, `blocks`, `precedes`, …) |
 | `redmine_update_issue_relation` | Change a relation (remove + re-create) |
 | `redmine_remove_issue_relation` | Unlink two issues — both issues stay |

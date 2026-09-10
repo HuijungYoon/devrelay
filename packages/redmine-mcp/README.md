@@ -108,7 +108,8 @@ the user approved. Never call dry-run and `confirm=true` in the same turn.
 | `redmine_search_issues` | Search issues (default: open; supports `assignedTo: "me"`). Rows include `dueDate` and `doneRatio` |
 | `redmine_get_issue` | Issue detail (includes journals, children, etc.) |
 | `redmine_list_issue_relations` | Related issues with their `relationId` (needed to update/remove one) |
-| `redmine_list_metadata` | Trackers / statuses / priorities (+ versions, categories, custom fields with `projectId`) as id+name |
+| `redmine_list_metadata` | Trackers / statuses / priorities / activities (+ versions, categories, custom fields with `projectId`) as id+name |
+| `redmine_list_time_entries` | Time entries by issue / project / user (`"me"`, the default when no issue or project is given) / `spentFrom`–`spentTo`; returns `totalHours` of the returned rows |
 
 ## Write APIs
 
@@ -119,6 +120,7 @@ the user approved. Never call dry-run and `confirm=true` in the same turn.
 | `redmine_add_comment` | Add comment (plain text only; Textile/Markdown blocked) |
 | `redmine_add_attachment` | Attach a local file to an existing issue |
 | `redmine_update_status` | Change issue status (`statusId`) only |
+| `redmine_log_time` | Record a time entry: `issueId` or `projectId`, `hours`, `spentOn` (default today), `activityId` (id or name), `comments`. Dry-run shows the issue subject |
 | `redmine_add_issue_relation` | Link two issues (`relationType`; `delay` for `precedes`/`follows`) |
 | `redmine_update_issue_relation` | Change a relation by `relationId` (remove + re-create) |
 | `redmine_remove_issue_relation` | Remove a relation by `relationId` — both issues stay |
