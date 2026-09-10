@@ -50,6 +50,7 @@ If Antigravity does not expand `${REDMINE_URL}` / `${REDMINE_API_KEY}`:
 | `/redmine:subtask` | Subtasks — create / move / detach (dry-run → confirm) |
 | `/redmine:log-time` | Time entries — log hours (dry-run → confirm) / list |
 | `/redmine:read-attachment` | Download and read an issue attachment (read-only) |
+| `/redmine:weekly-report` | Weekly report draft from my issues, journals, time entries (read-only) |
 
 If skill names had to drop `:`, use `/redmine-create-issue` style instead (same folders).
 

@@ -21,6 +21,7 @@ npx -y redmine-devrelay@0.8.0
 | `REDMINE_URL` | Redmine base URL (may include `/redmine` path) |
 | `REDMINE_API_KEY` | REST API key |
 | `REDMINE_ALLOWED_HOSTS` | (optional) Host allowlist. Private IPv4 HTTP is allowed separately |
+| `REDMINE_PREVIEW_STORE_DIR` | (optional) Directory for previewToken files. Set it when running several HTTP-mode server processes so a dry-run on one and a confirm on another share tokens. Unset = in-process memory |
 | `REDMINE_CA_CERT_PATH` | (optional) Private CA PEM |
 
 ## HTTP mode (`--http`) · BYOK

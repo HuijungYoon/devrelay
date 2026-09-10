@@ -19,6 +19,7 @@ npx -y redmine-devrelay@0.8.0
 | `REDMINE_URL` | Redmine 베이스 URL (`/redmine` path 포함 가능) |
 | `REDMINE_API_KEY` | REST API Key |
 | `REDMINE_ALLOWED_HOSTS` | (선택) 호스트 allowlist. 사설 IPv4 HTTP는 별도 허용 |
+| `REDMINE_PREVIEW_STORE_DIR` | (선택) previewToken을 파일로 저장할 디렉터리. HTTP 모드에서 서버 프로세스를 여러 개 띄울 때 dry-run과 confirm이 다른 프로세스에 떨어져도 토큰이 맞도록. 비우면 프로세스 메모리 |
 | `REDMINE_CA_CERT_PATH` | (선택) 사설 CA PEM |
 
 ## 쓰기 규칙

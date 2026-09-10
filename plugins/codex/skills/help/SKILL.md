@@ -39,5 +39,6 @@ Env: `REDMINE_URL`, `REDMINE_API_KEY`. Details: plugin README.
 | `subtask` | 하위일감 생성·부모 변경·연결 해제 (dry-run 후 확인) |
 | `log-time` | 작업시간 기록 (dry-run 후 확인)·조회 |
 | `read-attachment` | 첨부 내려받아 읽기 (읽기 전용) |
+| `weekly-report` | 주간보고 초안 (이번 주 내 일감·댓글·작업시간·다음 주 마감, 읽기 전용) |
 
 Note: write skills require dry-run then explicit user confirmation before `confirm=true` + `previewToken`.

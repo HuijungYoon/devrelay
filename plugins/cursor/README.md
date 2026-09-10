@@ -27,6 +27,7 @@ Install target for `/add-plugin redmine-devrelay` after Marketplace listing.
 | `/subtask` | 하위일감 생성·부모 변경·연결 해제 (dry-run 후 확인) |
 | `/log-time` | 작업시간 기록 (dry-run 후 확인)·조회 |
 | `/read-attachment` | 첨부 내려받아 읽기 (읽기 전용) |
+| `/weekly-report` | 주간보고 초안 (읽기 전용) |
 
 description/댓글은 **평문 줄바꿈**으로 작성하면 됩니다 (`<p>` / `<br />` 자동).
 

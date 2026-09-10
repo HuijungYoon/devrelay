@@ -97,6 +97,7 @@ Slash examples (Cursor):
 | `/bulk-status` | Same status for several issues — one table preview, one confirm |
 | `/log-time` | Time entries — log hours (dry-run → confirm) / list |
 | `/read-attachment` | Download and read an issue attachment (read-only) |
+| `/weekly-report` | Weekly report draft from my issues, journals and time entries (read-only) |
 
 ## Architecture
 

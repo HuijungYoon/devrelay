@@ -20,6 +20,7 @@ Optional:
 ```bash
 export REDMINE_ALLOWED_HOSTS=redmine.example.com
 export REDMINE_CA_CERT_PATH=/path/to/company-ca.pem
+export REDMINE_PREVIEW_STORE_DIR=/var/lib/redmine-devrelay/preview   # 선택: HTTP 모드에서 서버 프로세스가 여럿일 때 previewToken 공유
 ```
 
 사설망 HTTP 예: `REDMINE_URL=http://192.168.10.50/redmine` (RFC1918 IP는 allowlist 없이 HTTP 허용).
