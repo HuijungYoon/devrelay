@@ -82,6 +82,7 @@ Build first: `pnpm --filter redmine-devrelay build`
 | `/redmine-devrelay:add-comment` | Comment (dry-run → confirm) |
 | `/redmine-devrelay:add-attachment` | Attachment (dry-run → confirm) |
 | `/redmine-devrelay:update-status` | Status change (dry-run → confirm) |
+| `/redmine-devrelay:bulk-status` | Same status for several issues — one table preview, one confirm |
 | `/redmine-devrelay:relate-issue` | Related issues — add / change / remove (dry-run → confirm) |
 | `/redmine-devrelay:subtask` | Subtasks — create / move / detach (dry-run → confirm) |
 | `/redmine-devrelay:log-time` | Time entries — log hours (dry-run → confirm) / list |

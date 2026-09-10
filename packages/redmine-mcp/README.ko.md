@@ -70,6 +70,7 @@ dry-run과 `confirm=true`를 같은 턴에 부르지 마세요.
 | `redmine_add_comment` | 이슈 댓글 추가 (평문만; Textile/Markdown 차단) |
 | `redmine_add_attachment` | 기존 이슈에 로컬 파일 첨부 |
 | `redmine_update_status` | 이슈 상태(`statusId`)만 변경 |
+| `redmine_bulk_update_status` | 1~50개 `issueIds`를 같은 상태(id·이름)로. dry-run이 일감마다 읽어 `rows[]`(제목, 이전→이후, `unchanged`/`error`)와 `previewToken` 하나를 돌려주고, confirm은 한 건씩 적용해 `updated`/`skipped`/`failed`로 보고. 선택 `notes`(평문)는 모든 일감에 |
 | `redmine_log_time` | 작업시간 기록: `issueId` 또는 `projectId`, `hours`, `spentOn`(기본 오늘), `activityId`(id·이름), `comments`. dry-run에 일감 제목 표시 |
 | `redmine_add_issue_relation` | 연결된 일감 추가 (`relationType`; `delay`는 `precedes`/`follows`만) |
 | `redmine_update_issue_relation` | `relationId`로 연결 수정 (삭제 후 재생성) |

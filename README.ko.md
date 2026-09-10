@@ -94,6 +94,7 @@ Codex · Claude Code · Cursor · Antigravity에서 **자연어와 슬래시 명
 | `/add-comment` | 댓글 (dry-run → 확인) |
 | `/add-attachment` | 파일 첨부 (dry-run → 확인) |
 | `/update-status` | 상태만 변경 (dry-run → 확인) |
+| `/bulk-status` | 여러 일감 상태 일괄 변경 (표 미리보기 한 번 → 확인) |
 | `/log-time` | 작업시간 기록 (dry-run → 확인)·조회 |
 | `/read-attachment` | 첨부 내려받아 읽기 (읽기 전용) |
 
@@ -148,6 +149,7 @@ Claude Code / Codex / Cursor / Antigravity  (플러그인 + 스킬)
 | `redmine_add_comment` | 댓글 (`\n` → `<br />`) |
 | `redmine_add_attachment` | 기존 이슈에 로컬 파일 첨부 |
 | `redmine_update_status` | `statusId`만 변경 |
+| `redmine_bulk_update_status` | 1~50개 일감을 같은 상태로 — dry-run에 일감별 이전→이후 표, confirm 결과는 updated / skipped / failed |
 | `redmine_log_time` | 일감·프로젝트에 작업시간 기록 (`spentOn` 기본 오늘, `activityId`는 이름 가능) |
 | `redmine_add_issue_relation` | 연결된 일감 추가 (`relates`·`blocks`·`precedes` 등) |
 | `redmine_update_issue_relation` | 연결된 일감 수정 (삭제 후 재생성) |

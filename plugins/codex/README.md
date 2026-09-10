@@ -78,6 +78,7 @@ approval_mode = "approve"
 | `add-comment` | 댓글 (dry-run → 확인) |
 | `add-attachment` | 파일 첨부 (dry-run → 확인) |
 | `update-status` | 상태 변경 (dry-run → 확인) |
+| `bulk-status` | 여러 일감 상태 일괄 변경 (표 미리보기 → 확인) |
 | `relate-issue` | 연결된 일감 추가·수정·삭제 (dry-run → 확인) |
 | `subtask` | 하위일감 생성·부모 변경·연결 해제 (dry-run → 확인) |
 | `log-time` | 작업시간 기록 (dry-run → 확인)·조회 |

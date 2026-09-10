@@ -45,6 +45,7 @@ If Antigravity does not expand `${REDMINE_URL}` / `${REDMINE_API_KEY}`:
 | `/redmine:add-comment` | Comment (dry-run → confirm) |
 | `/redmine:add-attachment` | Attach files (dry-run → confirm) |
 | `/redmine:update-status` | Status only (dry-run → confirm) |
+| `/redmine:bulk-status` | Same status for several issues — one table preview, one confirm |
 | `/redmine:relate-issue` | Related issues — add / change / remove (dry-run → confirm) |
 | `/redmine:subtask` | Subtasks — create / move / detach (dry-run → confirm) |
 | `/redmine:log-time` | Time entries — log hours (dry-run → confirm) / list |

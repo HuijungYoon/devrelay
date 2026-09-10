@@ -122,6 +122,7 @@ the user approved. Never call dry-run and `confirm=true` in the same turn.
 | `redmine_add_comment` | Add comment (plain text only; Textile/Markdown blocked) |
 | `redmine_add_attachment` | Attach a local file to an existing issue |
 | `redmine_update_status` | Change issue status (`statusId`) only |
+| `redmine_bulk_update_status` | Same status (id or name) for 1–50 `issueIds`. Dry-run reads every issue → `rows[]` (subject, from→to, `unchanged`/`error` flags) + one `previewToken`; confirm applies one by one and returns `updated`/`skipped`/`failed`. Optional plain-text `notes` on every issue |
 | `redmine_log_time` | Record a time entry: `issueId` or `projectId`, `hours`, `spentOn` (default today), `activityId` (id or name), `comments`. Dry-run shows the issue subject |
 | `redmine_add_issue_relation` | Link two issues (`relationType`; `delay` for `precedes`/`follows`) |
 | `redmine_update_issue_relation` | Change a relation by `relationId` (remove + re-create) |
