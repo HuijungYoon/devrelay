@@ -30,6 +30,10 @@ const VERSIONS = [
   { id: 8, name: "2026-Q4", status: "open", dueDate: null },
 ];
 const CATEGORIES = [{ id: 2, name: "프론트엔드", assignedTo: null }];
+const CUSTOM_FIELDS = [
+  { id: 3, name: "고객사" },
+  { id: 7, name: "플랫폼" },
+];
 
 function metaClient(extra: Record<string, unknown> = {}) {
   return {
@@ -38,6 +42,9 @@ function metaClient(extra: Record<string, unknown> = {}) {
     listIssuePriorities: vi.fn().mockResolvedValue(PRIORITIES),
     listProjectVersions: vi.fn().mockResolvedValue(VERSIONS),
     listIssueCategories: vi.fn().mockResolvedValue(CATEGORIES),
+    listProjectIssueCustomFields: vi
+      .fn()
+      .mockResolvedValue({ fields: CUSTOM_FIELDS, source: "project" }),
     listProjectPeople: vi.fn(),
     searchUsers: vi.fn(),
     getCurrentUser: vi.fn(),
@@ -57,7 +64,7 @@ describe("redmine_list_metadata", () => {
     expect(client.listProjectVersions).not.toHaveBeenCalled();
   });
 
-  it("adds versions and categories when projectId is given", async () => {
+  it("adds versions, categories and custom fields when projectId is given", async () => {
     const client = metaClient();
     const result = await handleListMetadata(client as never, { projectId: 11 });
     expect(Object.keys(result)).toEqual([
@@ -67,9 +74,20 @@ describe("redmine_list_metadata", () => {
       "priorities",
       "versions",
       "categories",
+      "customFields",
+      "customFieldsSource",
     ]);
     expect(client.listProjectVersions).toHaveBeenCalledWith(11);
     expect(client.listIssueCategories).toHaveBeenCalledWith(11);
+    expect(client.listProjectIssueCustomFields).toHaveBeenCalledWith(11);
+    expect(result.customFields).toEqual(CUSTOM_FIELDS);
+    expect(result.customFieldsSource).toBe("project");
+  });
+
+  it("rejects customFields without projectId", async () => {
+    await expect(
+      handleListMetadata(metaClient() as never, { kinds: ["customFields"] })
+    ).rejects.toThrow(/requires projectId/);
   });
 
   it("honours the kinds filter", async () => {
@@ -351,6 +369,198 @@ describe("write handlers accept names", () => {
       statusLabel: "진행중",
       fixedVersionLabel: "2026-Q4",
     });
+  });
+
+  it("createIssue resolves custom field names and previews id+name+value", async () => {
+    const createIssue = vi.fn().mockResolvedValue({ id: 9, subject: "S" });
+    const client = metaClient({ createIssue });
+    const args = {
+      projectId: 11,
+      subject: "S",
+      customFields: [
+        { name: "고객사", value: "A사" },
+        { id: 7, value: ["웹", "모바일"] },
+      ],
+    };
+    const dry = await handleCreateIssue(client as never, { ...args });
+    expect(createIssue).not.toHaveBeenCalled();
+    expect(dry.wouldApply).toMatchObject({
+      customFields: [
+        { id: 3, name: "고객사", value: "A사" },
+        { id: 7, name: "플랫폼", value: ["웹", "모바일"] },
+      ],
+    });
+    await handleCreateIssue(client as never, {
+      ...args,
+      confirm: true,
+      previewToken: dry.previewToken,
+    });
+    expect(createIssue).toHaveBeenCalledWith(
+      expect.objectContaining({
+        customFields: [
+          { id: 3, value: "A사" },
+          { id: 7, value: ["웹", "모바일"] },
+        ],
+      })
+    );
+  });
+
+  it("createIssue rejects an unknown custom field name with the candidates", async () => {
+    const client = metaClient({ createIssue: vi.fn() });
+    await expect(
+      handleCreateIssue(client as never, {
+        projectId: 11,
+        subject: "S",
+        customFields: [{ name: "없는필드", value: "x" }],
+      })
+    ).rejects.toMatchObject({
+      code: "REDMINE_VALIDATION_ERROR",
+      check: expect.arrayContaining([expect.stringContaining("3:고객사")]),
+    });
+  });
+
+  it("createIssue hints that a sampled list may be incomplete on older Redmine", async () => {
+    const client = metaClient({
+      createIssue: vi.fn(),
+      listProjectIssueCustomFields: vi
+        .fn()
+        .mockResolvedValue({ fields: CUSTOM_FIELDS, source: "issues" }),
+    });
+    await expect(
+      handleCreateIssue(client as never, {
+        projectId: 11,
+        subject: "S",
+        customFields: [{ name: "없는필드", value: "x" }],
+      })
+    ).rejects.toMatchObject({
+      check: expect.arrayContaining([expect.stringContaining("older than 4.2")]),
+    });
+  });
+
+  it("createIssue rejects the same custom field twice", async () => {
+    const client = metaClient({ createIssue: vi.fn() });
+    await expect(
+      handleCreateIssue(client as never, {
+        projectId: 11,
+        subject: "S",
+        customFields: [
+          { id: 3, value: "A" },
+          { name: "고객사", value: "B" },
+        ],
+      })
+    ).rejects.toThrow(/more than once/);
+  });
+
+  it("createIssue keeps id-only custom fields when the list is forbidden", async () => {
+    const createIssue = vi.fn().mockResolvedValue({ id: 9, subject: "S" });
+    const client = metaClient({
+      createIssue,
+      listProjectIssueCustomFields: vi.fn().mockRejectedValue(
+        new RedmineError({
+          code: "REDMINE_PERMISSION_DENIED",
+          message: "denied",
+          httpStatus: 403,
+        })
+      ),
+    });
+    const dry = await handleCreateIssue(client as never, {
+      projectId: 11,
+      subject: "S",
+      customFields: [{ id: 3, value: "A사" }],
+    });
+    expect(dry.wouldApply).toMatchObject({
+      customFields: [{ id: 3, value: "A사" }],
+    });
+  });
+
+  it("createIssue cannot resolve a custom field name when the list is forbidden", async () => {
+    const client = metaClient({
+      createIssue: vi.fn(),
+      listProjectIssueCustomFields: vi.fn().mockRejectedValue(
+        new RedmineError({
+          code: "REDMINE_PERMISSION_DENIED",
+          message: "denied",
+          httpStatus: 403,
+        })
+      ),
+    });
+    await expect(
+      handleCreateIssue(client as never, {
+        projectId: 11,
+        subject: "S",
+        customFields: [{ name: "고객사", value: "A사" }],
+      })
+    ).rejects.toMatchObject({ code: "REDMINE_PERMISSION_DENIED" });
+  });
+
+  it("updateIssue shows custom field before→after and skips unchanged ones", async () => {
+    const updateIssue = vi.fn().mockResolvedValue({ issueId: 5 });
+    const client = metaClient({
+      getIssue: vi.fn().mockResolvedValue({
+        project: { id: 11, name: "P" },
+        fixedVersion: null,
+        category: null,
+        parent: null,
+        description: "",
+        customFields: [
+          { id: 3, name: "고객사", value: "A사" },
+          { id: 7, name: "플랫폼", value: ["웹"] },
+        ],
+      }),
+      updateIssue,
+    });
+    const args = {
+      issueId: 5,
+      customFields: [
+        { name: "고객사", value: "B사" },
+        { id: 7, value: ["웹"] },
+      ],
+    };
+    const dry = await handleUpdateIssue(client as never, { ...args });
+    expect(dry.changes).toEqual([
+      { field: "customField:고객사", from: "A사", to: "B사" },
+    ]);
+    await handleUpdateIssue(client as never, {
+      ...args,
+      confirm: true,
+      previewToken: dry.previewToken,
+    });
+    expect(updateIssue).toHaveBeenCalledWith(
+      expect.objectContaining({
+        customFields: [
+          { id: 3, value: "B사" },
+          { id: 7, value: ["웹"] },
+        ],
+      })
+    );
+  });
+
+  it("updateIssue labels an id-only custom field from the issue detail when the list is forbidden", async () => {
+    const client = metaClient({
+      listProjectIssueCustomFields: vi.fn().mockRejectedValue(
+        new RedmineError({
+          code: "REDMINE_PERMISSION_DENIED",
+          message: "denied",
+          httpStatus: 403,
+        })
+      ),
+      getIssue: vi.fn().mockResolvedValue({
+        project: { id: 11, name: "P" },
+        fixedVersion: null,
+        category: null,
+        parent: null,
+        description: "",
+        customFields: [{ id: 3, name: "고객사", value: "A사" }],
+      }),
+      updateIssue: vi.fn(),
+    });
+    const dry = await handleUpdateIssue(client as never, {
+      issueId: 5,
+      customFields: [{ id: 3, value: "" }],
+    });
+    expect(dry.changes).toEqual([
+      { field: "customField:고객사", from: "A사", to: "" },
+    ]);
   });
 
   it("updateIssue can clear 대상 버전 with null", async () => {

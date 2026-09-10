@@ -81,6 +81,20 @@ const namedRef = z.union([positiveInt, z.string().min(1)]);
 /** id·이름, 또는 null(비우기) */
 const nullableNamedRef = z.union([positiveInt, z.string().min(1), z.null()]);
 
+/** 사용자 정의 필드 한 개: id 또는 name 중 하나 + value ("" = 비움, 배열 = 다중 선택) */
+export const customFieldWriteSchema = z
+  .object({
+    id: positiveInt.optional(),
+    name: z.string().min(1).optional(),
+    value: z.union([z.string(), z.array(z.string())]),
+  })
+  .strict()
+  .refine((v) => (v.id === undefined) !== (v.name === undefined), {
+    message: "customFields[] entries need exactly one of id or name",
+  });
+
+const customFieldsField = z.array(customFieldWriteSchema).min(1).optional();
+
 export const attachmentInputSchema = z
   .object({
     path: z.string().min(1),
@@ -124,6 +138,7 @@ export const createIssueInputSchema = z
     priorityId: namedRef.optional(),
     fixedVersionId: namedRef.optional(),
     categoryId: namedRef.optional(),
+    customFields: customFieldsField,
     startDate: ymd.optional(),
     dueDate: ymd.optional(),
     doneRatio: doneRatio.optional(),
@@ -148,6 +163,7 @@ export const updateIssueInputSchema = z
     priorityId: namedRef.optional(),
     fixedVersionId: nullableNamedRef.optional(),
     categoryId: nullableNamedRef.optional(),
+    customFields: customFieldsField,
     startDate: ymd.optional(),
     dueDate: ymd.optional(),
     doneRatio: doneRatio.optional(),
@@ -168,6 +184,7 @@ export const updateIssueInputSchema = z
       v.priorityId !== undefined ||
       v.fixedVersionId !== undefined ||
       v.categoryId !== undefined ||
+      v.customFields !== undefined ||
       v.startDate !== undefined ||
       v.dueDate !== undefined ||
       v.doneRatio !== undefined ||
@@ -226,14 +243,21 @@ export const listMetadataInputSchema = z
     projectId: positiveInt.optional(),
     kinds: z
       .array(
-        z.enum(["trackers", "statuses", "priorities", "versions", "categories"])
+        z.enum([
+          "trackers",
+          "statuses",
+          "priorities",
+          "versions",
+          "categories",
+          "customFields",
+        ])
       )
       .optional(),
   })
   .strict()
   .superRefine((v, ctx) => {
     const needsProject = (v.kinds ?? []).filter(
-      (k) => k === "versions" || k === "categories"
+      (k) => k === "versions" || k === "categories" || k === "customFields"
     );
     if (needsProject.length > 0 && v.projectId === undefined) {
       ctx.addIssue({
@@ -528,6 +552,27 @@ export const toolJsonSchemas = {
           { type: "string", minLength: 1 },
         ],
       },
+      customFields: {
+        description:
+          '사용자 정의 필드 — [{ id 또는 name, value }]. value는 문자열, 다중 선택이면 문자열 배열, ""면 비움 (예: [{ name: "고객사", value: "A사" }])',
+        type: "array",
+        minItems: 1,
+        items: {
+          type: "object",
+          properties: {
+            id: { type: "integer", minimum: 1 },
+            name: { type: "string", minLength: 1 },
+            value: {
+              oneOf: [
+                { type: "string" },
+                { type: "array", items: { type: "string" } },
+              ],
+            },
+          },
+          required: ["value"],
+          additionalProperties: false,
+        },
+      },
       startDate: {
         type: "string",
         pattern: "^\\d{4}-\\d{2}-\\d{2}$",
@@ -646,6 +691,27 @@ export const toolJsonSchemas = {
           { type: "string", minLength: 1 },
           { type: "null" },
         ],
+      },
+      customFields: {
+        description:
+          '사용자 정의 필드 — [{ id 또는 name, value }]. value는 문자열, 다중 선택이면 문자열 배열, ""면 비움. Omit a field to leave it unchanged (예: [{ name: "고객사", value: "A사" }])',
+        type: "array",
+        minItems: 1,
+        items: {
+          type: "object",
+          properties: {
+            id: { type: "integer", minimum: 1 },
+            name: { type: "string", minLength: 1 },
+            value: {
+              oneOf: [
+                { type: "string" },
+                { type: "array", items: { type: "string" } },
+              ],
+            },
+          },
+          required: ["value"],
+          additionalProperties: false,
+        },
       },
       startDate: {
         type: "string",
@@ -797,15 +863,22 @@ export const toolJsonSchemas = {
         type: "integer",
         minimum: 1,
         description:
-          "Required for versions/categories (they are per project); optional otherwise",
+          "Required for versions/categories/customFields (they are per project); optional otherwise",
       },
       kinds: {
         description:
-          "Defaults to trackers+statuses+priorities, plus versions+categories when projectId is given",
+          "Defaults to trackers+statuses+priorities, plus versions+categories+customFields when projectId is given",
         type: "array",
         items: {
           type: "string",
-          enum: ["trackers", "statuses", "priorities", "versions", "categories"],
+          enum: [
+            "trackers",
+            "statuses",
+            "priorities",
+            "versions",
+            "categories",
+            "customFields",
+          ],
         },
       },
     },

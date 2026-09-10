@@ -13,7 +13,12 @@ import type {
   UpdateStatusInput,
 } from "./schemas.js";
 import { consumeIfConfirm, withIssuedToken } from "./previewStore.js";
-import { resolveIssueMetadata, resolveNamedRef } from "./metadata.js";
+import {
+  resolveCustomFields,
+  resolveIssueMetadata,
+  resolveNamedRef,
+} from "./metadata.js";
+import type { ResolvedCustomField } from "./metadata.js";
 
 type NotesMarkupBlock = {
   blocked: true;
@@ -60,6 +65,40 @@ function attachmentWouldApply(
 
 function compact(s: string): string {
   return s.toLowerCase().replace(/\s+/g, "");
+}
+
+/** dry-run 표시용: id·name·value (value ""는 비움) */
+function customFieldsWouldApply(fields: ResolvedCustomField[]) {
+  return fields.map((f) => ({
+    id: f.id,
+    ...(f.name !== undefined ? { name: f.name } : {}),
+    value: f.value,
+  }));
+}
+
+/** 실제 쓰기 payload: 이름은 빼고 id + value */
+function customFieldsWrite(fields: ResolvedCustomField[]) {
+  return fields.map((f) => ({ id: f.id, value: f.value }));
+}
+
+/** 이슈 상세의 custom_fields 값 (없으면 null) */
+function currentCustomFieldValue(
+  current: { customFields?: Array<{ id: number; value: unknown }> },
+  id: number
+): unknown {
+  const found = current.customFields?.find((f) => f.id === id);
+  if (!found) return null;
+  return found.value ?? null;
+}
+
+/** ""·null·undefined는 같은 "비움"으로, 배열은 순서 무시하고 비교 */
+function sameCustomFieldValue(a: unknown, b: unknown): boolean {
+  const norm = (v: unknown): string => {
+    if (Array.isArray(v)) return JSON.stringify(v.map(String).sort());
+    if (v == null) return "";
+    return String(v);
+  };
+  return norm(a) === norm(b);
 }
 
 async function loadMembers(
@@ -242,6 +281,11 @@ export async function handleCreateIssue(
     assignee?.members
   );
   const meta = await resolveIssueMetadata(client, input.projectId, input);
+  const customFields = await resolveCustomFields(
+    client,
+    input.projectId,
+    input.customFields
+  );
 
   const wouldApply = {
     projectId: input.projectId,
@@ -253,6 +297,9 @@ export async function handleCreateIssue(
       ? { parentIssueId: input.parentIssueId }
       : {}),
     ...meta,
+    ...(customFields
+      ? { customFields: customFieldsWouldApply(customFields) }
+      : {}),
     ...(input.startDate !== undefined ? { startDate: input.startDate } : {}),
     ...(input.dueDate !== undefined ? { dueDate: input.dueDate } : {}),
     ...(input.doneRatio !== undefined ? { doneRatio: input.doneRatio } : {}),
@@ -312,6 +359,7 @@ export async function handleCreateIssue(
     ...(wouldApply.categoryId != null
       ? { categoryId: wouldApply.categoryId }
       : {}),
+    ...(customFields ? { customFields: customFieldsWrite(customFields) } : {}),
     ...(wouldApply.startDate !== undefined
       ? { startDate: wouldApply.startDate }
       : {}),
@@ -387,6 +435,11 @@ export async function handleUpdateIssue(
   );
 
   const meta = await resolveIssueMetadata(client, projectId, input);
+  const customFields = await resolveCustomFields(
+    client,
+    projectId,
+    input.customFields
+  );
 
   const changes: FieldChange[] = [];
   const push = (field: string, from: unknown, to: unknown) => {
@@ -432,6 +485,20 @@ export async function handleUpdateIssue(
   }
   if (meta.categoryId !== undefined) {
     push("categoryId", current.category?.id ?? null, meta.categoryId);
+  }
+  if (customFields) {
+    for (const f of customFields) {
+      // 이슈 상세가 이름을 들고 있으니 목록을 못 읽었어도 여기서 채운다
+      const label =
+        f.name ?? current.customFields?.find((c) => c.id === f.id)?.name;
+      const from = currentCustomFieldValue(current, f.id);
+      if (sameCustomFieldValue(from, f.value)) continue;
+      changes.push({
+        field: `customField:${label ?? f.id}`,
+        from,
+        to: f.value,
+      });
+    }
   }
   if (input.startDate !== undefined) {
     push("startDate", current.startDate, input.startDate);
@@ -490,6 +557,7 @@ export async function handleUpdateIssue(
       ? { fixedVersionId: meta.fixedVersionId }
       : {}),
     ...(meta.categoryId !== undefined ? { categoryId: meta.categoryId } : {}),
+    ...(customFields ? { customFields: customFieldsWrite(customFields) } : {}),
     ...(input.startDate !== undefined ? { startDate: input.startDate } : {}),
     ...(input.dueDate !== undefined ? { dueDate: input.dueDate } : {}),
     ...(input.doneRatio !== undefined ? { doneRatio: input.doneRatio } : {}),

@@ -249,4 +249,53 @@ describe("tool schemas", () => {
     ).toBe(true);
     expect(safeParseListMetadata({ kinds: ["nope"] }).success).toBe(false);
   });
+
+  it("listMetadata needs projectId for customFields", () => {
+    expect(safeParseListMetadata({ kinds: ["customFields"] }).success).toBe(
+      false
+    );
+    expect(
+      safeParseListMetadata({ kinds: ["customFields"], projectId: 11 }).success
+    ).toBe(true);
+  });
+
+  it("customFields entries need exactly one of id or name", () => {
+    const base = { projectId: 1, subject: "x" };
+    expect(
+      safeParseCreateIssue({
+        ...base,
+        customFields: [{ id: 3, value: "A사" }],
+      }).success
+    ).toBe(true);
+    expect(
+      safeParseCreateIssue({
+        ...base,
+        customFields: [{ name: "고객사", value: ["a", "b"] }],
+      }).success
+    ).toBe(true);
+    expect(
+      safeParseCreateIssue({
+        ...base,
+        customFields: [{ id: 3, name: "고객사", value: "x" }],
+      }).success
+    ).toBe(false);
+    expect(
+      safeParseCreateIssue({ ...base, customFields: [{ value: "x" }] }).success
+    ).toBe(false);
+    expect(
+      safeParseCreateIssue({ ...base, customFields: [{ id: 3 }] }).success
+    ).toBe(false);
+    expect(
+      safeParseCreateIssue({ ...base, customFields: [] }).success
+    ).toBe(false);
+  });
+
+  it("updateIssue counts customFields as a field to update", () => {
+    expect(
+      safeParseUpdateIssue({
+        issueId: 5,
+        customFields: [{ name: "고객사", value: "" }],
+      }).success
+    ).toBe(true);
+  });
 });

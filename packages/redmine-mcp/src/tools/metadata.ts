@@ -1,4 +1,8 @@
-import type { RedmineClient, RedmineNamed } from "redmine-devrelay-client";
+import type {
+  IssueCustomFieldValue,
+  RedmineClient,
+  RedmineNamed,
+} from "redmine-devrelay-client";
 import { RedmineError, matchNamedByName } from "redmine-devrelay-client";
 import type { ListMetadataInput } from "./schemas.js";
 
@@ -7,9 +11,10 @@ export type MetadataKind =
   | "statuses"
   | "priorities"
   | "versions"
-  | "categories";
+  | "categories"
+  | "customFields";
 
-const PROJECT_KINDS: MetadataKind[] = ["versions", "categories"];
+const PROJECT_KINDS: MetadataKind[] = ["versions", "categories", "customFields"];
 
 const KIND_LABEL: Record<MetadataKind, string> = {
   trackers: "유형",
@@ -17,6 +22,7 @@ const KIND_LABEL: Record<MetadataKind, string> = {
   priorities: "우선순위",
   versions: "대상 버전",
   categories: "범주",
+  customFields: "사용자 정의 필드",
 };
 
 function requireProjectId(
@@ -49,6 +55,12 @@ async function loadOptions(
       return client.listProjectVersions(requireProjectId(kind, projectId));
     case "categories":
       return client.listIssueCategories(requireProjectId(kind, projectId));
+    case "customFields":
+      return (
+        await client.listProjectIssueCustomFields(
+          requireProjectId(kind, projectId)
+        )
+      ).fields;
   }
 }
 
@@ -120,6 +132,20 @@ export async function resolveNamedRef(
   if (/^\d+$/.test(query)) return { id: Number(query) };
 
   const options = await loadOptionsForMatch(client, kind, field, projectId);
+  return matchNamedOption(options, kind, query, field);
+}
+
+/**
+ * 이미 받아 둔 목록에서 이름 하나를 고른다. 못 찾으면 후보를, 여러 개면 ambiguous를 던진다.
+ * extraChecks는 목록이 불완전할 수 있을 때 붙이는 안내.
+ */
+function matchNamedOption(
+  options: RedmineNamed[],
+  kind: MetadataKind,
+  query: string,
+  field: string,
+  extraChecks: string[] = []
+): { id: number; label?: string } {
   let matches = matchNamedByName(options, query);
 
   // "진행중으로" 처럼 사용자가 붙여 말한 경우: 이름이 질문에 포함되면 받아 준다.
@@ -139,6 +165,7 @@ export async function resolveNamedRef(
       check: [
         `Available: ${sample(options) || "(none)"}`,
         "Call redmine_list_metadata to see the full list",
+        ...extraChecks,
       ],
     });
   }
@@ -246,7 +273,97 @@ export async function resolveIssueMetadata(
   return out;
 }
 
-/** 읽기 도구: 유형·상태·우선순위(+프로젝트별 버전·범주) 목록 */
+export type CustomFieldInput = {
+  id?: number;
+  name?: string;
+  value: IssueCustomFieldValue;
+};
+
+export type ResolvedCustomField = {
+  id: number;
+  /** 이름을 알 때만 (이름으로 넘겼거나 목록을 읽을 수 있었을 때) */
+  name?: string;
+  value: IssueCustomFieldValue;
+};
+
+/**
+ * 사용자 정의 필드 [{ id | name, value }] → [{ id, name?, value }].
+ * 이름은 프로젝트의 issue_custom_fields 목록으로 해석한다. id만 넘긴 항목도
+ * 목록을 읽을 수 있으면 이름을 붙여 dry-run에서 사람이 읽을 수 있게 한다.
+ * 같은 필드를 두 번 넘기면 거절한다 (어느 값이 이기는지 Redmine에 맡기지 않음).
+ */
+export async function resolveCustomFields(
+  client: RedmineClient,
+  projectId: number,
+  fields: CustomFieldInput[] | undefined
+): Promise<ResolvedCustomField[] | undefined> {
+  if (!fields || fields.length === 0) return undefined;
+
+  const field = "customFields[].name";
+  let options: RedmineNamed[] | null = null;
+  let extraChecks: string[] = [];
+  const needsNames = fields.some((f) => f.name !== undefined);
+  try {
+    const listed = await client.listProjectIssueCustomFields(projectId);
+    options = listed.fields;
+    if (listed.source === "issues") {
+      extraChecks = [
+        "This Redmine is older than 4.2, so the list was sampled from recent issues and a field that was never filled in may be missing — pass its numeric id",
+      ];
+    }
+  } catch (err) {
+    // id만 왔을 때는 라벨용이니 못 읽어도 실패시키지 않는다. 이름이 있으면 해석 불가.
+    if (!needsNames) {
+      options = null;
+    } else if (isPermissionDenied(err)) {
+      throw new RedmineError({
+        code: "REDMINE_PERMISSION_DENIED",
+        message: `Cannot read the ${KIND_LABEL.customFields} list, so ${field}="..." cannot be resolved by name`,
+        httpStatus: 403,
+        retrySafe: false,
+        check: [
+          `Pass a numeric id for ${field} instead of a name`,
+          "Look the id up in Redmine (the custom field on the issue form)",
+        ],
+      });
+    } else {
+      throw err;
+    }
+  }
+
+  const out: ResolvedCustomField[] = [];
+  const seen = new Set<number>();
+  for (const f of fields) {
+    let id: number;
+    let name: string | undefined;
+    if (f.id !== undefined) {
+      id = f.id;
+      name = options?.find((o) => o.id === id)?.name;
+    } else {
+      const r = matchNamedOption(
+        options ?? [],
+        "customFields",
+        f.name as string,
+        field,
+        extraChecks
+      );
+      id = r.id;
+      name = r.label;
+    }
+    if (seen.has(id)) {
+      throw new RedmineError({
+        code: "REDMINE_VALIDATION_ERROR",
+        message: `customFields lists field ${id}${name ? ` (${name})` : ""} more than once`,
+        check: ["Pass each custom field once"],
+      });
+    }
+    seen.add(id);
+    out.push({ id, ...(name !== undefined ? { name } : {}), value: f.value });
+  }
+  return out;
+}
+
+/** 읽기 도구: 유형·상태·우선순위(+프로젝트별 버전·범주·사용자 정의 필드) 목록 */
 export async function handleListMetadata(
   client: RedmineClient,
   input: ListMetadataInput
@@ -256,7 +373,14 @@ export async function handleListMetadata(
       ? [...input.kinds]
       : input.projectId === undefined
         ? ["trackers", "statuses", "priorities"]
-        : ["trackers", "statuses", "priorities", "versions", "categories"];
+        : [
+            "trackers",
+            "statuses",
+            "priorities",
+            "versions",
+            "categories",
+            "customFields",
+          ];
 
   const result: Record<string, unknown> = {};
   if (input.projectId !== undefined) result.projectId = input.projectId;
@@ -265,7 +389,16 @@ export async function handleListMetadata(
   for (const kind of kinds) {
     if (PROJECT_KINDS.includes(kind)) requireProjectId(kind, input.projectId);
     try {
-      result[kind] = await loadOptions(client, kind, input.projectId);
+      if (kind === "customFields") {
+        const listed = await client.listProjectIssueCustomFields(
+          input.projectId as number
+        );
+        result.customFields = listed.fields;
+        // "issues"면 최근 이슈에서 추린 것 — 빠진 필드가 있을 수 있다는 신호
+        result.customFieldsSource = listed.source;
+      } else {
+        result[kind] = await loadOptions(client, kind, input.projectId);
+      }
     } catch (err) {
       // 한 종류가 권한으로 막혀도 나머지는 돌려준다 (범주가 흔한 경우).
       if (!isPermissionDenied(err)) throw err;
