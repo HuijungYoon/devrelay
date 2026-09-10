@@ -83,4 +83,4 @@ approval_mode = "approve"
 | `subtask` | 하위일감 생성·부모 변경·연결 해제 (dry-run → 확인) |
 | `log-time` | 작업시간 기록 (dry-run → 확인)·조회 |
 | `read-attachment` | 첨부 내려받아 읽기 (읽기 전용) |
-| `weekly-report` | 주간보고 초안 (읽기 전용) |
+| `weekly-report` | 주간보고 초안 — 표 형식 (읽기 전용) |

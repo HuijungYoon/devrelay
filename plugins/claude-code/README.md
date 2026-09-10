@@ -87,6 +87,6 @@ Build first: `pnpm --filter redmine-devrelay build`
 | `/redmine-devrelay:subtask` | Subtasks — create / move / detach (dry-run → confirm) |
 | `/redmine-devrelay:log-time` | Time entries — log hours (dry-run → confirm) / list |
 | `/redmine-devrelay:read-attachment` | Download and read an issue attachment (read-only) |
-| `/redmine-devrelay:weekly-report` | Weekly report draft from my issues, journals, time entries (read-only) |
+| `/redmine-devrelay:weekly-report` | Weekly report draft as tables from my issues, journals, time entries (read-only) |
 
 Community marketplace submission checklist: `docs/claude-code-marketplace-submit.md`.
