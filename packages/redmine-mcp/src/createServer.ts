@@ -25,6 +25,7 @@ import {
 } from "./tools/relations.js";
 import { handleSearchUsers } from "./tools/users.js";
 import { handleListTimeEntries, handleLogTime } from "./tools/timeEntries.js";
+import { handleGetAttachment } from "./tools/attachments.js";
 import { handleListProjectMembers } from "./tools/members.js";
 import {
   safeParseAddAttachment,
@@ -32,6 +33,7 @@ import {
   safeParseAddIssueRelation,
   safeParseConnection,
   safeParseCreateIssue,
+  safeParseGetAttachment,
   safeParseGetIssue,
   safeParseListIssueRelations,
   safeParseListMetadata,
@@ -164,6 +166,12 @@ export function createRedmineMcpServer(client: RedmineClient): Server {
           const parsed = safeParseUpdateStatus(req.params.arguments);
           if (!parsed.success) throw validationError(parsed.error.message);
           result = await handleUpdateStatus(client, parsed.data);
+          break;
+        }
+        case "redmine_get_attachment": {
+          const parsed = safeParseGetAttachment(req.params.arguments);
+          if (!parsed.success) throw validationError(parsed.error.message);
+          result = await handleGetAttachment(client, parsed.data);
           break;
         }
         case "redmine_list_time_entries": {

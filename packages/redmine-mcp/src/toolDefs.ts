@@ -13,6 +13,7 @@ redmine_update_issue: multi-field update with before→after changes; prefer thi
 하위일감 (subtasks): create one with redmine_create_issue + parentIssueId; move/attach an existing issue with redmine_update_issue + parentIssueId; detach with parentIssueId=null (the issue itself is never deleted). List them with redmine_search_issues parentIssueId or redmine_get_issue include=["children"].
 연결된 일감 (relations): redmine_list_issue_relations to get relation ids, then redmine_add_issue_relation / redmine_update_issue_relation / redmine_remove_issue_relation. relationType relates|duplicates|duplicated|blocks|blocked|precedes|follows|copied_to|copied_from; delay only for precedes/follows.
 redmine_add_attachment: attach local files to an existing issue (upload only after confirm+previewToken).
+redmine_get_attachment: read an attachment — redmine_get_issue include=["attachments"] gives the ids, then this saves the file locally and returns path (+ text for text files). Images/PDFs: open the returned path with a file reader. Only files served by the configured Redmine are fetched; default limit 10 MiB.
 redmine_update_status: still valid for status-only.
 작업시간 (time entries): redmine_log_time { issueId, hours, spentOn?, activityId?, comments? } — dry-run shows the issue subject and the date (today when omitted); activityId takes an id or a name ("개발"). List with redmine_list_time_entries (defaults to userId="me" when no issue/project is given; spentFrom/spentTo YYYY-MM-DD). Activities: redmine_list_metadata kinds:["activities"].
 notes (댓글): plain text only. No Textile (h3., *, bq.) or Markdown (# , -, **bold**). Markup is blocked in dry-run (blocked:true, no previewToken) and confirm throws. Rewrite as short plain sentences.
@@ -113,6 +114,13 @@ export const TOOL_DEFS = [
       "Update issue status by statusId. Optional notes: plain text only. Dry-run returns previewToken; confirm=true requires it.",
     inputSchema: toolJsonSchemas.redmine_update_status,
     annotations: writeAnnotations,
+  },
+  {
+    name: "redmine_get_attachment",
+    description:
+      'Download an issue attachment to the MCP host and return its local path; text files also come back inline (first 200 KiB). Get attachment ids from redmine_get_issue include=["attachments"]. Read-only for Redmine; default size limit 10 MiB.',
+    inputSchema: toolJsonSchemas.redmine_get_attachment,
+    annotations: readOnlyAnnotations,
   },
   {
     name: "redmine_list_time_entries",

@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { ISSUE_RELATION_TYPES } from "redmine-devrelay-client";
+import {
+  ATTACHMENT_DOWNLOAD_HARD_MAX_BYTES,
+  ISSUE_RELATION_TYPES,
+} from "redmine-devrelay-client";
 
 const positiveInt = z.number().int().positive();
 
@@ -319,6 +322,21 @@ export const removeIssueRelationInputSchema = z
   .strict()
   .superRefine(requirePreviewTokenWhenConfirm);
 
+/** 첨부 내려받기 — 읽기 도구. destDir은 MCP 호스트의 폴더 */
+export const getAttachmentInputSchema = z
+  .object({
+    attachmentId: positiveInt,
+    destDir: z.string().min(1).optional(),
+    maxBytes: z
+      .number()
+      .int()
+      .positive()
+      .max(ATTACHMENT_DOWNLOAD_HARD_MAX_BYTES)
+      .optional(),
+    inlineText: z.boolean().optional(),
+  })
+  .strict();
+
 /** 작업시간 기록 — 일감 또는 프로젝트 중 하나, hours는 0 초과 24 이하 */
 export const logTimeInputSchema = z
   .object({
@@ -379,8 +397,13 @@ export type UpdateIssueRelationInput = z.infer<
 export type RemoveIssueRelationInput = z.infer<
   typeof removeIssueRelationInputSchema
 >;
+export type GetAttachmentInput = z.infer<typeof getAttachmentInputSchema>;
 export type LogTimeInput = z.infer<typeof logTimeInputSchema>;
 export type ListTimeEntriesInput = z.infer<typeof listTimeEntriesInputSchema>;
+
+export function safeParseGetAttachment(input: unknown) {
+  return getAttachmentInputSchema.safeParse(input);
+}
 
 export function safeParseLogTime(input: unknown) {
   return logTimeInputSchema.safeParse(input ?? {});
@@ -928,6 +951,36 @@ export const toolJsonSchemas = {
         },
       },
     },
+    additionalProperties: false,
+  },
+  redmine_get_attachment: {
+    type: "object",
+    properties: {
+      attachmentId: {
+        type: "integer",
+        minimum: 1,
+        description:
+          'Attachment id from redmine_get_issue include=["attachments"]',
+      },
+      destDir: {
+        type: "string",
+        minLength: 1,
+        description:
+          "Folder on the MCP host to save into. Default: OS temp dir under redmine-devrelay/attachments/<id>/. An existing file is not overwritten (the id is appended)",
+      },
+      maxBytes: {
+        type: "integer",
+        minimum: 1,
+        maximum: ATTACHMENT_DOWNLOAD_HARD_MAX_BYTES,
+        description: "Size limit. Default 10 MiB, hard max 50 MiB",
+      },
+      inlineText: {
+        type: "boolean",
+        description:
+          "Return the file body as text when it looks like text (default true, first 200 KiB)",
+      },
+    },
+    required: ["attachmentId"],
     additionalProperties: false,
   },
   redmine_log_time: {
