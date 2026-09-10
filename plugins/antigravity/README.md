@@ -38,6 +38,7 @@ If Antigravity does not expand `${REDMINE_URL}` / `${REDMINE_API_KEY}`:
 | `/redmine:test-connection` | Connection / current user |
 | `/redmine:list-projects` | Projects |
 | `/redmine:my-issues` | My open issues |
+| `/redmine:search-issues` | Search with filters (due range, names, author/watcher) or full text |
 | `/redmine:issue` | Issue detail + journals |
 | `/redmine:create-issue` | Create (dry-run → confirm) |
 | `/redmine:update-issue` | Update (dry-run → confirm) |

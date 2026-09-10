@@ -75,6 +75,7 @@ Build first: `pnpm --filter redmine-devrelay build`
 | `/redmine-devrelay:test-connection` | Connection check |
 | `/redmine-devrelay:list-projects` | Project list |
 | `/redmine-devrelay:my-issues` | My open issues |
+| `/redmine-devrelay:search-issues` | Search with filters (due range, names, author/watcher) or full text |
 | `/redmine-devrelay:issue` | Issue detail |
 | `/redmine-devrelay:create-issue` | Create issue (dry-run → confirm) |
 | `/redmine-devrelay:update-issue` | Update issue (dry-run → confirm) |

@@ -16,3 +16,4 @@ Use MCP tools only. Never invent write operations. Never print API keys.
 3. Present a markdown table: `| ID | Subject | Status | Priority | Due | Updated |`
    - `dueDate`·`doneRatio`는 검색 결과에 이미 들어 있습니다. 표를 채우려고 이슈마다 `redmine_get_issue`를 부르지 마세요
 4. On errors, show the tool error message; do not retry with different credentials.
+5. 마감일 범위·유형·상태·작성자·일감관리자 같은 추가 필터나 본문 검색이 필요하면 `search-issues` 스킬 (`dueAfter`/`dueBefore`, 이름으로 `trackerId`/`status`, `redmine_search_text`).

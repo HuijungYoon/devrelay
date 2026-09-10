@@ -13,6 +13,7 @@ Do **not** call Redmine MCP tools. Only show available slash commands.
 | `/redmine:test-connection` | Redmine 연결·현재 사용자 확인 |
 | `/redmine:list-projects` | 프로젝트 목록 (검색어 가능) |
 | `/redmine:my-issues` | 내게 할당된 열린 이슈 |
+| `/redmine:search-issues` | 일감 검색 (마감일·유형·상태·사람 필터, 전문 검색) |
 | `/redmine:issue` | 이슈 상세 + journals (이슈 id 전달) |
 | `/redmine:create-issue` | 이슈 생성 (유형·상태·우선순위·시작일·진척도 포함 미리보기) |
 | `/redmine:update-issue` | 이슈 수정 (이전→이후 미리보기 후 확인) |

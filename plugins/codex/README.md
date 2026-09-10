@@ -71,6 +71,7 @@ approval_mode = "approve"
 | `test-connection` | 연결 확인 |
 | `list-projects` | 프로젝트 목록 |
 | `my-issues` | 내 열린 이슈 |
+| `search-issues` | 일감 검색 (마감일·유형·상태·사람 필터, 전문 검색) |
 | `issue` | 이슈 상세 + journals |
 | `create-issue` | 이슈 생성 (dry-run → 확인, 첨부 가능) |
 | `update-issue` | 이슈 수정 (dry-run → 확인) |

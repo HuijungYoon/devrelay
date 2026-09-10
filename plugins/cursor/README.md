@@ -15,6 +15,7 @@ Install target for `/add-plugin redmine-devrelay` after Marketplace listing.
 | `/test-connection` | Redmine 연결·현재 사용자 확인 |
 | `/list-projects` | 프로젝트 목록 (검색어 가능) |
 | `/my-issues` | 내게 할당된 열린 이슈 |
+| `/search-issues` | 일감 검색 (마감일·유형·상태·사람 필터, 전문 검색) |
 | `/issue` | 이슈 상세 + journals (예: `/issue 23840`) |
 | `/create-issue` | 이슈 생성 (프로젝트·담당자·관리자·첨부, dry-run 후 확인) |
 | `/update-issue` | 이슈 수정 (이전→이후 표, dry-run 후 확인) |

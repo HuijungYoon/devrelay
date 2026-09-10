@@ -87,6 +87,7 @@ Slash examples (Cursor):
 | `/test-connection` | Connection and current user |
 | `/list-projects` | Project list |
 | `/my-issues` | My open issues |
+| `/search-issues` | Search with filters (due range, names, author/watcher) or full text |
 | `/issue 1523` | Issue detail + journals |
 | `/create-issue` | Create issue (dry-run → confirm) |
 | `/update-issue` | Update issue (dry-run → confirm) |
@@ -130,7 +131,8 @@ Claude Code / Codex / Cursor / Antigravity  (plugins + skills)
 | `redmine_list_projects` | List accessible projects |
 | `redmine_list_project_members` | Project members (pick assignee/watchers) |
 | `redmine_search_users` | Search all users (may require permission) |
-| `redmine_search_issues` | Search issues (`assignedTo: "me"`, open by default; rows carry `dueDate`/`doneRatio`) |
+| `redmine_search_issues` | Search issues (`assignedTo: "me"`, open by default; rows carry `dueDate`/`doneRatio`). Filters take **names** (tracker/status/priority/version/category), people as `"me"`/id/name (assignee, author, watcher), and date ranges (`dueAfter`/`dueBefore`, created, updated) |
+| `redmine_search_text` | Full-text search in subjects, descriptions, notes (+ wiki/news via `types`). Redmine 3.3+ |
 | `redmine_get_issue` | Issue detail (includes `journals`, `children`, etc.) |
 | `redmine_list_issue_relations` | Related issues with their `relationId` |
 | `redmine_list_metadata` | Trackers / statuses / priorities / versions / categories / custom fields / activities (id + name) |
