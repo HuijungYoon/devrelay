@@ -8,6 +8,7 @@ import {
 import type {
   AddAttachmentInput,
   AddCommentInput,
+  BulkUpdateStatusInput,
   CreateIssueInput,
   UpdateIssueInput,
   UpdateStatusInput,
@@ -656,4 +657,120 @@ export async function handleUpdateStatus(
     input.notes
   );
   return { dryRun: false as const, result };
+}
+
+export type BulkStatusRow = {
+  issueId: number;
+  subject: string | null;
+  from: { id: number; name: string } | null;
+  to: { id: number; name?: string };
+  /** 이미 그 상태라 건너뜀 */
+  unchanged?: true;
+  /** dry-run에서 이슈를 못 읽음 (없거나 권한 없음) */
+  error?: string;
+};
+
+/**
+ * 여러 일감을 같은 상태로. dry-run은 일감마다 현재 상태를 읽어 이전→이후 표를 만들고,
+ * confirm은 한 건씩 적용하되 하나가 실패해도 나머지를 계속 진행해 성공·실패를 나눠 돌려준다.
+ * (Redmine에 일괄 API가 없어 요청 수는 일감 수와 같다.)
+ */
+export async function handleBulkUpdateStatus(
+  client: RedmineClient,
+  input: BulkUpdateStatusInput
+) {
+  if (input.notes !== undefined) {
+    const block = notesMarkupBlock(input.notes);
+    if (block) {
+      if (input.confirm) assertPlainNotesOrThrow(input.notes);
+      return { dryRun: true as const, ...block };
+    }
+  }
+
+  const status = await resolveNamedRef(
+    client,
+    "statuses",
+    input.statusId,
+    "statusId"
+  );
+  const to = { id: status.id, ...(status.label ? { name: status.label } : {}) };
+
+  const rows: BulkStatusRow[] = [];
+  for (const issueId of input.issueIds) {
+    try {
+      const issue = await client.getIssue(issueId);
+      const row: BulkStatusRow = {
+        issueId,
+        subject: issue.subject ?? null,
+        from: issue.status ?? null,
+        to,
+      };
+      if (issue.status?.id === status.id) row.unchanged = true;
+      rows.push(row);
+    } catch (err) {
+      rows.push({
+        issueId,
+        subject: null,
+        from: null,
+        to,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }
+
+  const willChange = rows.filter((r) => !r.unchanged && !r.error);
+  const summary = {
+    total: rows.length,
+    willChange: willChange.length,
+    unchanged: rows.filter((r) => r.unchanged).length,
+    unreadable: rows.filter((r) => r.error).length,
+  };
+
+  if (!input.confirm) {
+    return withIssuedToken("redmine_bulk_update_status", input, {
+      dryRun: true as const,
+      statusId: status.id,
+      ...(status.label ? { statusLabel: status.label } : {}),
+      ...(input.notes !== undefined ? { notes: input.notes } : {}),
+      rows,
+      summary,
+    });
+  }
+
+  consumeIfConfirm("redmine_bulk_update_status", input);
+
+  const updated: Array<{
+    issueId: number;
+    status: { id: number; name: string } | null;
+  }> = [];
+  const failed: Array<{ issueId: number; error: string }> = [];
+  const skipped = rows.filter((r) => r.unchanged).map((r) => r.issueId);
+  for (const row of willChange) {
+    try {
+      const result = await client.updateIssueStatus(
+        row.issueId,
+        status.id,
+        input.notes
+      );
+      updated.push({ issueId: row.issueId, status: result.status });
+    } catch (err) {
+      failed.push({
+        issueId: row.issueId,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }
+  // dry-run에서 못 읽은 일감은 confirm에서도 건드리지 않는다
+  for (const row of rows) {
+    if (row.error) failed.push({ issueId: row.issueId, error: row.error });
+  }
+
+  return {
+    dryRun: false as const,
+    statusId: status.id,
+    ...(status.label ? { statusLabel: status.label } : {}),
+    updated,
+    skipped,
+    failed,
+  };
 }

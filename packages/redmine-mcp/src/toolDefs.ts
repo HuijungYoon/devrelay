@@ -15,6 +15,7 @@ redmine_update_issue: multi-field update with before→after changes; prefer thi
 redmine_add_attachment: attach local files to an existing issue (upload only after confirm+previewToken).
 redmine_get_attachment: read an attachment — redmine_get_issue include=["attachments"] gives the ids, then this saves the file locally and returns path (+ text for text files). Images/PDFs: open the returned path with a file reader. Only files served by the configured Redmine are fetched; default limit 10 MiB.
 redmine_update_status: still valid for status-only.
+일괄 상태 변경: redmine_bulk_update_status { issueIds:[…], statusId, notes? } — one dry-run returns a per-issue before→after table (rows[]: unchanged/error flags) and one previewToken; confirm applies issue by issue and returns updated/skipped/failed. Use it when the user names several issues; never loop redmine_update_status with separate confirms.
 작업시간 (time entries): redmine_log_time { issueId, hours, spentOn?, activityId?, comments? } — dry-run shows the issue subject and the date (today when omitted); activityId takes an id or a name ("개발"). List with redmine_list_time_entries (defaults to userId="me" when no issue/project is given; spentFrom/spentTo YYYY-MM-DD). Activities: redmine_list_metadata kinds:["activities"].
 notes (댓글): plain text only. No Textile (h3., *, bq.) or Markdown (# , -, **bold**). Markup is blocked in dry-run (blocked:true, no previewToken) and confirm throws. Rewrite as short plain sentences.
 Do not print API keys or credentials.
@@ -142,6 +143,13 @@ export const TOOL_DEFS = [
     description:
       'Record 작업시간 (a time entry) on an issue or project: hours, spentOn (default today), activityId (id or name), comments. Dry-run returns previewToken; confirm=true requires it.',
     inputSchema: toolJsonSchemas.redmine_log_time,
+    annotations: writeAnnotations,
+  },
+  {
+    name: "redmine_bulk_update_status",
+    description:
+      'Move several issues (1–50) to one status by id or name. Dry-run reads each issue and returns rows[] with subject and from→to (unchanged/error flagged) plus one previewToken; confirm=true applies one by one and reports updated/skipped/failed. Optional notes: plain text only.',
+    inputSchema: toolJsonSchemas.redmine_bulk_update_status,
     annotations: writeAnnotations,
   },
   {

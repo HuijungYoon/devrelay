@@ -10,7 +10,8 @@ export type PreviewTool =
   | "redmine_add_issue_relation"
   | "redmine_update_issue_relation"
   | "redmine_remove_issue_relation"
-  | "redmine_log_time";
+  | "redmine_log_time"
+  | "redmine_bulk_update_status";
 
 type PreviewEntry = {
   tool: PreviewTool;

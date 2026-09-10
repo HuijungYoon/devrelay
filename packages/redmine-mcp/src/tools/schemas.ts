@@ -368,6 +368,21 @@ export const removeIssueRelationInputSchema = z
   .strict()
   .superRefine(requirePreviewTokenWhenConfirm);
 
+/** 일괄 상태 변경 — 한 번의 미리보기로 여러 일감 (최대 50) */
+export const bulkUpdateStatusInputSchema = z
+  .object({
+    issueIds: z.array(positiveInt).min(1).max(50),
+    statusId: namedRef,
+    notes: z.string().optional(),
+    ...confirmFields,
+  })
+  .strict()
+  .refine((v) => new Set(v.issueIds).size === v.issueIds.length, {
+    message: "issueIds must not repeat",
+    path: ["issueIds"],
+  })
+  .superRefine(requirePreviewTokenWhenConfirm);
+
 /** 첨부 내려받기 — 읽기 도구. destDir은 MCP 호스트의 폴더 */
 export const getAttachmentInputSchema = z
   .object({
@@ -445,8 +460,13 @@ export type RemoveIssueRelationInput = z.infer<
   typeof removeIssueRelationInputSchema
 >;
 export type GetAttachmentInput = z.infer<typeof getAttachmentInputSchema>;
+export type BulkUpdateStatusInput = z.infer<typeof bulkUpdateStatusInputSchema>;
 export type LogTimeInput = z.infer<typeof logTimeInputSchema>;
 export type ListTimeEntriesInput = z.infer<typeof listTimeEntriesInputSchema>;
+
+export function safeParseBulkUpdateStatus(input: unknown) {
+  return bulkUpdateStatusInputSchema.safeParse(input ?? {});
+}
 
 export function safeParseGetAttachment(input: unknown) {
   return getAttachmentInputSchema.safeParse(input);
@@ -1056,6 +1076,41 @@ export const toolJsonSchemas = {
         },
       },
     },
+    additionalProperties: false,
+  },
+  redmine_bulk_update_status: {
+    type: "object",
+    properties: {
+      issueIds: {
+        type: "array",
+        minItems: 1,
+        maxItems: 50,
+        items: { type: "integer", minimum: 1 },
+        description: "Issues to move to the same status (1–50, no repeats)",
+      },
+      statusId: {
+        description: '상태 — id 또는 이름 (예: 5, "완료")',
+        oneOf: [
+          { type: "integer", minimum: 1 },
+          { type: "string", minLength: 1 },
+        ],
+      },
+      notes: {
+        type: "string",
+        description: "Optional journal note added to every issue — plain text only",
+      },
+      confirm: {
+        type: "boolean",
+        description:
+          "false/omit = per-issue before→after preview (returns previewToken); true = apply (requires previewToken)",
+      },
+      previewToken: {
+        type: "string",
+        minLength: 1,
+        description: "Token from matching dry-run; required when confirm=true",
+      },
+    },
+    required: ["issueIds", "statusId"],
     additionalProperties: false,
   },
   redmine_get_attachment: {
