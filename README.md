@@ -94,6 +94,7 @@ Slash examples (Cursor):
 | `/add-attachment` | Attach file (dry-run → confirm) |
 | `/update-status` | Status only (dry-run → confirm) |
 | `/log-time` | Time entries — log hours (dry-run → confirm) / list |
+| `/read-attachment` | Download and read an issue attachment (read-only) |
 
 ## Architecture
 
@@ -134,6 +135,7 @@ Claude Code / Codex / Cursor / Antigravity  (plugins + skills)
 | `redmine_list_issue_relations` | Related issues with their `relationId` |
 | `redmine_list_metadata` | Trackers / statuses / priorities / versions / categories / custom fields / activities (id + name) |
 | `redmine_list_time_entries` | Time entries by issue / project / user (`"me"`) / date range, with `totalHours` |
+| `redmine_get_attachment` | Download an attachment to the MCP host (`path`; text files also inline). Same-host only, 10 MiB default limit |
 
 **Write** (`confirm` defaults to `false` = preview)
 

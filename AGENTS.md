@@ -65,7 +65,7 @@ Redmine REST API
 | `packages/redmine-client/src/memberships.ts` | 프로젝트 멤버 (담당자·일감관리자 후보), 이름 매칭 |
 | `packages/redmine-client/src/metadata.ts` | 유형·상태·우선순위·대상 버전·범주 목록 + `matchNamedByName` (이름 → id) |
 | `packages/redmine-client/src/users.ts` | 전체 사용자 검색 (권한 필요할 수 있음) |
-| `packages/redmine-client/src/attachments.ts` | 파일 검사·업로드 토큰 (최대 5개, 10MiB/파일) |
+| `packages/redmine-client/src/attachments.ts` | 파일 검사·업로드 토큰 (최대 5개, 10MiB/파일) + 첨부 메타·내려받기(`getBinary`는 같은 호스트만, 기본 10MiB·최대 50MiB, 텍스트면 본문 포함) |
 | `packages/redmine-client/src/textile.ts` | `formatDescriptionForRedmine`(→`<p>`), `formatNotesForRedmine`(→`<br />`), `detectNotesMarkup` |
 | `packages/redmine-client/src/types.ts` | 모든 입출력 타입 + `ISSUE_RELATION_TYPES` 등 상수 |
 | `packages/redmine-client/src/index.ts` | 공개 export. 새 함수·타입은 여기도 추가 |
@@ -87,6 +87,7 @@ Redmine REST API
 | `packages/redmine-mcp/src/tools/writes.ts` | 생성·수정·댓글·첨부·상태 핸들러 (담당자·일감관리자 해석 포함) |
 | `packages/redmine-mcp/src/tools/relations.ts` | 연결된 일감 핸들러 |
 | `packages/redmine-mcp/src/tools/timeEntries.ts` | 작업시간 기록(dry-run에 일감 제목·오늘 날짜)·조회 핸들러 |
+| `packages/redmine-mcp/src/tools/attachments.ts` | `redmine_get_attachment` — 첨부 내려받기 (읽기 도구, 게이트 없음) |
 | `packages/redmine-mcp/src/tools/metadata.ts` | `redmine_list_metadata` 핸들러 + `resolveNamedRef`/`resolveIssueMetadata` (쓰기 도구가 이름을 id로 해석할 때 쓰는 공용 함수) |
 | `packages/redmine-mcp/src/tools/` 의 `issues.ts` · `projects.ts` · `members.ts` · `users.ts` · `connection.ts` | 읽기 핸들러 |
 | `packages/redmine-mcp/src/errors.ts`, `packages/redmine-mcp/src/logging.ts` | MCP 에러 payload, 감사 로그(`logAudit`) |
@@ -102,8 +103,8 @@ Redmine REST API
 | `plugins/cursor` | `plugins/cursor/.cursor-plugin/plugin.json` + `plugins/cursor/mcp.json` | `/` | `commands/*.md`가 스킬을 호출 |
 | `plugins/antigravity` | `plugins/antigravity/plugin.json` + `plugins/antigravity/mcp_config.json` | `/redmine:` | 스킬 frontmatter `name:`도 `redmine:` 접두 |
 
-스킬 13개 — 4개 플러그인 모두 `plugins/<client>/skills/<name>/SKILL.md`:
-`help` · `test-connection` · `list-projects` · `my-issues` · `issue` · `create-issue` · `update-issue` · `add-comment` · `add-attachment` · `update-status` · `relate-issue` · `subtask` · `log-time`
+스킬 14개 — 4개 플러그인 모두 `plugins/<client>/skills/<name>/SKILL.md`:
+`help` · `test-connection` · `list-projects` · `my-issues` · `issue` · `create-issue` · `update-issue` · `add-comment` · `add-attachment` · `update-status` · `relate-issue` · `subtask` · `log-time` · `read-attachment`
 
 플러그인 스킬을 고치는 절차는 §7에 있습니다.
 

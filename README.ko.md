@@ -94,6 +94,7 @@ Codex · Claude Code · Cursor · Antigravity에서 **자연어와 슬래시 명
 | `/add-attachment` | 파일 첨부 (dry-run → 확인) |
 | `/update-status` | 상태만 변경 (dry-run → 확인) |
 | `/log-time` | 작업시간 기록 (dry-run → 확인)·조회 |
+| `/read-attachment` | 첨부 내려받아 읽기 (읽기 전용) |
 
 ## 구성
 
@@ -134,6 +135,7 @@ Claude Code / Codex / Cursor / Antigravity  (플러그인 + 스킬)
 | `redmine_list_issue_relations` | 연결된 일감 목록 (+ `relationId`) |
 | `redmine_list_metadata` | 유형·상태·우선순위·대상 버전·범주·사용자 정의 필드·작업 분류 (id + 이름) |
 | `redmine_list_time_entries` | 작업시간 조회 — 일감 / 프로젝트 / 사용자(`"me"`) / 기간, `totalHours` 포함 |
+| `redmine_get_attachment` | 첨부를 MCP 호스트에 내려받음 (`path`; 텍스트 파일은 본문도 함께). 같은 호스트만, 기본 10 MiB 제한 |
 
 **쓰기** (`confirm` 기본 `false` = 미리보기)
 

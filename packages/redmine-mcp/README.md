@@ -109,6 +109,7 @@ the user approved. Never call dry-run and `confirm=true` in the same turn.
 | `redmine_get_issue` | Issue detail (includes journals, children, etc.) |
 | `redmine_list_issue_relations` | Related issues with their `relationId` (needed to update/remove one) |
 | `redmine_list_metadata` | Trackers / statuses / priorities / activities (+ versions, categories, custom fields with `projectId`) as id+name |
+| `redmine_get_attachment` | Download an attachment (`attachmentId` from `redmine_get_issue include=["attachments"]`) to `destDir` (default: OS temp) and return `path`; text files also return `text` (first 200 KiB). Only the configured Redmine host is fetched; `maxBytes` default 10 MiB, hard max 50 MiB |
 | `redmine_list_time_entries` | Time entries by issue / project / user (`"me"`, the default when no issue or project is given) / `spentFrom`–`spentTo`; returns `totalHours` of the returned rows |
 
 ## Write APIs

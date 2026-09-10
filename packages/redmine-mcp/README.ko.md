@@ -57,6 +57,7 @@ dry-run과 `confirm=true`를 같은 턴에 부르지 마세요.
 | `redmine_get_issue` | 이슈 상세 조회 (journals·children 등 include) |
 | `redmine_list_issue_relations` | 연결된 일감 목록 (수정·삭제에 필요한 `relationId` 확인) |
 | `redmine_list_metadata` | 유형·상태·우선순위·작업 분류 (+ `projectId`면 대상 버전·범주·사용자 정의 필드) id+이름 목록 |
+| `redmine_get_attachment` | 첨부 내려받기 (`attachmentId`는 `redmine_get_issue include=["attachments"]`에서) → `destDir`(기본 OS 임시 폴더)에 저장하고 `path` 반환. 텍스트 파일은 `text`도 함께 (200 KiB까지). 설정된 Redmine 호스트만, `maxBytes` 기본 10 MiB·최대 50 MiB |
 | `redmine_list_time_entries` | 작업시간 조회 — 일감 / 프로젝트 / 사용자(`"me"`, 일감·프로젝트가 없으면 기본) / `spentFrom`–`spentTo`. 돌려준 행의 `totalHours` 포함 |
 
 ## 쓰기 API

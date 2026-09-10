@@ -22,5 +22,6 @@ Do **not** call Redmine MCP tools. Only show available slash commands.
 | `/redmine:relate-issue` | 연결된 일감 추가·수정·삭제 (dry-run 후 확인) |
 | `/redmine:subtask` | 하위일감 생성·부모 변경·연결 해제 (dry-run 후 확인) |
 | `/redmine:log-time` | 작업시간 기록 (dry-run 후 확인)·조회 |
+| `/redmine:read-attachment` | 첨부 내려받아 읽기 (읽기 전용) |
 
 Note: write commands require dry-run then explicit user confirmation before `confirm=true`.
