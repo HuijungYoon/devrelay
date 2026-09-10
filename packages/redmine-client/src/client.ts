@@ -15,6 +15,7 @@ import type {
   IssuePriorityOption,
   IssueRelation,
   IssueStatusOption,
+  ListIssueCustomFieldsResult,
   ListIssueRelationsResult,
   ListProjectMembersResult,
   ProjectVersionOption,
@@ -39,6 +40,7 @@ import {
   listIssueCategories,
   listIssuePriorities,
   listIssueStatuses,
+  listProjectIssueCustomFields,
   listProjectVersions,
   listTrackers,
 } from "./metadata.js";
@@ -240,6 +242,13 @@ export class RedmineClient {
   /** 범주 목록 (프로젝트별) */
   listIssueCategories(projectId: number): Promise<IssueCategoryOption[]> {
     return listIssueCategories(this.http, projectId);
+  }
+
+  /** 일감 사용자 정의 필드 목록 (프로젝트별). Redmine 4.2 미만은 폴백으로 추림 */
+  listProjectIssueCustomFields(
+    projectId: number
+  ): Promise<ListIssueCustomFieldsResult> {
+    return listProjectIssueCustomFields(this.http, projectId);
   }
 
   /** 연결된 일감 목록 (GET /issues/:id/relations.json) */

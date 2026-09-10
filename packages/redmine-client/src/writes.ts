@@ -1,6 +1,7 @@
 import type { RedmineHttp } from "./http.js";
 import type {
   AddCommentResult,
+  IssueCustomFieldWrite,
   AddIssueAttachmentsInput,
   AddIssueAttachmentsResult,
   CreateIssueInput,
@@ -36,6 +37,7 @@ function applyOptionalIssueFields(
     /** number sets, null clears (Redmine wants "") */
     fixedVersionId?: number | null;
     categoryId?: number | null;
+    customFields?: IssueCustomFieldWrite[];
     assignedTo?: "me" | number;
     watcherUserIds?: number[];
     notes?: string;
@@ -64,6 +66,12 @@ function applyOptionalIssueFields(
   }
   if (input.categoryId !== undefined) {
     issue.category_id = input.categoryId === null ? "" : input.categoryId;
+  }
+  if (input.customFields !== undefined && input.customFields.length > 0) {
+    issue.custom_fields = input.customFields.map((f) => ({
+      id: f.id,
+      value: f.value,
+    }));
   }
   if (input.assignedTo !== undefined) issue.assigned_to_id = input.assignedTo;
   if (input.watcherUserIds !== undefined) {

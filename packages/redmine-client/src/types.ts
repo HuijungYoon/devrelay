@@ -41,6 +41,30 @@ export type IssueCategoryOption = RedmineNamed & {
   assignedTo: RedmineNamed | null;
 };
 
+/** 프로젝트에 켜진 일감 사용자 정의 필드 (id + 이름) */
+export type IssueCustomFieldOption = RedmineNamed;
+
+export type ListIssueCustomFieldsResult = {
+  fields: IssueCustomFieldOption[];
+  /**
+   * project      — GET /projects/:id.json?include=issue_custom_fields (Redmine 4.2+)
+   * custom_fields — GET /custom_fields.json (관리자 키)
+   * issues       — 프로젝트 최근 이슈에서 합친 것. 값이 한 번도 안 붙은 필드는 빠질 수 있음
+   */
+  source: "project" | "custom_fields" | "issues";
+};
+
+/**
+ * 쓰기용 사용자 정의 필드 값. 문자열, 다중 선택이면 문자열 배열,
+ * 빈 문자열이면 비움 (Redmine은 ""를 비우기로 해석).
+ */
+export type IssueCustomFieldValue = string | string[];
+
+export type IssueCustomFieldWrite = {
+  id: number;
+  value: IssueCustomFieldValue;
+};
+
 /** 이름 또는 id로 지정할 수 있는 필드 값 */
 export type NamedRef = number | string;
 
@@ -221,6 +245,8 @@ export type CreateIssueInput = {
   fixedVersionId?: number;
   /** 범주 (category_id) */
   categoryId?: number;
+  /** 사용자 정의 필드 (custom_fields) — 프로젝트에 켜진 필드만 */
+  customFields?: IssueCustomFieldWrite[];
   /** "me", numeric user id (담당자) */
   assignedTo?: "me" | number;
   /** 일감관리자 — Redmine watcher_user_ids */
@@ -256,6 +282,8 @@ export type UpdateIssueInput = {
   fixedVersionId?: number | null;
   /** 범주 — number sets it, null clears it */
   categoryId?: number | null;
+  /** 사용자 정의 필드 — 넘긴 필드만 바뀜, value ""면 비움 */
+  customFields?: IssueCustomFieldWrite[];
   assignedTo?: "me" | number;
   /** replace-all when provided (including empty) */
   watcherUserIds?: number[];

@@ -32,6 +32,7 @@ export {
   listIssueCategories,
   listIssuePriorities,
   listIssueStatuses,
+  listProjectIssueCustomFields,
   listProjectVersions,
   listTrackers,
   matchNamedByName,
