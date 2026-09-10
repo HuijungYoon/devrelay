@@ -1,0 +1,1 @@
+{"trackers":[{"id":1,"name":"버그"},{"id":2,"name":"기능추가"}],"statuses":[{"id":1,"name":"신규","isClosed":false},{"id":2,"name":"진행","isClosed":false},{"id":5,"name":"완료","isClosed":true}],"priorities":[{"id":2,"name":"보통","isDefault":true},{"id":3,"name":"높음","isDefault":false}]}

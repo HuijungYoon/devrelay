@@ -1,0 +1,1 @@
+{"projectId":301,"source":"memberships","members":[{"id":164,"login":"hjyoon","name":"윤 희중"},{"id":16,"login":"sjyoon","name":"윤 석준"},{"id":21,"login":"kim","name":"김 철수"}],"totalCount":3,"returnedCount":3}

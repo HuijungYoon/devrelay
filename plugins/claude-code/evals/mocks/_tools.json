@@ -1,0 +1,1439 @@
+{
+  "tools": [
+    {
+      "name": "redmine_test_connection",
+      "description": "Verify Redmine URL and API key by fetching the current user.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "redmine_list_projects",
+      "description": "List Redmine projects visible to the current user.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "search": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "redmine_list_project_members",
+      "description": "List project members (for 담당자 / 일감관리자 picker). Prefer this over redmine_search_users.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Project id whose members to list (for 담당자/일감관리자)"
+          },
+          "query": {
+            "type": "string",
+            "description": "Optional name filter"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          }
+        },
+        "required": [
+          "projectId"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "redmine_search_users",
+      "description": "Search all Redmine users (may require admin). Prefer redmine_list_project_members.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Filter by name or login (partial match)"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "redmine_list_metadata",
+      "description": "List 유형/상태/우선순위/작업 분류(activities) (and 대상 버전/범주/사용자 정의 필드 with projectId) as id+name. Use it to turn a name the user said into an id — though create/update/update_status also accept names directly. For one issue's legal next statuses use redmine_get_issue include=[\"allowed_statuses\"].",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Required for versions/categories/customFields (they are per project); optional otherwise"
+          },
+          "kinds": {
+            "description": "Defaults to trackers+statuses+priorities, plus versions+categories+customFields when projectId is given",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "trackers",
+                "statuses",
+                "priorities",
+                "versions",
+                "categories",
+                "customFields",
+                "activities"
+              ]
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "redmine_search_issues",
+      "description": "Search Redmine issues. Defaults to open issues. Supports assignedTo=me.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "issueId": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "assignedTo": {
+            "description": "담당자 — \"me\", user id, or a name (names need projectId or the users API)",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer",
+                "minimum": 1
+              }
+            ]
+          },
+          "authorId": {
+            "description": "작성자 — \"me\", user id, or a name",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer",
+                "minimum": 1
+              }
+            ]
+          },
+          "watcherId": {
+            "description": "일감관리자(watcher) — \"me\", user id, or a name",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer",
+                "minimum": 1
+              }
+            ]
+          },
+          "status": {
+            "description": "open (default) | closed | all | status id | 상태 이름 (\"진행중\")",
+            "oneOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "integer",
+                "minimum": 1
+              }
+            ]
+          },
+          "trackerId": {
+            "description": "유형 — id 또는 이름 (\"버그\")",
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ]
+          },
+          "priorityId": {
+            "description": "우선순위 — id 또는 이름 (\"높음\")",
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ]
+          },
+          "fixedVersionId": {
+            "description": "대상 버전 — id 또는 이름 (name needs projectId)",
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ]
+          },
+          "categoryId": {
+            "description": "범주 — id 또는 이름 (name needs projectId)",
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ]
+          },
+          "subjectContains": {
+            "type": "string",
+            "description": "제목에 포함된 문자열"
+          },
+          "createdAfter": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "등록일 >= (YYYY-MM-DD)"
+          },
+          "createdBefore": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "등록일 <= (YYYY-MM-DD)"
+          },
+          "updatedAfter": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "수정일 >= (YYYY-MM-DD)"
+          },
+          "updatedBefore": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "수정일 <= (YYYY-MM-DD)"
+          },
+          "dueAfter": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "완료기한 >= (YYYY-MM-DD)"
+          },
+          "dueBefore": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "완료기한 <= (YYYY-MM-DD) — 'this week' = dueAfter+dueBefore"
+          },
+          "parentIssueId": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "customFields": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "value"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "sort": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": "string"
+                },
+                "direction": {
+                  "type": "string",
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ]
+                }
+              },
+              "required": [
+                "field",
+                "direction"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "redmine_search_text",
+      "description": "Full-text search across issue subjects, descriptions and notes (plus wiki/news/documents via types). Needs Redmine 3.3+; older servers return an error that says to use redmine_search_issues subjectContains.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Words to search in subject, description, notes (and wiki/news when types say so)"
+          },
+          "projectId": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Limit to one project"
+          },
+          "types": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "enum": [
+                "issues",
+                "news",
+                "documents",
+                "changesets",
+                "wiki_pages",
+                "messages",
+                "projects"
+              ]
+            },
+            "description": "Default [\"issues\"]. Others: wiki_pages, news, documents, changesets, messages, projects"
+          },
+          "titlesOnly": {
+            "type": "boolean",
+            "description": "Match titles only"
+          },
+          "openIssuesOnly": {
+            "type": "boolean",
+            "description": "Skip closed issues"
+          },
+          "allWords": {
+            "type": "boolean",
+            "description": "All words must match (default true)"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "redmine_get_issue",
+      "description": "Get a Redmine issue by id, optionally including journals and related data.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "issueId": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "include": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "journals",
+                "attachments",
+                "relations",
+                "children",
+                "allowed_statuses"
+              ]
+            }
+          }
+        },
+        "required": [
+          "issueId"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "redmine_create_issue",
+      "description": "Create issue. projectId+subject required. Optional: tracker/status/priority/startDate/doneRatio, customFields[{id|name,value}], assignedTo(담당자), watchers(일감관리자), attachments[{path}]. Dry-run returns previewToken; confirm=true requires that token.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Redmine project id (required)"
+          },
+          "subject": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Issue subject/title (required)"
+          },
+          "description": {
+            "type": "string",
+            "description": "Issue description body"
+          },
+          "parentIssueId": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "상위 일감 id — set to create this issue as a 하위일감 (subtask)"
+          },
+          "trackerId": {
+            "description": "유형 — tracker id 또는 이름 (예: 2, \"기능추가\")",
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ]
+          },
+          "statusId": {
+            "description": "상태 — status id 또는 이름 (예: 2, \"진행중\")",
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ]
+          },
+          "priorityId": {
+            "description": "우선순위 — priority id 또는 이름 (예: 4, \"높음\")",
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ]
+          },
+          "fixedVersionId": {
+            "description": "대상 버전 — version id 또는 이름 (예: \"2026-Q3\")",
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ]
+          },
+          "categoryId": {
+            "description": "범주 — category id 또는 이름",
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ]
+          },
+          "customFields": {
+            "description": "사용자 정의 필드 — [{ id 또는 name, value }]. value는 문자열, 다중 선택이면 문자열 배열, \"\"면 비움 (예: [{ name: \"고객사\", value: \"A사\" }])",
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {
+                  "oneOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "value"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "startDate": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "시작일 YYYY-MM-DD"
+          },
+          "dueDate": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "완료기한 YYYY-MM-DD"
+          },
+          "doneRatio": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "진척도 0-100"
+          },
+          "estimatedHours": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "assignedTo": {
+            "description": "담당자 (assignee): \"me\", user id, or name matched in project members",
+            "oneOf": [
+              {
+                "type": "string",
+                "const": "me"
+              },
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ]
+          },
+          "watchers": {
+            "description": "일감관리자 (Redmine watchers): array of \"me\", user ids, or names",
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "const": "me"
+                },
+                {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                {
+                  "type": "string",
+                  "minLength": 1
+                }
+              ]
+            }
+          },
+          "attachments": {
+            "description": "Local files to upload: [{ path, filename?, description? }], max 5, 10MiB each",
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 5,
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "filename": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "description": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "path"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "false/omit = dry-run (returns previewToken); true = create (requires previewToken)"
+          },
+          "previewToken": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Token from matching dry-run; required when confirm=true"
+          }
+        },
+        "required": [
+          "projectId",
+          "subject"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "redmine_update_issue",
+      "description": "Update issue fields (tracker/status/priority/dates/doneRatio/customFields/assignee/watchers/subject...). Dry-run returns before→after + previewToken; confirm=true requires matching previewToken. notes: plain text only (Textile/Markdown blocked).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "issueId": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "subject": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string"
+          },
+          "parentIssueId": {
+            "description": "상위 일감: id = 하위일감으로 편입/부모 변경, null = 부모 연결 해제 (하위일감 삭제). Omit to leave unchanged.",
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "trackerId": {
+            "description": "유형 — tracker id 또는 이름 (예: 2, \"기능추가\")",
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ]
+          },
+          "statusId": {
+            "description": "상태 — status id 또는 이름 (예: 2, \"진행중\")",
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ]
+          },
+          "priorityId": {
+            "description": "우선순위 — priority id 또는 이름 (예: 4, \"높음\")",
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ]
+          },
+          "fixedVersionId": {
+            "description": "대상 버전 — id·이름, 또는 null로 비우기 (예: \"2026-Q3\"). Omit to leave unchanged.",
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "categoryId": {
+            "description": "범주 — id·이름, 또는 null로 비우기. Omit to leave unchanged.",
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "customFields": {
+            "description": "사용자 정의 필드 — [{ id 또는 name, value }]. value는 문자열, 다중 선택이면 문자열 배열, \"\"면 비움. Omit a field to leave it unchanged (예: [{ name: \"고객사\", value: \"A사\" }])",
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {
+                  "oneOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "value"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "startDate": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "시작일 YYYY-MM-DD"
+          },
+          "dueDate": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "완료기한 YYYY-MM-DD"
+          },
+          "doneRatio": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "진척도 0-100"
+          },
+          "estimatedHours": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "assignedTo": {
+            "description": "담당자: \"me\", user id, or name",
+            "oneOf": [
+              {
+                "type": "string",
+                "const": "me"
+              },
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ]
+          },
+          "watchers": {
+            "description": "일감관리자 replace-all when provided; omit to leave unchanged",
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "const": "me"
+                },
+                {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                {
+                  "type": "string",
+                  "minLength": 1
+                }
+              ]
+            }
+          },
+          "notes": {
+            "type": "string",
+            "description": "Optional journal note — plain text only (no Textile/Markdown). Markup is blocked."
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "false/omit = before→after preview (returns previewToken); true = apply (requires previewToken)"
+          },
+          "previewToken": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Token from matching dry-run; required when confirm=true"
+          }
+        },
+        "required": [
+          "issueId"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "redmine_add_comment",
+      "description": "Add a comment (notes). Plain text only. Dry-run returns previewToken; confirm=true requires it. Never confirm on first call.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "issueId": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "notes": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Comment body — plain text only (no Textile h3./* or Markdown). Newlines OK."
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "false/omit = dry-run (returns previewToken); true = apply (requires previewToken)"
+          },
+          "previewToken": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Token from matching dry-run; required when confirm=true"
+          }
+        },
+        "required": [
+          "issueId",
+          "notes"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "redmine_add_attachment",
+      "description": "Attach local files. attachments: [{path, filename?, description?}]. Dry-run returns previewToken; confirm=true requires it.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "issueId": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "attachments": {
+            "description": "Local files to upload: [{ path, filename?, description? }], max 5, 10MiB each",
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 5,
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "filename": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "description": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "path"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "false/omit = dry-run preview (returns previewToken); true = upload and attach (requires previewToken)"
+          },
+          "previewToken": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Token from matching dry-run; required when confirm=true"
+          }
+        },
+        "required": [
+          "issueId",
+          "attachments"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "redmine_update_status",
+      "description": "Update issue status by statusId. Optional notes: plain text only. Dry-run returns previewToken; confirm=true requires it.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "issueId": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "statusId": {
+            "description": "상태 — status id 또는 이름 (예: 2, \"진행중\")",
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ]
+          },
+          "notes": {
+            "type": "string",
+            "description": "Optional journal note — plain text only (no Textile/Markdown)."
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "false/omit = dry-run (returns previewToken); true = apply (requires previewToken)"
+          },
+          "previewToken": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Token from matching dry-run; required when confirm=true"
+          }
+        },
+        "required": [
+          "issueId",
+          "statusId"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "redmine_get_attachment",
+      "description": "Download an issue attachment to the MCP host and return its local path; text files also come back inline (first 200 KiB). Get attachment ids from redmine_get_issue include=[\"attachments\"]. Read-only for Redmine; default size limit 10 MiB.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "attachmentId": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Attachment id from redmine_get_issue include=[\"attachments\"]"
+          },
+          "destDir": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Folder on the MCP host to save into. Default: OS temp dir under redmine-devrelay/attachments/<id>/. An existing file is not overwritten (the id is appended)"
+          },
+          "maxBytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 52428800,
+            "description": "Size limit. Default 10 MiB, hard max 50 MiB"
+          },
+          "inlineText": {
+            "type": "boolean",
+            "description": "Return the file body as text when it looks like text (default true, first 200 KiB)"
+          }
+        },
+        "required": [
+          "attachmentId"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "redmine_list_time_entries",
+      "description": "List 작업시간 (time entries) by issue, project, user (\"me\" or id) and spent-on range. Defaults to userId=\"me\" when no issue/project is given. Returns entries plus totalHours of the returned rows.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "issueId": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Time on one issue"
+          },
+          "projectId": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Time on one project"
+          },
+          "userId": {
+            "description": "\"me\" or a user id. Defaults to \"me\" when no issueId/projectId is given",
+            "oneOf": [
+              {
+                "type": "string",
+                "const": "me"
+              },
+              {
+                "type": "integer",
+                "minimum": 1
+              }
+            ]
+          },
+          "spentFrom": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "작업일 시작 YYYY-MM-DD (inclusive)"
+          },
+          "spentTo": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "작업일 끝 YYYY-MM-DD (inclusive)"
+          },
+          "activityId": {
+            "description": "작업 분류(활동) — id 또는 이름",
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ]
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "redmine_log_time",
+      "description": "Record 작업시간 (a time entry) on an issue or project: hours, spentOn (default today), activityId (id or name), comments. Dry-run returns previewToken; confirm=true requires it.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "issueId": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Issue to log time on (preferred). issueId or projectId is required"
+          },
+          "projectId": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Project to log time on when there is no issue"
+          },
+          "hours": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "maximum": 24,
+            "description": "작업시간 (시간 단위, 예: 1.5)"
+          },
+          "spentOn": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "작업일 YYYY-MM-DD — omit for today"
+          },
+          "activityId": {
+            "description": "작업 분류(활동) — id 또는 이름 (예: 9, \"개발\"). List with redmine_list_metadata kinds:[\"activities\"]",
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ]
+          },
+          "comments": {
+            "type": "string",
+            "maxLength": 1024,
+            "description": "설명 — short plain text (older Redmine caps it at 255 chars)"
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "false/omit = dry-run (returns previewToken); true = record (requires previewToken)"
+          },
+          "previewToken": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Token from matching dry-run; required when confirm=true"
+          }
+        },
+        "required": [
+          "hours"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "redmine_bulk_update_status",
+      "description": "Move several issues (1–50) to one status by id or name. Dry-run reads each issue and returns rows[] with subject and from→to (unchanged/error flagged) plus one previewToken; confirm=true applies one by one and reports updated/skipped/failed. Optional notes: plain text only.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "issueIds": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 50,
+            "items": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "description": "Issues to move to the same status (1–50, no repeats)"
+          },
+          "statusId": {
+            "description": "상태 — id 또는 이름 (예: 5, \"완료\")",
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ]
+          },
+          "notes": {
+            "type": "string",
+            "description": "Optional journal note added to every issue — plain text only"
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "false/omit = per-issue before→after preview (returns previewToken); true = apply (requires previewToken)"
+          },
+          "previewToken": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Token from matching dry-run; required when confirm=true"
+          }
+        },
+        "required": [
+          "issueIds",
+          "statusId"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "redmine_list_issue_relations",
+      "description": "List 연결된 일감 (issue relations) with their relation ids — required before updating or removing a relation.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "issueId": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Issue whose 연결된 일감 (relations) to list"
+          }
+        },
+        "required": [
+          "issueId"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "redmine_add_issue_relation",
+      "description": "Link two issues (연결된 일감 추가). relationType: relates/duplicates/duplicated/blocks/blocked/precedes/follows/copied_to/copied_from; delay only for precedes/follows. Dry-run returns previewToken; confirm=true requires it.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "issueId": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Source issue id"
+          },
+          "issueToId": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Issue id to link to (must differ from issueId)"
+          },
+          "relationType": {
+            "type": "string",
+            "enum": [
+              "relates",
+              "duplicates",
+              "duplicated",
+              "blocks",
+              "blocked",
+              "precedes",
+              "follows",
+              "copied_to",
+              "copied_from"
+            ],
+            "description": "relates(관련됨) duplicates/duplicated(중복) blocks/blocked(차단) precedes/follows(선행/후속) copied_to/copied_from(복사)"
+          },
+          "delay": {
+            "type": "integer",
+            "description": "Days of delay — precedes/follows only"
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "false/omit = dry-run (returns previewToken); true = apply (requires previewToken)"
+          },
+          "previewToken": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Token from matching dry-run; required when confirm=true"
+          }
+        },
+        "required": [
+          "issueId",
+          "issueToId",
+          "relationType"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "redmine_update_issue_relation",
+      "description": "Change an existing relation (연결된 일감 수정) by relationId. Redmine has no relation update API, so this removes and re-creates it. Dry-run returns before→after + previewToken.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "relationId": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Relation id from redmine_list_issue_relations"
+          },
+          "issueToId": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "relationType": {
+            "type": "string",
+            "enum": [
+              "relates",
+              "duplicates",
+              "duplicated",
+              "blocks",
+              "blocked",
+              "precedes",
+              "follows",
+              "copied_to",
+              "copied_from"
+            ]
+          },
+          "delay": {
+            "description": "Days of delay (precedes/follows only); null clears it",
+            "oneOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "false/omit = before→after preview (returns previewToken); true = apply (requires previewToken)"
+          },
+          "previewToken": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Token from matching dry-run; required when confirm=true"
+          }
+        },
+        "required": [
+          "relationId"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "redmine_remove_issue_relation",
+      "description": "Remove a relation by relationId (연결된 일감 삭제). Only the link is deleted — both issues stay. Dry-run returns previewToken; confirm=true requires it.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "relationId": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Relation id from redmine_list_issue_relations"
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "false/omit = dry-run (returns previewToken); true = remove (requires previewToken)"
+          },
+          "previewToken": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Token from matching dry-run; required when confirm=true"
+          }
+        },
+        "required": [
+          "relationId"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+{"id":24067,"subject":"[CloudHMI] Root rule chain - 디바이스 attributes 저장 scope 검토 및 변경","project":{"id":301,"name":"CLOUD-HMI"},"tracker":{"id":2,"name":"기능추가"},"status":{"id":2,"name":"진행"},"priority":{"id":2,"name":"보통"},"assignedTo":{"id":164,"name":"윤 희중"},"description":"","dueDate":"2026-09-12","doneRatio":60,"customFields":[],"journals":[]}
