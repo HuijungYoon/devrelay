@@ -6,7 +6,7 @@ MCP integration that lets you query, create, and update Redmine issues with **na
 
 Agents do not call the Redmine REST API directly. They go through the shared MCP server [`redmine-devrelay`](https://www.npmjs.com/package/redmine-devrelay). Write APIs enforce a **dry-run → confirm → `confirm=true` + `previewToken`** gate.
 
-**Current release: `0.7.5`** (`redmine-devrelay` / `redmine-devrelay-client`)
+**Current release: `0.8.0`** (`redmine-devrelay` / `redmine-devrelay-client`)
 
 ## Shipped so far (Phase 1–7)
 
@@ -18,7 +18,14 @@ Agents do not call the Redmine REST API directly. They go through the shared MCP
 | 4 | Issue **attachments** (create + `add_attachment`) | 0.4.x |
 | 5 | Plain-text notes enforcement, **`previewToken` confirm gate** | 0.5.x |
 | 6 | Issue relations and subtasks, Streamable HTTP + BYOK | 0.6.x |
-| 7 | **Names instead of ids** (status/tracker/priority), target version and category | **0.7.x** |
+| 7 | **Names instead of ids** (status/tracker/priority), target version and category | 0.7.x |
+| 8 | **Custom fields** on create/update (`customFields`), field list in `list_metadata` | **0.8.x** |
+
+### 0.8.x highlights
+
+- **Custom fields** on create/update: `customFields: [{ id | name, value }]` — names resolve against the project's issue custom fields; `""` clears, string arrays for multi-select; only the listed fields change
+- The update preview shows `customField:<name>` before→after and skips unchanged fields; the create preview lists id, name and value
+- `redmine_list_metadata` gains the `customFields` kind and reports `customFieldsSource`: `project` (Redmine 4.2+), `custom_fields` (admin key) or `issues` (sampled from recent issues on older servers, so a never-filled field can be missing — pass its id)
 
 ### 0.7.x highlights
 
@@ -30,9 +37,8 @@ Agents do not call the Redmine REST API directly. They go through the shared MCP
 
 - `statusId`/`trackerId`/`priorityId`/`fixedVersionId`/`categoryId` accept a **name** as well as an id, so "set it to 진행" works without knowing that 진행 is 2
 - A miss returns the real candidates (`2:진행, 4:테스트 …`) instead of guessing; ambiguity is refused
-- `redmine_list_metadata` lists trackers/statuses/priorities (+ versions/categories/custom fields per project); kinds a project forbids come back under `unavailable` instead of failing the call
+- `redmine_list_metadata` lists trackers/statuses/priorities (+ versions/categories per project); kinds a project forbids come back under `unavailable` instead of failing the call
 - New `fixedVersionId` (대상 버전) and `categoryId` (범주) on create/update; `null` clears them
-- **Custom fields** on create/update: `customFields: [{ id | name, value }]`. Names resolve against the project's issue custom fields (Redmine 4.2+; older servers fall back to `/custom_fields.json` or to sampling recent issues, reported as `customFieldsSource`); `""` clears, arrays for multi-select. The update preview shows `customField:<name>` before→after
 
 ### 0.6.x highlights
 
@@ -94,10 +100,10 @@ Slash examples (Cursor):
 Claude Code / Codex / Cursor / Antigravity  (plugins + skills)
         │ MCP STDIO
         ▼
-   redmine-devrelay@0.7.5   (tool schemas, STDIO, npm)
+   redmine-devrelay@0.8.0   (tool schemas, STDIO, npm)
         │
         ▼
-   redmine-devrelay-client@0.7.5  (REST, auth, HTML formatting, writes)
+   redmine-devrelay-client@0.8.0  (REST, auth, HTML formatting, writes)
         │ HTTPS or private-IP HTTP
         ▼
    Redmine REST API
@@ -105,8 +111,8 @@ Claude Code / Codex / Cursor / Antigravity  (plugins + skills)
 
 | Path | Role |
 | --- | --- |
-| `packages/redmine-client` | npm: `redmine-devrelay-client@0.7.5` |
-| `packages/redmine-mcp` | npm: `redmine-devrelay@0.7.5` |
+| `packages/redmine-client` | npm: `redmine-devrelay-client@0.8.0` |
+| `packages/redmine-mcp` | npm: `redmine-devrelay@0.8.0` |
 | `plugins/cursor` | Cursor plugin |
 | `plugins/claude-code` | Claude Code plugin + skills |
 | `plugins/codex` | Codex plugin + skills |
@@ -155,7 +161,7 @@ See [`packages/redmine-mcp/README.md`](packages/redmine-mcp/README.md) for field
 ### 1. Run via npm (recommended)
 
 ```bash
-npx -y redmine-devrelay@0.7.5
+npx -y redmine-devrelay@0.8.0
 ```
 
 Local build:
@@ -198,7 +204,7 @@ Local Docker: `http://localhost:3000` + `REDMINE_ALLOWED_HOSTS=localhost` (`dock
 /add-plugin redmine-devrelay
 ```
 
-Or connect `npx -y redmine-devrelay@0.7.5` in `plugins/cursor/mcp.json` / MCP settings, then set `REDMINE_URL` / `REDMINE_API_KEY`.
+Or connect `npx -y redmine-devrelay@0.8.0` in `plugins/cursor/mcp.json` / MCP settings, then set `REDMINE_URL` / `REDMINE_API_KEY`.
 
 ### 4. Claude Code
 
@@ -252,8 +258,8 @@ npx @modelcontextprotocol/inspector node packages/redmine-mcp/dist/index.js
 ## Repository layout
 
 ```
-packages/redmine-client/   # npm: redmine-devrelay-client@0.7.5
-packages/redmine-mcp/      # npm: redmine-devrelay@0.7.5
+packages/redmine-client/   # npm: redmine-devrelay-client@0.8.0
+packages/redmine-mcp/      # npm: redmine-devrelay@0.8.0
 plugins/cursor|claude-code|codex|antigravity/
 docker/redmine/            # Redmine for integration tests
 docs/superpowers/          # Phase designs and implementation plans
@@ -275,4 +281,4 @@ docs/superpowers/          # Phase designs and implementation plans
 
 ## License / publish
 
-MIT · npm: [`redmine-devrelay@0.7.5`](https://www.npmjs.com/package/redmine-devrelay), [`redmine-devrelay-client@0.7.5`](https://www.npmjs.com/package/redmine-devrelay-client)
+MIT · npm: [`redmine-devrelay@0.8.0`](https://www.npmjs.com/package/redmine-devrelay), [`redmine-devrelay-client@0.8.0`](https://www.npmjs.com/package/redmine-devrelay-client)

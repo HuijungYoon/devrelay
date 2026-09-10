@@ -4,12 +4,12 @@
 
 Redmine REST client used by the [redmine-devrelay](https://www.npmjs.com/package/redmine-devrelay) MCP server.
 
-- **Version:** `0.7.5` (aligned with the MCP server)
+- **Version:** `0.8.0` (aligned with the MCP server)
 - **GitHub:** https://github.com/HuijungYoon/devrelay
 - **MCP server:** [redmine-devrelay](https://www.npmjs.com/package/redmine-devrelay)
 
 ```bash
-npm install redmine-devrelay-client@0.7.5
+npm install redmine-devrelay-client@0.8.0
 ```
 
 ## Features

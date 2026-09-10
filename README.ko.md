@@ -6,7 +6,7 @@ Codex · Claude Code · Cursor · Antigravity에서 **자연어와 슬래시 명
 
 에이전트는 Redmine REST를 직접 호출하지 않고, 공통 MCP 서버 [`redmine-devrelay`](https://www.npmjs.com/package/redmine-devrelay)를 통합니다. 쓰기 API는 **dry-run → 확인 → `confirm=true` + `previewToken`** 게이트를 강제합니다.
 
-**현재 배포 버전: `0.7.5`** (`redmine-devrelay` / `redmine-devrelay-client`)
+**현재 배포 버전: `0.8.0`** (`redmine-devrelay` / `redmine-devrelay-client`)
 
 ## 현재까지 (Phase 1–7)
 
@@ -18,7 +18,14 @@ Codex · Claude Code · Cursor · Antigravity에서 **자연어와 슬래시 명
 | 4 | 이슈 **첨부파일** (create + `add_attachment`) | 0.4.x |
 | 5 | notes 평문 강제, **`previewToken` confirm 게이트** | 0.5.x |
 | 6 | 연결된 일감·하위일감, Streamable HTTP + BYOK | 0.6.x |
-| 7 | **id 대신 이름** (상태·유형·우선순위), 대상 버전·범주 | **0.7.x** |
+| 7 | **id 대신 이름** (상태·유형·우선순위), 대상 버전·범주 | 0.7.x |
+| 8 | 생성·수정에 **사용자 정의 필드** (`customFields`), `list_metadata`에 필드 목록 | **0.8.x** |
+
+### 0.8.x 하이라이트
+
+- **사용자 정의 필드** — 생성·수정에 `customFields: [{ id 또는 name, value }]`. 이름은 프로젝트에 켜진 필드 목록으로 해석, `""`면 비움, 다중 선택은 문자열 배열. 넘긴 필드만 바뀜
+- 수정 미리보기는 `customField:<이름>`으로 이전→이후를 보여 주고 값이 같은 필드는 생략, 생성 미리보기는 id·이름·값을 나열
+- `redmine_list_metadata`에 `customFields` 종류 추가, 출처를 `customFieldsSource`로 표시: `project`(Redmine 4.2+) · `custom_fields`(관리자 키) · `issues`(구버전은 최근 이슈에서 추림 — 값이 한 번도 안 붙은 필드는 빠질 수 있으니 id로)
 
 ### 0.7.x 하이라이트
 
@@ -30,9 +37,8 @@ Codex · Claude Code · Cursor · Antigravity에서 **자연어와 슬래시 명
 
 - `statusId`·`trackerId`·`priorityId`·`fixedVersionId`·`categoryId`가 **이름**을 받습니다 — "진행으로 바꿔줘"가 id 없이 동작
 - 이름이 안 맞으면 실제 후보(`2:진행, 4:테스트 …`)를 돌려줍니다. 추측하지 않고, 애매하면 거절
-- `redmine_list_metadata`로 유형·상태·우선순위(+프로젝트별 대상 버전·범주·사용자 정의 필드) 목록. 권한이 막힌 종류는 호출 전체를 실패시키지 않고 `unavailable`로 표시
+- `redmine_list_metadata`로 유형·상태·우선순위(+프로젝트별 대상 버전·범주) 목록. 권한이 막힌 종류는 호출 전체를 실패시키지 않고 `unavailable`로 표시
 - `fixedVersionId`(대상 버전)·`categoryId`(범주) 필드 추가, `null`이면 비움
-- **사용자 정의 필드** — 생성·수정에 `customFields: [{ id 또는 name, value }]`. 이름은 프로젝트에 켜진 필드 목록으로 해석 (Redmine 4.2+; 구버전은 `/custom_fields.json` → 최근 이슈 샘플링으로 폴백, `customFieldsSource`로 표시), `""`면 비움, 다중 선택은 배열. 수정 미리보기에 `customField:<이름>` 이전→이후 표시
 
 ### 0.6.x 하이라이트
 
@@ -94,10 +100,10 @@ Codex · Claude Code · Cursor · Antigravity에서 **자연어와 슬래시 명
 Claude Code / Codex / Cursor / Antigravity  (플러그인 + 스킬)
         │ MCP STDIO
         ▼
-   redmine-devrelay@0.7.5   (도구 스키마, STDIO, npm)
+   redmine-devrelay@0.8.0   (도구 스키마, STDIO, npm)
         │
         ▼
-   redmine-devrelay-client@0.7.5  (REST, 인증, HTML 포맷, 쓰기)
+   redmine-devrelay-client@0.8.0  (REST, 인증, HTML 포맷, 쓰기)
         │ HTTPS 또는 사설 IP HTTP
         ▼
    Redmine REST API
@@ -105,8 +111,8 @@ Claude Code / Codex / Cursor / Antigravity  (플러그인 + 스킬)
 
 | 경로 | 역할 |
 | --- | --- |
-| `packages/redmine-client` | npm: `redmine-devrelay-client@0.7.5` |
-| `packages/redmine-mcp` | npm: `redmine-devrelay@0.7.5` |
+| `packages/redmine-client` | npm: `redmine-devrelay-client@0.8.0` |
+| `packages/redmine-mcp` | npm: `redmine-devrelay@0.8.0` |
 | `plugins/cursor` | Cursor 플러그인 |
 | `plugins/claude-code` | Claude Code 플러그인 + 스킬 |
 | `plugins/codex` | Codex 플러그인 + 스킬 |
@@ -155,7 +161,7 @@ Claude Code / Codex / Cursor / Antigravity  (플러그인 + 스킬)
 ### 1. npm으로 실행 (권장)
 
 ```bash
-npx -y redmine-devrelay@0.7.5
+npx -y redmine-devrelay@0.8.0
 ```
 
 로컬 빌드:
@@ -198,7 +204,7 @@ export REDMINE_API_KEY=your-api-key
 /add-plugin redmine-devrelay
 ```
 
-또는 `plugins/cursor/mcp.json` / MCP 설정에서 `npx -y redmine-devrelay@0.7.5` 연결 후 `REDMINE_URL` / `REDMINE_API_KEY` 설정.
+또는 `plugins/cursor/mcp.json` / MCP 설정에서 `npx -y redmine-devrelay@0.8.0` 연결 후 `REDMINE_URL` / `REDMINE_API_KEY` 설정.
 
 ### 4. Claude Code
 
@@ -252,8 +258,8 @@ npx @modelcontextprotocol/inspector node packages/redmine-mcp/dist/index.js
 ## 저장소 구조
 
 ```
-packages/redmine-client/   # npm: redmine-devrelay-client@0.7.5
-packages/redmine-mcp/      # npm: redmine-devrelay@0.7.5
+packages/redmine-client/   # npm: redmine-devrelay-client@0.8.0
+packages/redmine-mcp/      # npm: redmine-devrelay@0.8.0
 plugins/cursor|claude-code|codex|antigravity/
 docker/redmine/            # 통합 테스트용 Redmine
 docs/superpowers/          # Phase 설계·구현 계획
@@ -275,4 +281,4 @@ docs/superpowers/          # Phase 설계·구현 계획
 
 ## 라이선스 / 배포
 
-MIT · npm: [`redmine-devrelay@0.7.5`](https://www.npmjs.com/package/redmine-devrelay), [`redmine-devrelay-client@0.7.5`](https://www.npmjs.com/package/redmine-devrelay-client)
+MIT · npm: [`redmine-devrelay@0.8.0`](https://www.npmjs.com/package/redmine-devrelay), [`redmine-devrelay-client@0.8.0`](https://www.npmjs.com/package/redmine-devrelay-client)
