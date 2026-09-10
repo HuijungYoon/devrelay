@@ -154,6 +154,14 @@ export type NormalizedIssueSummary = {
   createdOn: string | null;
 };
 
+/** journal 한 건의 필드 변경: property attr → name은 필드 (status_id, done_ratio, assigned_to_id …) */
+export type JournalDetail = {
+  property: string;
+  name: string;
+  oldValue: string | null;
+  newValue: string | null;
+};
+
 export type NormalizedIssueDetail = NormalizedIssueSummary & {
   description: string;
   author: { id: number; name: string } | null;
@@ -171,6 +179,8 @@ export type NormalizedIssueDetail = NormalizedIssueSummary & {
     notes: string;
     createdOn: string;
     privateNotes: boolean;
+    /** 필드 변경 내역 (상태·진척도·담당자 …). Redmine의 journal details */
+    details: JournalDetail[];
   }>;
   attachments?: Array<{
     id: number;

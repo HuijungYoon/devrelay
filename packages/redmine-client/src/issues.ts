@@ -35,6 +35,12 @@ type RawIssue = {
     notes?: string;
     created_on: string;
     private_notes?: boolean;
+    details?: Array<{
+      property?: string;
+      name?: string;
+      old_value?: string | null;
+      new_value?: string | null;
+    }>;
   }>;
   attachments?: Array<{
     id: number;
@@ -160,6 +166,12 @@ function normalizeDetail(raw: RawIssue): NormalizedIssueDetail {
       notes: j.notes ?? "",
       createdOn: j.created_on,
       privateNotes: Boolean(j.private_notes),
+      details: (j.details ?? []).map((d) => ({
+        property: d.property ?? "",
+        name: d.name ?? "",
+        oldValue: d.old_value ?? null,
+        newValue: d.new_value ?? null,
+      })),
     })),
     attachments: raw.attachments?.map((a) => ({
       id: a.id,
