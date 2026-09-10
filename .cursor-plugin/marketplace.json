@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "DevRelay plugins for Cursor — Redmine read-only MCP and issue skills",
-    "version": "0.1.0"
+    "version": "0.1.1"
   },
   "plugins": [
     {
       "name": "redmine-devrelay",
       "source": "./plugins/cursor",
       "description": "Connect Cursor to Redmine (read-only): test connection, list projects, search my open issues, and view issue detail with journals.",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "keywords": ["redmine", "mcp", "issues"],
       "category": "developer-tools",
       "logo": "https://raw.githubusercontent.com/HuijungYoon/devrelay/main/plugins/cursor/assets/logo.svg"

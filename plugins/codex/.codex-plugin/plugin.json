@@ -1,6 +1,6 @@
 {
   "name": "redmine-devrelay",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "Redmine read/write via redmine-devrelay MCP (dry-run → confirm + previewToken) and bundled skills.",
   "author": { "name": "M2I" },
   "license": "MIT",

@@ -1,7 +1,7 @@
 {
   "name": "redmine-devrelay",
   "displayName": "Redmine DevRelay",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Connect Cursor to your Redmine with a read-only MCP server. Slash commands: /help, /test-connection, /list-projects, /my-issues, /issue — without write access.",
   "author": {
     "name": "M2I / markyoon",
