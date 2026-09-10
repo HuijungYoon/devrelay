@@ -230,6 +230,46 @@ export type IssueUploadToken = {
 export const ATTACHMENT_MAX_FILES = 5;
 export const ATTACHMENT_MAX_BYTES = 10 * 1024 * 1024;
 
+/** 내려받기 기본 상한 (요청으로 올릴 수 있는 최대는 HARD) */
+export const ATTACHMENT_DOWNLOAD_MAX_BYTES = 10 * 1024 * 1024;
+export const ATTACHMENT_DOWNLOAD_HARD_MAX_BYTES = 50 * 1024 * 1024;
+/** 텍스트 파일을 결과에 바로 실어 주는 상한 */
+export const ATTACHMENT_TEXT_INLINE_MAX_BYTES = 200 * 1024;
+
+/** GET /attachments/:id.json */
+export type AttachmentInfo = {
+  id: number;
+  filename: string;
+  filesize: number;
+  /** 구버전 Redmine은 안 준다 → 내려받을 때 응답 헤더로 채움 */
+  contentType: string | null;
+  description: string;
+  contentUrl: string;
+  author: RedmineNamed | null;
+  createdOn: string | null;
+};
+
+export type DownloadAttachmentInput = {
+  attachmentId: number;
+  /** 저장 폴더. 생략하면 OS 임시 폴더 아래 redmine-devrelay/attachments/<id>/ */
+  destDir?: string;
+  /** 기본 ATTACHMENT_DOWNLOAD_MAX_BYTES, 최대 ATTACHMENT_DOWNLOAD_HARD_MAX_BYTES */
+  maxBytes?: number;
+  /** 텍스트 파일이면 내용을 함께 돌려줄지 (기본 true) */
+  inlineText?: boolean;
+};
+
+export type DownloadAttachmentResult = {
+  attachment: AttachmentInfo;
+  /** 저장된 로컬 경로 */
+  path: string;
+  sizeBytes: number;
+  contentType: string | null;
+  /** 텍스트로 판단되면 UTF-8 본문 (ATTACHMENT_TEXT_INLINE_MAX_BYTES까지) */
+  text?: string;
+  textTruncated?: boolean;
+};
+
 /** Redmine relation_type values (연결된 일감 관계 종류) */
 export const ISSUE_RELATION_TYPES = [
   "relates",

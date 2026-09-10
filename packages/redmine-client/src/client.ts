@@ -6,8 +6,11 @@ import type {
   AddIssueAttachmentsInput,
   AddIssueAttachmentsResult,
   AddIssueRelationInput,
+  AttachmentInfo,
   AttachmentInput,
   AttachmentPreview,
+  DownloadAttachmentInput,
+  DownloadAttachmentResult,
   CreateIssueInput,
   CreateIssueResult,
   IssueCategoryOption,
@@ -64,6 +67,8 @@ import {
 import { listProjectMembers, listProjectPeople } from "./memberships.js";
 import { searchUsers } from "./users.js";
 import {
+  downloadAttachment,
+  getAttachment,
   inspectAttachments,
   uploadAttachments,
   uploadFile,
@@ -306,6 +311,18 @@ export class RedmineClient {
 
   inspectAttachments(inputs: AttachmentInput[]): AttachmentPreview[] {
     return inspectAttachments(inputs);
+  }
+
+  /** 첨부 메타데이터 */
+  getAttachment(attachmentId: number): Promise<AttachmentInfo> {
+    return getAttachment(this.http, attachmentId);
+  }
+
+  /** 첨부를 로컬에 저장 (텍스트면 본문 포함). 같은 Redmine 호스트만 */
+  downloadAttachment(
+    input: DownloadAttachmentInput
+  ): Promise<DownloadAttachmentResult> {
+    return downloadAttachment(this.http, input);
   }
 
   uploadFile(input: AttachmentInput): Promise<UploadedAttachment> {

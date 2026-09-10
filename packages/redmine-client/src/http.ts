@@ -99,6 +99,80 @@ export class RedmineHttp {
     }
   }
 
+  /**
+   * GET a file (attachment download). Only URLs on the configured Redmine are
+   * allowed — the API key goes out with every request, so a content_url that
+   * points anywhere else must not be followed. Refuses bodies over maxBytes,
+   * first by Content-Length and then by what was actually read.
+   */
+  async getBinary(
+    url: string,
+    opts: { maxBytes: number }
+  ): Promise<{ bytes: Buffer; contentType: string | null }> {
+    const target = this.assertSameRedmine(url);
+    try {
+      const response = await this.request(target, "GET", undefined, {
+        Accept: "*/*",
+      });
+      if (!response.ok) {
+        const bodyText = await response.text();
+        this.mapStatus(response.status, bodyText, new URL(target).pathname);
+      }
+      const declared = Number(response.headers.get("content-length") ?? "");
+      if (Number.isFinite(declared) && declared > opts.maxBytes) {
+        throw this.tooLarge(declared, opts.maxBytes);
+      }
+      const bytes = Buffer.from(await response.arrayBuffer());
+      if (bytes.length > opts.maxBytes) {
+        throw this.tooLarge(bytes.length, opts.maxBytes);
+      }
+      return { bytes, contentType: response.headers.get("content-type") };
+    } catch (err) {
+      if (err instanceof RedmineError) {
+        throw this.maskError(err);
+      }
+      throw this.mapNetworkError(err);
+    }
+  }
+
+  private tooLarge(size: number, maxBytes: number): RedmineError {
+    return new RedmineError({
+      code: "REDMINE_VALIDATION_ERROR",
+      message: `File is ${size} bytes, over the ${maxBytes} byte limit`,
+      retrySafe: false,
+      check: [
+        "Raise maxBytes (up to the hard limit) if you really need this file",
+        "Or open it in Redmine directly",
+      ],
+    });
+  }
+
+  /** Absolute URL on this Redmine (same origin, under its base path) → normalized URL */
+  private assertSameRedmine(url: string): string {
+    const base = new URL(`${this.config.baseUrl}/`);
+    let target: URL;
+    try {
+      target = new URL(url, base);
+    } catch {
+      throw new RedmineError({
+        code: "REDMINE_VALIDATION_ERROR",
+        message: "Invalid download URL",
+        retrySafe: false,
+      });
+    }
+    const sameOrigin = target.origin === base.origin;
+    const underBase = target.pathname.startsWith(base.pathname);
+    if (!sameOrigin || !underBase) {
+      throw new RedmineError({
+        code: "REDMINE_VALIDATION_ERROR",
+        message: `Refusing to download from ${target.origin}${target.pathname}: not on the configured Redmine`,
+        retrySafe: false,
+        check: ["Only attachments served by REDMINE_URL are downloaded"],
+      });
+    }
+    return target.toString();
+  }
+
   private async sendJson<T>(
     method: "POST" | "PUT" | "DELETE",
     path: string,

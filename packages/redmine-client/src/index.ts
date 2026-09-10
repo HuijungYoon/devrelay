@@ -45,6 +45,11 @@ export {
   normalizeTimeEntry,
 } from "./timeEntries.js";
 export {
+  downloadAttachment,
+  getAttachment,
+  looksLikeText,
+  normalizeAttachment,
+  safeAttachmentFilename,
   inspectAttachments,
   uploadAttachments,
   uploadFile,
@@ -53,6 +58,9 @@ export {
   ATTACHMENT_MAX_BYTES,
   ATTACHMENT_MAX_FILES,
   DELAY_RELATION_TYPES,
+  ATTACHMENT_DOWNLOAD_HARD_MAX_BYTES,
+  ATTACHMENT_DOWNLOAD_MAX_BYTES,
+  ATTACHMENT_TEXT_INLINE_MAX_BYTES,
   ISSUE_RELATION_TYPES,
 } from "./types.js";
 export {
