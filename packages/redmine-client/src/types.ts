@@ -65,6 +65,69 @@ export type IssueCustomFieldWrite = {
   value: IssueCustomFieldValue;
 };
 
+/** 작업 분류(활동) — time_entry_activities */
+export type TimeEntryActivityOption = RedmineNamed & { isDefault: boolean };
+
+/** 작업시간 한 건 (GET /time_entries.json 행) */
+export type TimeEntry = {
+  id: number;
+  project: RedmineNamed | null;
+  issue: { id: number } | null;
+  user: RedmineNamed | null;
+  activity: RedmineNamed | null;
+  hours: number;
+  comments: string;
+  /** YYYY-MM-DD */
+  spentOn: string;
+  createdOn: string | null;
+  updatedOn: string | null;
+};
+
+export type ListTimeEntriesInput = {
+  issueId?: number;
+  projectId?: number;
+  /** "me" 또는 user id */
+  userId?: "me" | number;
+  /** YYYY-MM-DD (포함) */
+  spentFrom?: string;
+  /** YYYY-MM-DD (포함) */
+  spentTo?: string;
+  activityId?: number;
+  limit?: number;
+  offset?: number;
+};
+
+export type ListTimeEntriesResult = {
+  entries: TimeEntry[];
+  totalCount: number;
+  returnedCount: number;
+  hasMore: boolean;
+  /** 돌려준 행들의 hours 합 (전체 합이 아님 — hasMore면 더 있다) */
+  totalHours: number;
+};
+
+export type CreateTimeEntryInput = {
+  /** 둘 중 하나는 필수. 일감이 있으면 일감을 우선 */
+  issueId?: number;
+  projectId?: number;
+  hours: number;
+  /** YYYY-MM-DD, 생략하면 Redmine이 오늘로 */
+  spentOn?: string;
+  /** 활동 id. Redmine에 기본 활동이 없으면 필수 */
+  activityId?: number;
+  comments?: string;
+};
+
+export type CreateTimeEntryResult = {
+  id: number;
+  hours: number;
+  spentOn: string;
+  issueId: number | null;
+  projectId: number | null;
+  activity: RedmineNamed | null;
+  comments: string;
+};
+
 /** 이름 또는 id로 지정할 수 있는 필드 값 */
 export type NamedRef = number | string;
 

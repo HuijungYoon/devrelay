@@ -15,9 +15,14 @@ import type {
   IssuePriorityOption,
   IssueRelation,
   IssueStatusOption,
+  CreateTimeEntryInput,
+  CreateTimeEntryResult,
   ListIssueCustomFieldsResult,
   ListIssueRelationsResult,
   ListProjectMembersResult,
+  ListTimeEntriesInput,
+  ListTimeEntriesResult,
+  TimeEntryActivityOption,
   ProjectVersionOption,
   RedmineNamed,
   ListProjectsResult,
@@ -44,6 +49,11 @@ import {
   listProjectVersions,
   listTrackers,
 } from "./metadata.js";
+import {
+  createTimeEntry,
+  listTimeEntries,
+  listTimeEntryActivities,
+} from "./timeEntries.js";
 import {
   addIssueRelation,
   getIssueRelation,
@@ -249,6 +259,23 @@ export class RedmineClient {
     projectId: number
   ): Promise<ListIssueCustomFieldsResult> {
     return listProjectIssueCustomFields(this.http, projectId);
+  }
+
+  /** 작업 분류(활동) 목록 */
+  listTimeEntryActivities(): Promise<TimeEntryActivityOption[]> {
+    return listTimeEntryActivities(this.http);
+  }
+
+  /** 작업시간 목록 (일감·프로젝트·사용자·기간 필터) */
+  listTimeEntries(
+    input: ListTimeEntriesInput = {}
+  ): Promise<ListTimeEntriesResult> {
+    return listTimeEntries(this.http, this.config, input);
+  }
+
+  /** 작업시간 기록 (POST /time_entries.json) */
+  createTimeEntry(input: CreateTimeEntryInput): Promise<CreateTimeEntryResult> {
+    return createTimeEntry(this.http, input);
   }
 
   /** 연결된 일감 목록 (GET /issues/:id/relations.json) */

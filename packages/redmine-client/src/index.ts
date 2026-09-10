@@ -38,6 +38,13 @@ export {
   matchNamedByName,
 } from "./metadata.js";
 export {
+  buildTimeEntryQuery,
+  createTimeEntry,
+  listTimeEntries,
+  listTimeEntryActivities,
+  normalizeTimeEntry,
+} from "./timeEntries.js";
+export {
   inspectAttachments,
   uploadAttachments,
   uploadFile,
