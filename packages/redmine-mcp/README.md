@@ -105,7 +105,8 @@ the user approved. Never call dry-run and `confirm=true` in the same turn.
 | `redmine_list_projects` | List accessible projects |
 | `redmine_list_project_members` | List project members (for assignee / watchers) |
 | `redmine_search_users` | Search all users (may require permission) |
-| `redmine_search_issues` | Search issues (default: open; supports `assignedTo: "me"`). Rows include `dueDate` and `doneRatio` |
+| `redmine_search_issues` | Search issues (default: open; supports `assignedTo: "me"`). Rows include `dueDate` and `doneRatio`. Filters: `trackerId`/`priorityId`/`status`/`fixedVersionId`/`categoryId` by id **or name**, `assignedTo`/`authorId`/`watcherId` as `"me"`/id/name, date ranges `dueAfter`/`dueBefore`, `createdAfter`/`createdBefore`, `updatedAfter`/`updatedBefore` (YYYY-MM-DD, inclusive). `resolved` echoes what each name became |
+| `redmine_search_text` | Full-text search (GET /search.json, Redmine 3.3+): `query`, optional `projectId`, `types` (default issues), `titlesOnly`, `openIssuesOnly`. Older servers get an error pointing at `subjectContains` |
 | `redmine_get_issue` | Issue detail (includes journals, children, etc.) |
 | `redmine_list_issue_relations` | Related issues with their `relationId` (needed to update/remove one) |
 | `redmine_list_metadata` | Trackers / statuses / priorities / activities (+ versions, categories, custom fields with `projectId`) as id+name |

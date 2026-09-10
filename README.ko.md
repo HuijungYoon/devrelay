@@ -87,6 +87,7 @@ Codex · Claude Code · Cursor · Antigravity에서 **자연어와 슬래시 명
 | `/test-connection` | 연결·현재 사용자 |
 | `/list-projects` | 프로젝트 목록 |
 | `/my-issues` | 내 열린 이슈 |
+| `/search-issues` | 일감 검색 (마감일·유형·상태·사람 필터, 전문 검색) |
 | `/issue 1523` | 이슈 상세 + journals |
 | `/create-issue` | 이슈 생성 (dry-run → 확인) |
 | `/update-issue` | 이슈 수정 (dry-run → 확인) |
@@ -130,7 +131,8 @@ Claude Code / Codex / Cursor / Antigravity  (플러그인 + 스킬)
 | `redmine_list_projects` | 접근 가능한 프로젝트 목록 |
 | `redmine_list_project_members` | 프로젝트 멤버 (담당자·관리자 선택) |
 | `redmine_search_users` | 전체 사용자 검색 (권한 필요할 수 있음) |
-| `redmine_search_issues` | 이슈 검색 (`assignedTo: "me"`, 기본 열린 이슈; 각 행에 `dueDate`·`doneRatio`) |
+| `redmine_search_issues` | 이슈 검색 (`assignedTo: "me"`, 기본 열린 이슈; 각 행에 `dueDate`·`doneRatio`). 필터는 **이름**으로 (유형·상태·우선순위·버전·범주), 사람은 `"me"`/id/이름 (담당자·작성자·일감관리자), 날짜 범위 (`dueAfter`/`dueBefore`, 등록일, 수정일) |
+| `redmine_search_text` | 전문 검색 — 제목·설명·댓글 (+ `types`로 위키·뉴스). Redmine 3.3+ |
 | `redmine_get_issue` | 이슈 상세 (`journals`·`children` 등 include) |
 | `redmine_list_issue_relations` | 연결된 일감 목록 (+ `relationId`) |
 | `redmine_list_metadata` | 유형·상태·우선순위·대상 버전·범주·사용자 정의 필드·작업 분류 (id + 이름) |

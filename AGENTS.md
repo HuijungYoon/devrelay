@@ -58,7 +58,8 @@ Redmine REST API
 | `packages/redmine-client/src/config.ts` | `loadConfig`(env) / `configFromCredentials`(BYOK), 호스트 allowlist, 사설 IP 허용 |
 | `packages/redmine-client/src/errors.ts` | `RedmineError` (code · httpStatus · check[] · retrySafe) |
 | `packages/redmine-client/src/mask.ts` | `maskSecret` — 에러·로그에서 API key 제거 |
-| `packages/redmine-client/src/issues.ts` | 이슈 검색·상세, 쿼리 빌더, 정규화 |
+| `packages/redmine-client/src/issues.ts` | 이슈 검색·상세, 쿼리 빌더(날짜 범위 `><from|to`, author/watcher/version/category), 정규화 |
+| `packages/redmine-client/src/search.ts` | 전문 검색 (GET /search.json, 3.3+). 구버전 401/404는 안내 에러로 바꿈 |
 | `packages/redmine-client/src/writes.ts` | 이슈 생성·수정·댓글·상태·첨부 payload 조립 (`parent_issue_id` 포함) |
 | `packages/redmine-client/src/relations.ts` | 연결된 일감 목록·조회·추가·삭제·교체(삭제+재생성) |
 | `packages/redmine-client/src/timeEntries.ts` | 작업시간 목록(기간 필터 `><from|to`)·기록·작업 분류(활동) 목록 |
@@ -89,7 +90,7 @@ Redmine REST API
 | `packages/redmine-mcp/src/tools/timeEntries.ts` | 작업시간 기록(dry-run에 일감 제목·오늘 날짜)·조회 핸들러 |
 | `packages/redmine-mcp/src/tools/attachments.ts` | `redmine_get_attachment` — 첨부 내려받기 (읽기 도구, 게이트 없음) |
 | `packages/redmine-mcp/src/tools/metadata.ts` | `redmine_list_metadata` 핸들러 + `resolveNamedRef`/`resolveIssueMetadata` (쓰기 도구가 이름을 id로 해석할 때 쓰는 공용 함수) |
-| `packages/redmine-mcp/src/tools/` 의 `issues.ts` · `projects.ts` · `members.ts` · `users.ts` · `connection.ts` | 읽기 핸들러 |
+| `packages/redmine-mcp/src/tools/` 의 `issues.ts` · `projects.ts` · `members.ts` · `users.ts` · `connection.ts` · `search.ts` | 읽기 핸들러. `issues.ts`는 검색 필터의 이름(유형·상태·버전·범주·사람)을 id로 해석하고 `resolved`로 돌려줌 |
 | `packages/redmine-mcp/src/errors.ts`, `packages/redmine-mcp/src/logging.ts` | MCP 에러 payload, 감사 로그(`logAudit`) |
 | `packages/redmine-mcp/static/privacy.html`, `packages/redmine-mcp/static/terms.html` | HTTP 모드에서 서빙하는 정책 페이지 |
 | `packages/redmine-mcp/tests/*.test.ts` | 핸들러·스키마·annotations·HTTP 테스트 |
@@ -103,8 +104,8 @@ Redmine REST API
 | `plugins/cursor` | `plugins/cursor/.cursor-plugin/plugin.json` + `plugins/cursor/mcp.json` | `/` | `commands/*.md`가 스킬을 호출 |
 | `plugins/antigravity` | `plugins/antigravity/plugin.json` + `plugins/antigravity/mcp_config.json` | `/redmine:` | 스킬 frontmatter `name:`도 `redmine:` 접두 |
 
-스킬 14개 — 4개 플러그인 모두 `plugins/<client>/skills/<name>/SKILL.md`:
-`help` · `test-connection` · `list-projects` · `my-issues` · `issue` · `create-issue` · `update-issue` · `add-comment` · `add-attachment` · `update-status` · `relate-issue` · `subtask` · `log-time` · `read-attachment`
+스킬 15개 — 4개 플러그인 모두 `plugins/<client>/skills/<name>/SKILL.md`:
+`help` · `test-connection` · `list-projects` · `my-issues` · `issue` · `create-issue` · `update-issue` · `add-comment` · `add-attachment` · `update-status` · `relate-issue` · `subtask` · `log-time` · `read-attachment` · `search-issues`
 
 플러그인 스킬을 고치는 절차는 §7에 있습니다.
 

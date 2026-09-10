@@ -53,7 +53,8 @@ dry-run과 `confirm=true`를 같은 턴에 부르지 마세요.
 | `redmine_list_projects` | 접근 가능한 프로젝트 목록 |
 | `redmine_list_project_members` | 프로젝트 멤버 목록 (담당자·관리자 선택용) |
 | `redmine_search_users` | 전체 사용자 검색 (권한 필요할 수 있음) |
-| `redmine_search_issues` | 이슈 검색 (기본: 열린 이슈, `assignedTo: "me"` 지원). 각 행에 `dueDate`·`doneRatio` 포함 |
+| `redmine_search_issues` | 이슈 검색 (기본: 열린 이슈, `assignedTo: "me"` 지원). 각 행에 `dueDate`·`doneRatio` 포함. 필터: `trackerId`/`priorityId`/`status`/`fixedVersionId`/`categoryId`는 id **또는 이름**, `assignedTo`/`authorId`/`watcherId`는 `"me"`/id/이름, 날짜 범위 `dueAfter`/`dueBefore`·`createdAfter`/`createdBefore`·`updatedAfter`/`updatedBefore` (YYYY-MM-DD, 양끝 포함). `resolved`에 해석 결과 |
+| `redmine_search_text` | 전문 검색 (GET /search.json, Redmine 3.3+): `query`, 선택 `projectId`, `types`(기본 issues), `titlesOnly`, `openIssuesOnly`. 구버전은 `subjectContains`를 쓰라는 에러 |
 | `redmine_get_issue` | 이슈 상세 조회 (journals·children 등 include) |
 | `redmine_list_issue_relations` | 연결된 일감 목록 (수정·삭제에 필요한 `relationId` 확인) |
 | `redmine_list_metadata` | 유형·상태·우선순위·작업 분류 (+ `projectId`면 대상 버전·범주·사용자 정의 필드) id+이름 목록 |
