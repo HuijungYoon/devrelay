@@ -95,7 +95,7 @@ function currentCustomFieldValue(
 function sameCustomFieldValue(a: unknown, b: unknown): boolean {
   const norm = (v: unknown): string => {
     if (Array.isArray(v)) return JSON.stringify(v.map(String).sort());
-    if (v == null) return "";
+    if (v === null || v === undefined) return "";
     return String(v);
   };
   return norm(a) === norm(b);
