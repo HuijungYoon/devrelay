@@ -30,8 +30,9 @@ Agents do not call the Redmine REST API directly. They go through the shared MCP
 
 - `statusId`/`trackerId`/`priorityId`/`fixedVersionId`/`categoryId` accept a **name** as well as an id, so "set it to 진행" works without knowing that 진행 is 2
 - A miss returns the real candidates (`2:진행, 4:테스트 …`) instead of guessing; ambiguity is refused
-- `redmine_list_metadata` lists trackers/statuses/priorities (+ versions/categories per project); kinds a project forbids come back under `unavailable` instead of failing the call
+- `redmine_list_metadata` lists trackers/statuses/priorities (+ versions/categories/custom fields per project); kinds a project forbids come back under `unavailable` instead of failing the call
 - New `fixedVersionId` (대상 버전) and `categoryId` (범주) on create/update; `null` clears them
+- **Custom fields** on create/update: `customFields: [{ id | name, value }]`. Names resolve against the project's issue custom fields (Redmine 4.2+; older servers fall back to `/custom_fields.json` or to sampling recent issues, reported as `customFieldsSource`); `""` clears, arrays for multi-select. The update preview shows `customField:<name>` before→after
 
 ### 0.6.x highlights
 
@@ -124,7 +125,7 @@ Claude Code / Codex / Cursor / Antigravity  (plugins + skills)
 | `redmine_search_issues` | Search issues (`assignedTo: "me"`, open by default; rows carry `dueDate`/`doneRatio`) |
 | `redmine_get_issue` | Issue detail (includes `journals`, `children`, etc.) |
 | `redmine_list_issue_relations` | Related issues with their `relationId` |
-| `redmine_list_metadata` | Trackers / statuses / priorities / versions / categories (id + name) |
+| `redmine_list_metadata` | Trackers / statuses / priorities / versions / categories / custom fields (id + name) |
 
 **Write** (`confirm` defaults to `false` = preview)
 

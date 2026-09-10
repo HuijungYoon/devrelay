@@ -124,7 +124,7 @@ Redmine REST API
 ```bash
 pnpm install
 pnpm -r run build     # client → mcp 순서로 빌드
-pnpm -r run test      # vitest (client 85 + mcp 97)
+pnpm -r run test      # vitest (client 90 + mcp 110)
 pnpm -r run lint      # tsc --noEmit
 ```
 
@@ -207,6 +207,7 @@ node scripts/redmine-call.mjs redmine_add_comment '{"issueId":24038,"notes":"확
 | `/users.json` (전체 검색) | 403 | `/users/:id.json`은 개별 조회 가능 |
 | `/projects/:id/issue_categories.json` | 403 | `categoryId`에 숫자 id 사용 |
 | `/issues/:id/relations.json` | 일부 프로젝트 403 | 이슈의 `include=relations`로 자동 폴백 |
+| `/projects/:id.json?include=issue_custom_fields` | 키가 안 옴 (Redmine 4.2 미만) | `/custom_fields.json`(401) → 최근 이슈 샘플링으로 자동 폴백 (`customFieldsSource: issues`) |
 
 ---
 

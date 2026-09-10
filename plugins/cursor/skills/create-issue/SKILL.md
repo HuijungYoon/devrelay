@@ -22,6 +22,7 @@ description: Create a Redmine issue after dry-run confirmation
    - **id를 몰라도 됩니다. 이름을 그대로 넘기세요** (`"기능추가"`, `"진행"`, `"긴급"`, `"2026-Q3"`). 서버가 해석해 dry-run에 `statusLabel` 같은 라벨로 돌려줍니다
    - 안 맞으면 에러 `check`에 실제 후보가 들어옵니다 → 그 이름으로 재시도. **id 추측 금지**
    - 목록을 미리 보려면 `redmine_list_metadata { projectId }` (권한이 막힌 종류는 `unavailable`로 표시)
+   - **사용자 정의 필드** `customFields` — `[{ id 또는 name, value }]`. 이름을 그대로 넘기면 프로젝트에 켜진 필드 목록으로 해석 (`{ name: "고객사", value: "A사" }`). value는 문자열, 다중 선택은 문자열 배열, `""`면 비움. 필드 목록은 `redmine_list_metadata { projectId, kinds: ["customFields"] }`. dry-run `wouldApply.customFields`에 id·name·value로 표시되니 그대로 보여 준다. 목록 결과의 `customFieldsSource`가 `issues`면 (Redmine 4.2 미만) 최근 이슈에서 추린 것이라 빠진 필드가 있을 수 있음 — 그 필드는 id로 넘긴다. 프로젝트에 필수 사용자 정의 필드가 있으면 생성이 422로 실패하므로, 그때는 값을 물어서 채운다
 8. **시작일·완료기한·진척도** — `startDate` / `dueDate` / `doneRatio`. 설정한 값은 dry-run `wouldApply`에 **반드시** 포함해 보여 준다
 9. dry-run 결과로 보여 주기 → OK → `confirm: true` + `previewToken`
 10. API Key 출력 금지

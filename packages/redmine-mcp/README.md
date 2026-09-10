@@ -108,7 +108,7 @@ the user approved. Never call dry-run and `confirm=true` in the same turn.
 | `redmine_search_issues` | Search issues (default: open; supports `assignedTo: "me"`). Rows include `dueDate` and `doneRatio` |
 | `redmine_get_issue` | Issue detail (includes journals, children, etc.) |
 | `redmine_list_issue_relations` | Related issues with their `relationId` (needed to update/remove one) |
-| `redmine_list_metadata` | Trackers / statuses / priorities (+ versions, categories with `projectId`) as id+name |
+| `redmine_list_metadata` | Trackers / statuses / priorities (+ versions, categories, custom fields with `projectId`) as id+name |
 
 ## Write APIs
 
@@ -145,6 +145,7 @@ This server has no issue-delete tool by design; deleting an issue in Redmine is 
 | `priorityId` | Priority — **id or name** (`4` or `"긴급"`) |
 | `fixedVersionId` | Target version — id or name; `null` clears it (update only) |
 | `categoryId` | Category — id or name; `null` clears it (update only) |
+| `customFields` | Custom fields `[{ id \| name, value }]` — name resolves against the project's issue custom fields; `""` clears, string array for multi-select; only the listed fields change |
 | `startDate` / `dueDate` | Start / due date (`YYYY-MM-DD`) |
 | `doneRatio` | Done ratio (0–100) |
 | `assignedTo` | Assignee (`"me"` / id / name) |

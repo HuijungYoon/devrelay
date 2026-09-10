@@ -30,8 +30,9 @@ Codex · Claude Code · Cursor · Antigravity에서 **자연어와 슬래시 명
 
 - `statusId`·`trackerId`·`priorityId`·`fixedVersionId`·`categoryId`가 **이름**을 받습니다 — "진행으로 바꿔줘"가 id 없이 동작
 - 이름이 안 맞으면 실제 후보(`2:진행, 4:테스트 …`)를 돌려줍니다. 추측하지 않고, 애매하면 거절
-- `redmine_list_metadata`로 유형·상태·우선순위(+프로젝트별 대상 버전·범주) 목록. 권한이 막힌 종류는 호출 전체를 실패시키지 않고 `unavailable`로 표시
+- `redmine_list_metadata`로 유형·상태·우선순위(+프로젝트별 대상 버전·범주·사용자 정의 필드) 목록. 권한이 막힌 종류는 호출 전체를 실패시키지 않고 `unavailable`로 표시
 - `fixedVersionId`(대상 버전)·`categoryId`(범주) 필드 추가, `null`이면 비움
+- **사용자 정의 필드** — 생성·수정에 `customFields: [{ id 또는 name, value }]`. 이름은 프로젝트에 켜진 필드 목록으로 해석 (Redmine 4.2+; 구버전은 `/custom_fields.json` → 최근 이슈 샘플링으로 폴백, `customFieldsSource`로 표시), `""`면 비움, 다중 선택은 배열. 수정 미리보기에 `customField:<이름>` 이전→이후 표시
 
 ### 0.6.x 하이라이트
 
@@ -124,7 +125,7 @@ Claude Code / Codex / Cursor / Antigravity  (플러그인 + 스킬)
 | `redmine_search_issues` | 이슈 검색 (`assignedTo: "me"`, 기본 열린 이슈; 각 행에 `dueDate`·`doneRatio`) |
 | `redmine_get_issue` | 이슈 상세 (`journals`·`children` 등 include) |
 | `redmine_list_issue_relations` | 연결된 일감 목록 (+ `relationId`) |
-| `redmine_list_metadata` | 유형·상태·우선순위·대상 버전·범주 (id + 이름) |
+| `redmine_list_metadata` | 유형·상태·우선순위·대상 버전·범주·사용자 정의 필드 (id + 이름) |
 
 **쓰기** (`confirm` 기본 `false` = 미리보기)
 

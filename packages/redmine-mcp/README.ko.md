@@ -56,7 +56,7 @@ dry-run과 `confirm=true`를 같은 턴에 부르지 마세요.
 | `redmine_search_issues` | 이슈 검색 (기본: 열린 이슈, `assignedTo: "me"` 지원). 각 행에 `dueDate`·`doneRatio` 포함 |
 | `redmine_get_issue` | 이슈 상세 조회 (journals·children 등 include) |
 | `redmine_list_issue_relations` | 연결된 일감 목록 (수정·삭제에 필요한 `relationId` 확인) |
-| `redmine_list_metadata` | 유형·상태·우선순위 (+ `projectId`면 대상 버전·범주) id+이름 목록 |
+| `redmine_list_metadata` | 유형·상태·우선순위 (+ `projectId`면 대상 버전·범주·사용자 정의 필드) id+이름 목록 |
 
 ## 쓰기 API
 
@@ -93,6 +93,7 @@ dry-run과 `confirm=true`를 같은 턴에 부르지 마세요.
 | `priorityId` | 우선순위 — **id 또는 이름** (`4`, `"긴급"`) |
 | `fixedVersionId` | 대상 버전 — id·이름, `null`이면 비움 (update) |
 | `categoryId` | 범주 — id·이름, `null`이면 비움 (update) |
+| `customFields` | 사용자 정의 필드 `[{ id 또는 name, value }]` — 이름은 프로젝트 필드 목록으로 해석, `""`면 비움, 다중 선택은 문자열 배열. 넘긴 필드만 바뀜 |
 | `startDate` / `dueDate` | 시작일 / 완료기한 (`YYYY-MM-DD`) |
 | `doneRatio` | 진척도 (0–100) |
 | `assignedTo` | 담당자 (`"me"` / id / 이름) |
