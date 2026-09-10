@@ -18,7 +18,8 @@ redmine_update_status: still valid for status-only.
 작업시간 (time entries): redmine_log_time { issueId, hours, spentOn?, activityId?, comments? } — dry-run shows the issue subject and the date (today when omitted); activityId takes an id or a name ("개발"). List with redmine_list_time_entries (defaults to userId="me" when no issue/project is given; spentFrom/spentTo YYYY-MM-DD). Activities: redmine_list_metadata kinds:["activities"].
 notes (댓글): plain text only. No Textile (h3., *, bq.) or Markdown (# , -, **bold**). Markup is blocked in dry-run (blocked:true, no previewToken) and confirm throws. Rewrite as short plain sentences.
 Do not print API keys or credentials.
-Prefer redmine_search_issues with assignedTo=me for "my open issues".`;
+Prefer redmine_search_issues with assignedTo=me for "my open issues".
+검색 필터: redmine_search_issues takes names for trackerId/priorityId/status/fixedVersionId/categoryId and "me"|id|name for assignedTo/authorId/watcherId (names for versions/categories/members need projectId). Date ranges: dueAfter/dueBefore, createdAfter/createdBefore, updatedAfter/updatedBefore (YYYY-MM-DD, inclusive). The result's "resolved" field shows what each name became. Full text in descriptions/notes/wiki: redmine_search_text { query } (Redmine 3.3+; older servers return a clear error — fall back to subjectContains).`;
 
 const readOnlyAnnotations = {
   readOnlyHint: true,
@@ -71,6 +72,13 @@ export const TOOL_DEFS = [
     description:
       "Search Redmine issues. Defaults to open issues. Supports assignedTo=me.",
     inputSchema: toolJsonSchemas.redmine_search_issues,
+    annotations: readOnlyAnnotations,
+  },
+  {
+    name: "redmine_search_text",
+    description:
+      "Full-text search across issue subjects, descriptions and notes (plus wiki/news/documents via types). Needs Redmine 3.3+; older servers return an error that says to use redmine_search_issues subjectContains.",
+    inputSchema: toolJsonSchemas.redmine_search_text,
     annotations: readOnlyAnnotations,
   },
   {

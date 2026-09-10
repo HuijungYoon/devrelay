@@ -26,6 +26,7 @@ import {
 import { handleSearchUsers } from "./tools/users.js";
 import { handleListTimeEntries, handleLogTime } from "./tools/timeEntries.js";
 import { handleGetAttachment } from "./tools/attachments.js";
+import { handleSearchText } from "./tools/search.js";
 import { handleListProjectMembers } from "./tools/members.js";
 import {
   safeParseAddAttachment,
@@ -43,6 +44,7 @@ import {
   safeParseLogTime,
   safeParseRemoveIssueRelation,
   safeParseSearch,
+  safeParseSearchText,
   safeParseSearchUsers,
   safeParseUpdateIssue,
   safeParseUpdateIssueRelation,
@@ -118,6 +120,12 @@ export function createRedmineMcpServer(client: RedmineClient): Server {
           const parsed = safeParseSearch(req.params.arguments);
           if (!parsed.success) throw validationError(parsed.error.message);
           result = await handleSearchIssues(client, parsed.data);
+          break;
+        }
+        case "redmine_search_text": {
+          const parsed = safeParseSearchText(req.params.arguments);
+          if (!parsed.success) throw validationError(parsed.error.message);
+          result = await handleSearchText(client, parsed.data);
           break;
         }
         case "redmine_get_issue": {

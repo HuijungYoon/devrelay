@@ -2,9 +2,15 @@ import { z } from "zod";
 import {
   ATTACHMENT_DOWNLOAD_HARD_MAX_BYTES,
   ISSUE_RELATION_TYPES,
+  SEARCH_TEXT_TYPES,
 } from "redmine-devrelay-client";
 
 const positiveInt = z.number().int().positive();
+const ymdFilter = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+/** "me" | user id | 이름 */
+const userFilter = z.union([z.literal("me"), positiveInt, z.string().min(1)]);
+/** id 또는 이름 (검색 필터용) */
+const namedFilter = z.union([positiveInt, z.string().min(1)]);
 
 export const connectionInputSchema = z.object({}).strict();
 
@@ -19,20 +25,30 @@ export const searchIssuesInputSchema = z
   .object({
     projectId: positiveInt.optional(),
     issueId: positiveInt.optional(),
-    assignedTo: z.union([z.literal("me"), positiveInt, z.string()]).optional(),
+    assignedTo: userFilter.optional(),
+    authorId: userFilter.optional(),
+    watcherId: userFilter.optional(),
+    /** open | closed | all | status id | 상태 이름 */
     status: z
       .union([
         z.literal("open"),
         z.literal("closed"),
         z.literal("all"),
         positiveInt,
+        z.string().min(1),
       ])
       .optional(),
-    trackerId: positiveInt.optional(),
-    priorityId: positiveInt.optional(),
+    trackerId: namedFilter.optional(),
+    priorityId: namedFilter.optional(),
+    fixedVersionId: namedFilter.optional(),
+    categoryId: namedFilter.optional(),
     subjectContains: z.string().optional(),
-    createdAfter: z.string().optional(),
-    updatedAfter: z.string().optional(),
+    createdAfter: ymdFilter.optional(),
+    createdBefore: ymdFilter.optional(),
+    updatedAfter: ymdFilter.optional(),
+    updatedBefore: ymdFilter.optional(),
+    dueAfter: ymdFilter.optional(),
+    dueBefore: ymdFilter.optional(),
     parentIssueId: positiveInt.optional(),
     customFields: z
       .array(
@@ -55,6 +71,36 @@ export const searchIssuesInputSchema = z
       )
       .optional(),
     limit: z.number().int().positive().max(1000).optional(),
+    offset: z.number().int().nonnegative().optional(),
+  })
+  .strict()
+  .superRefine((v, ctx) => {
+    const pairs: Array<[string, string | undefined, string, string | undefined]> = [
+      ["createdAfter", v.createdAfter, "createdBefore", v.createdBefore],
+      ["updatedAfter", v.updatedAfter, "updatedBefore", v.updatedBefore],
+      ["dueAfter", v.dueAfter, "dueBefore", v.dueBefore],
+    ];
+    for (const [fromKey, from, toKey, to] of pairs) {
+      if (from && to && from > to) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `${fromKey} must not be after ${toKey}`,
+          path: [fromKey],
+        });
+      }
+    }
+  });
+
+/** 전문 검색 (본문·댓글·위키) */
+export const searchTextInputSchema = z
+  .object({
+    query: z.string().min(1),
+    projectId: positiveInt.optional(),
+    types: z.array(z.enum(SEARCH_TEXT_TYPES)).min(1).optional(),
+    titlesOnly: z.boolean().optional(),
+    openIssuesOnly: z.boolean().optional(),
+    allWords: z.boolean().optional(),
+    limit: z.number().int().positive().max(100).optional(),
     offset: z.number().int().nonnegative().optional(),
   })
   .strict();
@@ -375,6 +421,7 @@ export type ConnectionInput = z.infer<typeof connectionInputSchema>;
 export type ListProjectsInput = z.infer<typeof listProjectsInputSchema>;
 export type SearchIssuesInput = z.infer<typeof searchIssuesInputSchema>;
 export type GetIssueInput = z.infer<typeof getIssueInputSchema>;
+export type SearchTextInput = z.infer<typeof searchTextInputSchema>;
 export type CreateIssueInput = z.infer<typeof createIssueInputSchema>;
 export type UpdateIssueInput = z.infer<typeof updateIssueInputSchema>;
 export type SearchUsersInput = z.infer<typeof searchUsersInputSchema>;
@@ -423,6 +470,10 @@ export function safeParseListProjects(input: unknown) {
 
 export function safeParseSearch(input: unknown) {
   return searchIssuesInputSchema.safeParse(input ?? {});
+}
+
+export function safeParseSearchText(input: unknown) {
+  return searchTextInputSchema.safeParse(input ?? {});
 }
 
 export function safeParseGetIssue(input: unknown) {
@@ -498,22 +549,56 @@ export const toolJsonSchemas = {
       projectId: { type: "integer", minimum: 1 },
       issueId: { type: "integer", minimum: 1 },
       assignedTo: {
+        description: '담당자 — "me", user id, or a name (names need projectId or the users API)',
+        oneOf: [
+          { type: "string" },
+          { type: "integer", minimum: 1 },
+        ],
+      },
+      authorId: {
+        description: '작성자 — "me", user id, or a name',
+        oneOf: [
+          { type: "string" },
+          { type: "integer", minimum: 1 },
+        ],
+      },
+      watcherId: {
+        description: '일감관리자(watcher) — "me", user id, or a name',
         oneOf: [
           { type: "string" },
           { type: "integer", minimum: 1 },
         ],
       },
       status: {
+        description: 'open (default) | closed | all | status id | 상태 이름 ("진행중")',
         oneOf: [
-          { type: "string", enum: ["open", "closed", "all"] },
+          { type: "string", minLength: 1 },
           { type: "integer", minimum: 1 },
         ],
       },
-      trackerId: { type: "integer", minimum: 1 },
-      priorityId: { type: "integer", minimum: 1 },
-      subjectContains: { type: "string" },
-      createdAfter: { type: "string" },
-      updatedAfter: { type: "string" },
+      trackerId: {
+        description: '유형 — id 또는 이름 ("버그")',
+        oneOf: [{ type: "integer", minimum: 1 }, { type: "string", minLength: 1 }],
+      },
+      priorityId: {
+        description: '우선순위 — id 또는 이름 ("높음")',
+        oneOf: [{ type: "integer", minimum: 1 }, { type: "string", minLength: 1 }],
+      },
+      fixedVersionId: {
+        description: '대상 버전 — id 또는 이름 (name needs projectId)',
+        oneOf: [{ type: "integer", minimum: 1 }, { type: "string", minLength: 1 }],
+      },
+      categoryId: {
+        description: "범주 — id 또는 이름 (name needs projectId)",
+        oneOf: [{ type: "integer", minimum: 1 }, { type: "string", minLength: 1 }],
+      },
+      subjectContains: { type: "string", description: "제목에 포함된 문자열" },
+      createdAfter: { type: "string", pattern: "^\\d{4}-\\d{2}-\\d{2}$", description: "등록일 >= (YYYY-MM-DD)" },
+      createdBefore: { type: "string", pattern: "^\\d{4}-\\d{2}-\\d{2}$", description: "등록일 <= (YYYY-MM-DD)" },
+      updatedAfter: { type: "string", pattern: "^\\d{4}-\\d{2}-\\d{2}$", description: "수정일 >= (YYYY-MM-DD)" },
+      updatedBefore: { type: "string", pattern: "^\\d{4}-\\d{2}-\\d{2}$", description: "수정일 <= (YYYY-MM-DD)" },
+      dueAfter: { type: "string", pattern: "^\\d{4}-\\d{2}-\\d{2}$", description: "완료기한 >= (YYYY-MM-DD)" },
+      dueBefore: { type: "string", pattern: "^\\d{4}-\\d{2}-\\d{2}$", description: "완료기한 <= (YYYY-MM-DD) — 'this week' = dueAfter+dueBefore" },
       parentIssueId: { type: "integer", minimum: 1 },
       customFields: {
         type: "array",
@@ -542,6 +627,26 @@ export const toolJsonSchemas = {
       limit: { type: "integer", minimum: 1 },
       offset: { type: "integer", minimum: 0 },
     },
+    additionalProperties: false,
+  },
+  redmine_search_text: {
+    type: "object",
+    properties: {
+      query: { type: "string", minLength: 1, description: "Words to search in subject, description, notes (and wiki/news when types say so)" },
+      projectId: { type: "integer", minimum: 1, description: "Limit to one project" },
+      types: {
+        type: "array",
+        minItems: 1,
+        items: { type: "string", enum: [...SEARCH_TEXT_TYPES] },
+        description: 'Default ["issues"]. Others: wiki_pages, news, documents, changesets, messages, projects',
+      },
+      titlesOnly: { type: "boolean", description: "Match titles only" },
+      openIssuesOnly: { type: "boolean", description: "Skip closed issues" },
+      allWords: { type: "boolean", description: "All words must match (default true)" },
+      limit: { type: "integer", minimum: 1, maximum: 100 },
+      offset: { type: "integer", minimum: 0 },
+    },
+    required: ["query"],
     additionalProperties: false,
   },
   redmine_get_issue: {
