@@ -14,6 +14,7 @@ redmine_update_issue: multi-field update with before→after changes; prefer thi
 연결된 일감 (relations): redmine_list_issue_relations to get relation ids, then redmine_add_issue_relation / redmine_update_issue_relation / redmine_remove_issue_relation. relationType relates|duplicates|duplicated|blocks|blocked|precedes|follows|copied_to|copied_from; delay only for precedes/follows.
 redmine_add_attachment: attach local files to an existing issue (upload only after confirm+previewToken).
 redmine_update_status: still valid for status-only.
+작업시간 (time entries): redmine_log_time { issueId, hours, spentOn?, activityId?, comments? } — dry-run shows the issue subject and the date (today when omitted); activityId takes an id or a name ("개발"). List with redmine_list_time_entries (defaults to userId="me" when no issue/project is given; spentFrom/spentTo YYYY-MM-DD). Activities: redmine_list_metadata kinds:["activities"].
 notes (댓글): plain text only. No Textile (h3., *, bq.) or Markdown (# , -, **bold**). Markup is blocked in dry-run (blocked:true, no previewToken) and confirm throws. Rewrite as short plain sentences.
 Do not print API keys or credentials.
 Prefer redmine_search_issues with assignedTo=me for "my open issues".`;
@@ -60,7 +61,7 @@ export const TOOL_DEFS = [
   {
     name: "redmine_list_metadata",
     description:
-      "List 유형/상태/우선순위 (and 대상 버전/범주/사용자 정의 필드 with projectId) as id+name. Use it to turn a name the user said into an id — though create/update/update_status also accept names directly. For one issue's legal next statuses use redmine_get_issue include=[\"allowed_statuses\"].",
+      "List 유형/상태/우선순위/작업 분류(activities) (and 대상 버전/범주/사용자 정의 필드 with projectId) as id+name. Use it to turn a name the user said into an id — though create/update/update_status also accept names directly. For one issue's legal next statuses use redmine_get_issue include=[\"allowed_statuses\"].",
     inputSchema: toolJsonSchemas.redmine_list_metadata,
     annotations: readOnlyAnnotations,
   },
@@ -111,6 +112,20 @@ export const TOOL_DEFS = [
     description:
       "Update issue status by statusId. Optional notes: plain text only. Dry-run returns previewToken; confirm=true requires it.",
     inputSchema: toolJsonSchemas.redmine_update_status,
+    annotations: writeAnnotations,
+  },
+  {
+    name: "redmine_list_time_entries",
+    description:
+      'List 작업시간 (time entries) by issue, project, user ("me" or id) and spent-on range. Defaults to userId="me" when no issue/project is given. Returns entries plus totalHours of the returned rows.',
+    inputSchema: toolJsonSchemas.redmine_list_time_entries,
+    annotations: readOnlyAnnotations,
+  },
+  {
+    name: "redmine_log_time",
+    description:
+      'Record 작업시간 (a time entry) on an issue or project: hours, spentOn (default today), activityId (id or name), comments. Dry-run returns previewToken; confirm=true requires it.',
+    inputSchema: toolJsonSchemas.redmine_log_time,
     annotations: writeAnnotations,
   },
   {

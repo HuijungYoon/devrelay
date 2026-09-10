@@ -12,7 +12,8 @@ export type MetadataKind =
   | "priorities"
   | "versions"
   | "categories"
-  | "customFields";
+  | "customFields"
+  | "activities";
 
 const PROJECT_KINDS: MetadataKind[] = ["versions", "categories", "customFields"];
 
@@ -23,6 +24,7 @@ const KIND_LABEL: Record<MetadataKind, string> = {
   versions: "대상 버전",
   categories: "범주",
   customFields: "사용자 정의 필드",
+  activities: "작업 분류(활동)",
 };
 
 function requireProjectId(
@@ -61,6 +63,8 @@ async function loadOptions(
           requireProjectId(kind, projectId)
         )
       ).fields;
+    case "activities":
+      return client.listTimeEntryActivities();
   }
 }
 

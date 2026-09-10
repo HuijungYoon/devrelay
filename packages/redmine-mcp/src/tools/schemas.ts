@@ -250,6 +250,7 @@ export const listMetadataInputSchema = z
           "versions",
           "categories",
           "customFields",
+          "activities",
         ])
       )
       .optional(),
@@ -318,6 +319,40 @@ export const removeIssueRelationInputSchema = z
   .strict()
   .superRefine(requirePreviewTokenWhenConfirm);
 
+/** 작업시간 기록 — 일감 또는 프로젝트 중 하나, hours는 0 초과 24 이하 */
+export const logTimeInputSchema = z
+  .object({
+    issueId: positiveInt.optional(),
+    projectId: positiveInt.optional(),
+    hours: z.number().positive().max(24),
+    spentOn: ymd.optional(),
+    activityId: namedRef.optional(),
+    comments: z.string().max(1024).optional(),
+    ...confirmFields,
+  })
+  .strict()
+  .refine((v) => v.issueId !== undefined || v.projectId !== undefined, {
+    message: "issueId or projectId is required",
+  })
+  .superRefine(requirePreviewTokenWhenConfirm);
+
+export const listTimeEntriesInputSchema = z
+  .object({
+    issueId: positiveInt.optional(),
+    projectId: positiveInt.optional(),
+    userId: z.union([z.literal("me"), positiveInt]).optional(),
+    spentFrom: ymd.optional(),
+    spentTo: ymd.optional(),
+    activityId: namedRef.optional(),
+    limit: z.number().int().positive().max(1000).optional(),
+    offset: z.number().int().nonnegative().optional(),
+  })
+  .strict()
+  .refine(
+    (v) => !(v.spentFrom && v.spentTo) || v.spentFrom <= v.spentTo,
+    { message: "spentFrom must not be after spentTo" }
+  );
+
 export type ConnectionInput = z.infer<typeof connectionInputSchema>;
 export type ListProjectsInput = z.infer<typeof listProjectsInputSchema>;
 export type SearchIssuesInput = z.infer<typeof searchIssuesInputSchema>;
@@ -344,6 +379,16 @@ export type UpdateIssueRelationInput = z.infer<
 export type RemoveIssueRelationInput = z.infer<
   typeof removeIssueRelationInputSchema
 >;
+export type LogTimeInput = z.infer<typeof logTimeInputSchema>;
+export type ListTimeEntriesInput = z.infer<typeof listTimeEntriesInputSchema>;
+
+export function safeParseLogTime(input: unknown) {
+  return logTimeInputSchema.safeParse(input ?? {});
+}
+
+export function safeParseListTimeEntries(input: unknown) {
+  return listTimeEntriesInputSchema.safeParse(input ?? {});
+}
 
 export function safeParseConnection(input: unknown) {
   return connectionInputSchema.safeParse(input ?? {});
@@ -878,9 +923,95 @@ export const toolJsonSchemas = {
             "versions",
             "categories",
             "customFields",
+            "activities",
           ],
         },
       },
+    },
+    additionalProperties: false,
+  },
+  redmine_log_time: {
+    type: "object",
+    properties: {
+      issueId: {
+        type: "integer",
+        minimum: 1,
+        description: "Issue to log time on (preferred). issueId or projectId is required",
+      },
+      projectId: {
+        type: "integer",
+        minimum: 1,
+        description: "Project to log time on when there is no issue",
+      },
+      hours: {
+        type: "number",
+        exclusiveMinimum: 0,
+        maximum: 24,
+        description: "작업시간 (시간 단위, 예: 1.5)",
+      },
+      spentOn: {
+        type: "string",
+        pattern: "^\\d{4}-\\d{2}-\\d{2}$",
+        description: "작업일 YYYY-MM-DD — omit for today",
+      },
+      activityId: {
+        description: '작업 분류(활동) — id 또는 이름 (예: 9, "개발"). List with redmine_list_metadata kinds:["activities"]',
+        oneOf: [
+          { type: "integer", minimum: 1 },
+          { type: "string", minLength: 1 },
+        ],
+      },
+      comments: {
+        type: "string",
+        maxLength: 1024,
+        description: "설명 — short plain text (older Redmine caps it at 255 chars)",
+      },
+      confirm: {
+        type: "boolean",
+        description:
+          "false/omit = dry-run (returns previewToken); true = record (requires previewToken)",
+      },
+      previewToken: {
+        type: "string",
+        minLength: 1,
+        description: "Token from matching dry-run; required when confirm=true",
+      },
+    },
+    required: ["hours"],
+    additionalProperties: false,
+  },
+  redmine_list_time_entries: {
+    type: "object",
+    properties: {
+      issueId: { type: "integer", minimum: 1, description: "Time on one issue" },
+      projectId: { type: "integer", minimum: 1, description: "Time on one project" },
+      userId: {
+        description:
+          '"me" or a user id. Defaults to "me" when no issueId/projectId is given',
+        oneOf: [
+          { type: "string", const: "me" },
+          { type: "integer", minimum: 1 },
+        ],
+      },
+      spentFrom: {
+        type: "string",
+        pattern: "^\\d{4}-\\d{2}-\\d{2}$",
+        description: "작업일 시작 YYYY-MM-DD (inclusive)",
+      },
+      spentTo: {
+        type: "string",
+        pattern: "^\\d{4}-\\d{2}-\\d{2}$",
+        description: "작업일 끝 YYYY-MM-DD (inclusive)",
+      },
+      activityId: {
+        description: "작업 분류(활동) — id 또는 이름",
+        oneOf: [
+          { type: "integer", minimum: 1 },
+          { type: "string", minLength: 1 },
+        ],
+      },
+      limit: { type: "integer", minimum: 1 },
+      offset: { type: "integer", minimum: 0 },
     },
     additionalProperties: false,
   },
