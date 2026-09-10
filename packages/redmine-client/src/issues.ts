@@ -57,6 +57,17 @@ type RawIssuesResponse = {
   limit: number;
 };
 
+/** Redmine 날짜 필터: 둘 다 → "><from|to", 하나만 → ">=from" / "<=to" */
+export function dateRangeFilter(
+  from: string | undefined,
+  to: string | undefined
+): string | undefined {
+  if (from && to) return `><${from}|${to}`;
+  if (from) return `>=${from}`;
+  if (to) return `<=${to}`;
+  return undefined;
+}
+
 export function buildIssueQuery(
   input: SearchIssuesInput
 ): Record<string, string | number> {
@@ -67,6 +78,12 @@ export function buildIssueQuery(
   if (input.assignedTo !== undefined) {
     query.assigned_to_id = String(input.assignedTo);
   }
+  if (input.authorId !== undefined) query.author_id = String(input.authorId);
+  if (input.watcherId !== undefined) query.watcher_id = String(input.watcherId);
+  if (input.fixedVersionId !== undefined) {
+    query.fixed_version_id = input.fixedVersionId;
+  }
+  if (input.categoryId !== undefined) query.category_id = input.categoryId;
 
   if (input.status === undefined || input.status === "open") {
     query.status_id = "open";
@@ -84,8 +101,12 @@ export function buildIssueQuery(
   if (input.parentIssueId !== undefined) {
     query.parent_id = input.parentIssueId;
   }
-  if (input.createdAfter) query.created_on = `>=${input.createdAfter}`;
-  if (input.updatedAfter) query.updated_on = `>=${input.updatedAfter}`;
+  const created = dateRangeFilter(input.createdAfter, input.createdBefore);
+  if (created) query.created_on = created;
+  const updated = dateRangeFilter(input.updatedAfter, input.updatedBefore);
+  if (updated) query.updated_on = updated;
+  const due = dateRangeFilter(input.dueAfter, input.dueBefore);
+  if (due) query.due_date = due;
 
   if (input.customFields) {
     for (const field of input.customFields) {

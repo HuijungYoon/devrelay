@@ -187,18 +187,75 @@ export type NormalizedIssueDetail = NormalizedIssueSummary & {
 export type SearchIssuesInput = {
   projectId?: number;
   issueId?: number;
+  /** "me", user id — names are resolved by the MCP layer before reaching here */
   assignedTo?: string | number;
   status?: "open" | "closed" | "all" | number;
   trackerId?: number;
   priorityId?: number;
+  /** 대상 버전 id */
+  fixedVersionId?: number;
+  /** 범주 id */
+  categoryId?: number;
+  /** 작성자: "me" 또는 user id */
+  authorId?: "me" | number;
+  /** 일감관리자(watcher): "me" 또는 user id */
+  watcherId?: "me" | number;
   subjectContains?: string;
   createdAfter?: string;
+  createdBefore?: string;
   updatedAfter?: string;
-  parentIssueId?: number;
+  updatedBefore?: string;
+  /** 완료기한 범위 (포함) */
+  dueAfter?: string;
+  dueBefore?: string;
   customFields?: Array<{ id: number; value: string }>;
+  parentIssueId?: number;
   sort?: Array<{ field: string; direction: "asc" | "desc" }>;
   limit?: number;
   offset?: number;
+};
+
+export type SearchTextType =
+  | "issues"
+  | "news"
+  | "documents"
+  | "changesets"
+  | "wiki_pages"
+  | "messages"
+  | "projects";
+
+/** 전문 검색 (GET /search.json) */
+export type SearchTextInput = {
+  query: string;
+  /** 있으면 /projects/:id/search.json */
+  projectId?: number;
+  /** 기본 ["issues"] */
+  types?: SearchTextType[];
+  titlesOnly?: boolean;
+  openIssuesOnly?: boolean;
+  /** 기본 true — 모든 단어가 들어간 결과만 */
+  allWords?: boolean;
+  includeAttachments?: boolean;
+  limit?: number;
+  offset?: number;
+};
+
+export type SearchTextRow = {
+  id: number;
+  title: string;
+  /** "issue", "issue closed", "wiki-page", "news" … Redmine이 주는 그대로 */
+  type: string;
+  url: string;
+  description: string;
+  datetime: string | null;
+};
+
+export type SearchTextResult = {
+  query: string;
+  results: SearchTextRow[];
+  totalCount: number;
+  returnedCount: number;
+  hasMore: boolean;
 };
 
 export type AttachmentInput = {

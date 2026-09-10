@@ -38,6 +38,11 @@ export {
   matchNamedByName,
 } from "./metadata.js";
 export {
+  SEARCH_TEXT_TYPES,
+  buildSearchTextQuery,
+  searchText,
+} from "./search.js";
+export {
   buildTimeEntryQuery,
   createTimeEntry,
   listTimeEntries,

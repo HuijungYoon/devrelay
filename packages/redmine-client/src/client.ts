@@ -25,6 +25,8 @@ import type {
   ListProjectMembersResult,
   ListTimeEntriesInput,
   ListTimeEntriesResult,
+  SearchTextInput,
+  SearchTextResult,
   TimeEntryActivityOption,
   ProjectVersionOption,
   RedmineNamed,
@@ -57,6 +59,7 @@ import {
   listTimeEntries,
   listTimeEntryActivities,
 } from "./timeEntries.js";
+import { searchText } from "./search.js";
 import {
   addIssueRelation,
   getIssueRelation,
@@ -264,6 +267,11 @@ export class RedmineClient {
     projectId: number
   ): Promise<ListIssueCustomFieldsResult> {
     return listProjectIssueCustomFields(this.http, projectId);
+  }
+
+  /** 전문 검색 (GET /search.json, Redmine 3.3+) */
+  searchText(input: SearchTextInput): Promise<SearchTextResult> {
+    return searchText(this.http, this.config, input);
   }
 
   /** 작업 분류(활동) 목록 */
