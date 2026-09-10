@@ -4,7 +4,7 @@
 
 **Redmine MCP server** for Cursor · Claude Code · Codex.
 
-- **Version:** `0.8.0`
+- **Version:** `0.9.0`
 - **GitHub:** https://github.com/HuijungYoon/devrelay
 - **Client:** [redmine-devrelay-client](https://www.npmjs.com/package/redmine-devrelay-client) (same version)
 
@@ -13,7 +13,7 @@
 STDIO is the default transport. Local IDE plugins use this path.
 
 ```bash
-npx -y redmine-devrelay@0.8.0
+npx -y redmine-devrelay@0.9.0
 ```
 
 | Env var | Description |
@@ -29,7 +29,7 @@ npx -y redmine-devrelay@0.8.0
 For remote / Streamable HTTP deployments. The Codex Git marketplace keeps STDIO `npx` and does **not** switch to a remote URL.
 
 ```bash
-npx -y redmine-devrelay@0.8.0 --http
+npx -y redmine-devrelay@0.9.0 --http
 # or after build
 pnpm --filter redmine-devrelay start:http
 # port: --port 9090 or PORT (default 8080)
@@ -164,6 +164,7 @@ This server has no issue-delete tool by design; deleting an issue in Redmine is 
 
 | Version | Notes |
 | --- | --- |
+| **0.9.0** | Time entries (`redmine_log_time`, `redmine_list_time_entries`, activities kind), `redmine_get_attachment` (same-host download, inline text), search filters by name + date ranges and `redmine_search_text`, `redmine_bulk_update_status`, journal `details`, `REDMINE_PREVIEW_STORE_DIR` file-backed preview tokens |
 | **0.8.0** | Custom fields on create/update (`customFields: [{ id \| name, value }]`, names resolved per project, `""` clears, arrays for multi-select); `customFields` kind in `redmine_list_metadata` with `customFieldsSource`; Redmine older than 4.2 falls back to `/custom_fields.json`, then to sampling recent issues |
 | **0.7.5** | Fix: `assignedTo="me"` is resolved to the current user id on create/update — Redmine drops the literal `me` on writes, so issues were created unassigned |
 | **0.7.4** | Ships the Redmine write guard with the Claude Code plugin (PreToolUse hook) and documents `scripts/redmine-call.mjs` |

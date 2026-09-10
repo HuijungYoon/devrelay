@@ -6,7 +6,7 @@ Codex · Claude Code · Cursor · Antigravity에서 **자연어와 슬래시 명
 
 에이전트는 Redmine REST를 직접 호출하지 않고, 공통 MCP 서버 [`redmine-devrelay`](https://www.npmjs.com/package/redmine-devrelay)를 통합니다. 쓰기 API는 **dry-run → 확인 → `confirm=true` + `previewToken`** 게이트를 강제합니다.
 
-**현재 배포 버전: `0.8.0`** (`redmine-devrelay` / `redmine-devrelay-client`)
+**현재 배포 버전: `0.9.0`** (`redmine-devrelay` / `redmine-devrelay-client`)
 
 ## 현재까지 (Phase 1–7)
 
@@ -19,7 +19,17 @@ Codex · Claude Code · Cursor · Antigravity에서 **자연어와 슬래시 명
 | 5 | notes 평문 강제, **`previewToken` confirm 게이트** | 0.5.x |
 | 6 | 연결된 일감·하위일감, Streamable HTTP + BYOK | 0.6.x |
 | 7 | **id 대신 이름** (상태·유형·우선순위), 대상 버전·범주 | 0.7.x |
-| 8 | 생성·수정에 **사용자 정의 필드** (`customFields`), `list_metadata`에 필드 목록 | **0.8.x** |
+| 8 | 생성·수정에 **사용자 정의 필드** (`customFields`), `list_metadata`에 필드 목록 | 0.8.x |
+| 9 | **작업시간**, 첨부 내려받기, 이름·전문 검색 필터, 일괄 상태 변경, 주간보고 | **0.9.x** |
+
+### 0.9.x 하이라이트
+
+- **작업시간**: `redmine_log_time` (dry-run에 일감 제목·오늘 날짜, 활동은 이름으로) · `redmine_list_time_entries` (기본 내 기록, `totalHours`)
+- **첨부 읽기**: `redmine_get_attachment` — 로컬 저장 + 텍스트 파일은 본문 포함. 같은 호스트만, 기본 10 MiB
+- **검색**: `redmine_search_issues`가 유형·상태·우선순위·버전·범주 **이름**, 담당자·작성자·일감관리자 `"me"`/id/이름, 완료기한·등록·수정 날짜 범위를 받음 · `redmine_search_text` 전문 검색 (Redmine 3.3+)
+- **일괄 상태 변경**: `redmine_bulk_update_status` — 일감별 이전→이후 표 한 번, confirm 한 번, 부분 실패 보고
+- 스킬 `log-time` · `read-attachment` · `search-issues` · `bulk-status` · `weekly-report` (총 17개); journal에 필드 변경 `details`
+- 운영: `REDMINE_PREVIEW_STORE_DIR`로 HTTP 모드 다중 프로세스 간 previewToken 공유 · 쓰기 가드가 작업시간도 막고 레포 자체 단위테스트는 막지 않음 · `plugins/claude-code/evals/`에 mock 기반 `claude plugin eval` 스위트
 
 ### 0.8.x 하이라이트
 
@@ -105,10 +115,10 @@ Codex · Claude Code · Cursor · Antigravity에서 **자연어와 슬래시 명
 Claude Code / Codex / Cursor / Antigravity  (플러그인 + 스킬)
         │ MCP STDIO
         ▼
-   redmine-devrelay@0.8.0   (도구 스키마, STDIO, npm)
+   redmine-devrelay@0.9.0   (도구 스키마, STDIO, npm)
         │
         ▼
-   redmine-devrelay-client@0.8.0  (REST, 인증, HTML 포맷, 쓰기)
+   redmine-devrelay-client@0.9.0  (REST, 인증, HTML 포맷, 쓰기)
         │ HTTPS 또는 사설 IP HTTP
         ▼
    Redmine REST API
@@ -116,8 +126,8 @@ Claude Code / Codex / Cursor / Antigravity  (플러그인 + 스킬)
 
 | 경로 | 역할 |
 | --- | --- |
-| `packages/redmine-client` | npm: `redmine-devrelay-client@0.8.0` |
-| `packages/redmine-mcp` | npm: `redmine-devrelay@0.8.0` |
+| `packages/redmine-client` | npm: `redmine-devrelay-client@0.9.0` |
+| `packages/redmine-mcp` | npm: `redmine-devrelay@0.9.0` |
 | `plugins/cursor` | Cursor 플러그인 |
 | `plugins/claude-code` | Claude Code 플러그인 + 스킬 |
 | `plugins/codex` | Codex 플러그인 + 스킬 |
@@ -171,7 +181,7 @@ Claude Code / Codex / Cursor / Antigravity  (플러그인 + 스킬)
 ### 1. npm으로 실행 (권장)
 
 ```bash
-npx -y redmine-devrelay@0.8.0
+npx -y redmine-devrelay@0.9.0
 ```
 
 로컬 빌드:
@@ -214,7 +224,7 @@ export REDMINE_API_KEY=your-api-key
 /add-plugin redmine-devrelay
 ```
 
-또는 `plugins/cursor/mcp.json` / MCP 설정에서 `npx -y redmine-devrelay@0.8.0` 연결 후 `REDMINE_URL` / `REDMINE_API_KEY` 설정.
+또는 `plugins/cursor/mcp.json` / MCP 설정에서 `npx -y redmine-devrelay@0.9.0` 연결 후 `REDMINE_URL` / `REDMINE_API_KEY` 설정.
 
 ### 4. Claude Code
 
@@ -268,8 +278,8 @@ npx @modelcontextprotocol/inspector node packages/redmine-mcp/dist/index.js
 ## 저장소 구조
 
 ```
-packages/redmine-client/   # npm: redmine-devrelay-client@0.8.0
-packages/redmine-mcp/      # npm: redmine-devrelay@0.8.0
+packages/redmine-client/   # npm: redmine-devrelay-client@0.9.0
+packages/redmine-mcp/      # npm: redmine-devrelay@0.9.0
 plugins/cursor|claude-code|codex|antigravity/
 docker/redmine/            # 통합 테스트용 Redmine
 docs/superpowers/          # Phase 설계·구현 계획
@@ -291,4 +301,4 @@ docs/superpowers/          # Phase 설계·구현 계획
 
 ## 라이선스 / 배포
 
-MIT · npm: [`redmine-devrelay@0.8.0`](https://www.npmjs.com/package/redmine-devrelay), [`redmine-devrelay-client@0.8.0`](https://www.npmjs.com/package/redmine-devrelay-client)
+MIT · npm: [`redmine-devrelay@0.9.0`](https://www.npmjs.com/package/redmine-devrelay), [`redmine-devrelay-client@0.9.0`](https://www.npmjs.com/package/redmine-devrelay-client)

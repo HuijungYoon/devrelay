@@ -6,7 +6,7 @@ MCP integration that lets you query, create, and update Redmine issues with **na
 
 Agents do not call the Redmine REST API directly. They go through the shared MCP server [`redmine-devrelay`](https://www.npmjs.com/package/redmine-devrelay). Write APIs enforce a **dry-run → confirm → `confirm=true` + `previewToken`** gate.
 
-**Current release: `0.8.0`** (`redmine-devrelay` / `redmine-devrelay-client`)
+**Current release: `0.9.0`** (`redmine-devrelay` / `redmine-devrelay-client`)
 
 ## Shipped so far (Phase 1–7)
 
@@ -19,7 +19,17 @@ Agents do not call the Redmine REST API directly. They go through the shared MCP
 | 5 | Plain-text notes enforcement, **`previewToken` confirm gate** | 0.5.x |
 | 6 | Issue relations and subtasks, Streamable HTTP + BYOK | 0.6.x |
 | 7 | **Names instead of ids** (status/tracker/priority), target version and category | 0.7.x |
-| 8 | **Custom fields** on create/update (`customFields`), field list in `list_metadata` | **0.8.x** |
+| 8 | **Custom fields** on create/update (`customFields`), field list in `list_metadata` | 0.8.x |
+| 9 | **Time entries**, attachment download, search filters by name + full text, bulk status, weekly report | **0.9.x** |
+
+### 0.9.x highlights
+
+- **Time entries**: `redmine_log_time` (dry-run shows the issue subject and today's date; activity by name) and `redmine_list_time_entries` (defaults to my entries; `totalHours`)
+- **Read attachments**: `redmine_get_attachment` saves a file locally and inlines text files; same-host only, 10 MiB default limit
+- **Search**: `redmine_search_issues` takes names for tracker/status/priority/version/category, `"me"`/id/name for assignee/author/watcher, and due/created/updated date ranges; `redmine_search_text` searches descriptions and notes (Redmine 3.3+)
+- **Bulk status**: `redmine_bulk_update_status` — one per-issue before→after table, one confirm, partial failures reported
+- Skills: `log-time`, `read-attachment`, `search-issues`, `bulk-status`, `weekly-report` (17 skills); journals carry field-change `details`
+- Ops: `REDMINE_PREVIEW_STORE_DIR` shares preview tokens across HTTP-mode processes; the write guard also covers time entries and no longer blocks the repo's own unit tests; a mocked `claude plugin eval` suite lives in `plugins/claude-code/evals/`
 
 ### 0.8.x highlights
 
@@ -105,10 +115,10 @@ Slash examples (Cursor):
 Claude Code / Codex / Cursor / Antigravity  (plugins + skills)
         │ MCP STDIO
         ▼
-   redmine-devrelay@0.8.0   (tool schemas, STDIO, npm)
+   redmine-devrelay@0.9.0   (tool schemas, STDIO, npm)
         │
         ▼
-   redmine-devrelay-client@0.8.0  (REST, auth, HTML formatting, writes)
+   redmine-devrelay-client@0.9.0  (REST, auth, HTML formatting, writes)
         │ HTTPS or private-IP HTTP
         ▼
    Redmine REST API
@@ -116,8 +126,8 @@ Claude Code / Codex / Cursor / Antigravity  (plugins + skills)
 
 | Path | Role |
 | --- | --- |
-| `packages/redmine-client` | npm: `redmine-devrelay-client@0.8.0` |
-| `packages/redmine-mcp` | npm: `redmine-devrelay@0.8.0` |
+| `packages/redmine-client` | npm: `redmine-devrelay-client@0.9.0` |
+| `packages/redmine-mcp` | npm: `redmine-devrelay@0.9.0` |
 | `plugins/cursor` | Cursor plugin |
 | `plugins/claude-code` | Claude Code plugin + skills |
 | `plugins/codex` | Codex plugin + skills |
@@ -171,7 +181,7 @@ See [`packages/redmine-mcp/README.md`](packages/redmine-mcp/README.md) for field
 ### 1. Run via npm (recommended)
 
 ```bash
-npx -y redmine-devrelay@0.8.0
+npx -y redmine-devrelay@0.9.0
 ```
 
 Local build:
@@ -214,7 +224,7 @@ Local Docker: `http://localhost:3000` + `REDMINE_ALLOWED_HOSTS=localhost` (`dock
 /add-plugin redmine-devrelay
 ```
 
-Or connect `npx -y redmine-devrelay@0.8.0` in `plugins/cursor/mcp.json` / MCP settings, then set `REDMINE_URL` / `REDMINE_API_KEY`.
+Or connect `npx -y redmine-devrelay@0.9.0` in `plugins/cursor/mcp.json` / MCP settings, then set `REDMINE_URL` / `REDMINE_API_KEY`.
 
 ### 4. Claude Code
 
@@ -268,8 +278,8 @@ npx @modelcontextprotocol/inspector node packages/redmine-mcp/dist/index.js
 ## Repository layout
 
 ```
-packages/redmine-client/   # npm: redmine-devrelay-client@0.8.0
-packages/redmine-mcp/      # npm: redmine-devrelay@0.8.0
+packages/redmine-client/   # npm: redmine-devrelay-client@0.9.0
+packages/redmine-mcp/      # npm: redmine-devrelay@0.9.0
 plugins/cursor|claude-code|codex|antigravity/
 docker/redmine/            # Redmine for integration tests
 docs/superpowers/          # Phase designs and implementation plans
@@ -291,4 +301,4 @@ docs/superpowers/          # Phase designs and implementation plans
 
 ## License / publish
 
-MIT · npm: [`redmine-devrelay@0.8.0`](https://www.npmjs.com/package/redmine-devrelay), [`redmine-devrelay-client@0.8.0`](https://www.npmjs.com/package/redmine-devrelay-client)
+MIT · npm: [`redmine-devrelay@0.9.0`](https://www.npmjs.com/package/redmine-devrelay), [`redmine-devrelay-client@0.9.0`](https://www.npmjs.com/package/redmine-devrelay-client)
