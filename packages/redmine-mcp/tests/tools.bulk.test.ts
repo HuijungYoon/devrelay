@@ -85,6 +85,23 @@ describe("redmine_bulk_update_status", () => {
     ]);
   });
 
+  it("confirm reports the status name even when Redmine's PUT returns no body", async () => {
+    const client = bulkClient({
+      updateIssueStatus: vi.fn(async (id: number) => ({
+        issueId: id,
+        status: { id: 5 },
+      })),
+    });
+    const args = { issueIds: [1], statusId: "완료" };
+    const dry = await handleBulkUpdateStatus(client as never, { ...args });
+    const done = await handleBulkUpdateStatus(client as never, {
+      ...args,
+      confirm: true,
+      previewToken: dry.previewToken,
+    });
+    expect(done.updated).toEqual([{ issueId: 1, status: { id: 5, name: "완료" } }]);
+  });
+
   it("confirm without a matching token is rejected before any write", async () => {
     const client = bulkClient();
     await expect(

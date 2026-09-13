@@ -331,6 +331,26 @@ describe("write handlers confirm gate", () => {
     expect(result.dryRun).toBe(false);
   });
 
+  it("updateStatus fills the status name from the resolved label when Redmine sends none", async () => {
+    const updateIssueStatus = vi
+      .fn()
+      .mockResolvedValue({ issueId: 1, status: { id: 2 } });
+    const client = {
+      updateIssueStatus,
+      listIssueStatuses: vi
+        .fn()
+        .mockResolvedValue([{ id: 2, name: "진행", isClosed: false }]),
+    } as never;
+    const base = { issueId: 1, statusId: "진행" };
+    const dry = await handleUpdateStatus(client, { ...base, confirm: false });
+    const result = await handleUpdateStatus(client, {
+      ...base,
+      confirm: true,
+      previewToken: dry.previewToken,
+    });
+    expect(result.result.status).toEqual({ id: 2, name: "진행" });
+  });
+
   it("createIssue dry-run includes attachment sizes and does not upload", async () => {
     const inspectAttachments = vi.fn().mockReturnValue([
       {

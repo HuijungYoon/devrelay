@@ -619,6 +619,17 @@ export async function handleAddAttachment(
   return { dryRun: false as const, result };
 }
 
+/**
+ * Redmine의 PUT은 대개 204라 응답에 상태 이름이 없다. 이미 해석해 둔 라벨로 채운다.
+ */
+function labelStatus(
+  status: { id: number; name?: string } | null,
+  label?: string
+): { id: number; name?: string } | null {
+  if (!status || status.name) return status;
+  return label ? { id: status.id, name: label } : status;
+}
+
 export async function handleUpdateStatus(
   client: RedmineClient,
   input: UpdateStatusInput
@@ -656,7 +667,10 @@ export async function handleUpdateStatus(
     status.id,
     input.notes
   );
-  return { dryRun: false as const, result };
+  return {
+    dryRun: false as const,
+    result: { ...result, status: labelStatus(result.status, status.label) },
+  };
 }
 
 export type BulkStatusRow = {
@@ -741,7 +755,7 @@ export async function handleBulkUpdateStatus(
 
   const updated: Array<{
     issueId: number;
-    status: { id: number; name: string } | null;
+    status: { id: number; name?: string } | null;
   }> = [];
   const failed: Array<{ issueId: number; error: string }> = [];
   const skipped = rows.filter((r) => r.unchanged).map((r) => r.issueId);
@@ -752,7 +766,10 @@ export async function handleBulkUpdateStatus(
         status.id,
         input.notes
       );
-      updated.push({ issueId: row.issueId, status: result.status });
+      updated.push({
+        issueId: row.issueId,
+        status: labelStatus(result.status, status.label),
+      });
     } catch (err) {
       failed.push({
         issueId: row.issueId,
