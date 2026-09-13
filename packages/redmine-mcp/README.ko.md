@@ -4,14 +4,14 @@
 
 Cursor · Claude Code · Codex용 **Redmine MCP 서버**입니다.
 
-- **버전:** `0.9.0`
+- **버전:** `0.9.2`
 - **GitHub:** https://github.com/HuijungYoon/devrelay
 - **Client:** [redmine-devrelay-client](https://www.npmjs.com/package/redmine-devrelay-client) (동일 버전)
 
 ## 빠른 시작
 
 ```bash
-npx -y redmine-devrelay@0.9.0
+npx -y redmine-devrelay@0.9.2
 ```
 
 | 환경변수 | 설명 |
@@ -112,6 +112,7 @@ dry-run과 `confirm=true`를 같은 턴에 부르지 마세요.
 
 | 버전 | 내용 |
 | --- | --- |
+| **0.9.2** | 버그 수정: `redmine_update_status`·`redmine_bulk_update_status`가 쓰기 후 상태 이름을 제대로 돌려줌 — Redmine의 PUT이 204라 이름 자리에 id가 들어가던 문제 (`{ id: 2, name: "2" }`) |
 | **0.9.0** | 작업시간 (`redmine_log_time`·`redmine_list_time_entries`·활동 종류), `redmine_get_attachment` (같은 호스트 내려받기·텍스트 본문), 검색 필터 이름·날짜 범위와 `redmine_search_text`, `redmine_bulk_update_status`, journal `details`, `REDMINE_PREVIEW_STORE_DIR` 파일 기반 previewToken |
 | **0.8.0** | 생성·수정에 사용자 정의 필드 (`customFields: [{ id 또는 name, value }]`, 이름은 프로젝트별로 해석, `""`면 비움, 다중 선택은 배열) · `redmine_list_metadata`에 `customFields` 종류와 `customFieldsSource` · Redmine 4.2 미만은 `/custom_fields.json` → 최근 이슈 샘플링으로 폴백 |
 | **0.7.5** | 버그 수정: 생성·수정에서 `assignedTo="me"`를 현재 사용자 id로 해석 — Redmine이 쓰기에서 `me` 문자열을 무시해 담당자가 빈 채로 만들어지던 문제 |
