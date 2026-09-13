@@ -219,4 +219,14 @@ describe("write methods", () => {
     });
     expect(result.status?.id).toBe(4);
   });
+
+  it("updateIssueStatus does not invent a status name when Redmine sends no body", async () => {
+    // 실제 Redmine의 PUT은 204라 본문이 없다
+    const putJson = vi.fn().mockResolvedValue(undefined);
+    const http = { postJson: vi.fn(), putJson } as unknown as RedmineHttp;
+    const client = new RedmineClient(http, config);
+    const result = await client.updateIssueStatus(7, 4);
+    expect(result.status).toEqual({ id: 4 });
+    expect(result.status?.name).toBeUndefined();
+  });
 });

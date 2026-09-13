@@ -499,7 +499,8 @@ export type AddCommentResult = {
 
 export type UpdateStatusResult = {
   issueId: number;
-  status: { id: number; name: string } | null;
+  /** name은 Redmine이 본문을 돌려줬을 때만 있다 (PUT은 보통 204) */
+  status: { id: number; name?: string } | null;
 };
 
 export type SearchIssuesResult = {

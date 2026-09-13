@@ -172,6 +172,8 @@ export async function updateIssueStatus(
   });
   return {
     issueId,
-    status: data?.issue?.status ?? { id: statusId, name: String(statusId) },
+    // PUT은 보통 204라 본문이 없다. 그때 이름을 지어내지 않는다 —
+    // id를 name에 넣으면 상태 이름이 "2" 처럼 보인다
+    status: data?.issue?.status ?? { id: statusId },
   };
 }
