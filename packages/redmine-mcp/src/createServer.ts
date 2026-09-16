@@ -13,6 +13,7 @@ import { handleListProjects } from "./tools/projects.js";
 import {
   handleAddAttachment,
   handleAddComment,
+  handleBulkUpdateIssue,
   handleBulkUpdateStatus,
   handleCreateIssue,
   handleUpdateIssue,
@@ -33,6 +34,7 @@ import {
   safeParseAddAttachment,
   safeParseAddComment,
   safeParseAddIssueRelation,
+  safeParseBulkUpdateIssue,
   safeParseBulkUpdateStatus,
   safeParseConnection,
   safeParseCreateIssue,
@@ -200,6 +202,12 @@ export function createRedmineMcpServer(client: RedmineClient): Server {
           const parsed = safeParseBulkUpdateStatus(req.params.arguments);
           if (!parsed.success) throw validationError(parsed.error.message);
           result = await handleBulkUpdateStatus(client, parsed.data);
+          break;
+        }
+        case "redmine_bulk_update_issue": {
+          const parsed = safeParseBulkUpdateIssue(req.params.arguments);
+          if (!parsed.success) throw validationError(parsed.error.message);
+          result = await handleBulkUpdateIssue(client, parsed.data);
           break;
         }
         case "redmine_list_issue_relations": {

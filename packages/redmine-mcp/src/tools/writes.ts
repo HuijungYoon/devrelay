@@ -8,6 +8,7 @@ import {
 import type {
   AddAttachmentInput,
   AddCommentInput,
+  BulkUpdateIssueInput,
   BulkUpdateStatusInput,
   CreateIssueInput,
   UpdateIssueInput,
@@ -401,18 +402,11 @@ export type FieldChange = {
   to: unknown;
 };
 
-export async function handleUpdateIssue(
-  client: RedmineClient,
-  input: UpdateIssueInput
-) {
-  if (input.notes !== undefined) {
-    const block = notesMarkupBlock(input.notes);
-    if (block) {
-      if (input.confirm) assertPlainNotesOrThrow(input.notes);
-      return { dryRun: true as const, issueId: input.issueId, ...block };
-    }
-  }
-
+/**
+ * 한 건의 수정 계획. 게이트를 타지 않고 현재 값과 비교만 하므로
+ * 단건(redmine_update_issue)과 일괄(redmine_bulk_update_issue)이 같이 쓴다.
+ */
+async function planIssueUpdate(client: RedmineClient, input: UpdateIssueInput) {
   const current = await client.getIssue(input.issueId);
   const projectId = current.project?.id;
   if (!projectId) {
@@ -523,26 +517,19 @@ export async function handleUpdateIssue(
     changes.push({ field: "notes", from: null, to: "(journal note)" });
   }
 
-  if (!input.confirm) {
-    return withIssuedToken("redmine_update_issue", input, {
-      dryRun: true as const,
-      issueId: input.issueId,
-      changes,
-      ...(assignee?.label ? { assignedToLabel: assignee.label } : {}),
-      ...(watchers ? { watcherLabels: watchers.watcherLabels } : {}),
-      ...(meta.trackerLabel ? { trackerLabel: meta.trackerLabel } : {}),
-      ...(meta.statusLabel ? { statusLabel: meta.statusLabel } : {}),
-      ...(meta.priorityLabel ? { priorityLabel: meta.priorityLabel } : {}),
-      ...(meta.fixedVersionLabel
-        ? { fixedVersionLabel: meta.fixedVersionLabel }
-        : {}),
-      ...(meta.categoryLabel ? { categoryLabel: meta.categoryLabel } : {}),
-    });
-  }
+  const labels = {
+    ...(assignee?.label ? { assignedToLabel: assignee.label } : {}),
+    ...(watchers ? { watcherLabels: watchers.watcherLabels } : {}),
+    ...(meta.trackerLabel ? { trackerLabel: meta.trackerLabel } : {}),
+    ...(meta.statusLabel ? { statusLabel: meta.statusLabel } : {}),
+    ...(meta.priorityLabel ? { priorityLabel: meta.priorityLabel } : {}),
+    ...(meta.fixedVersionLabel
+      ? { fixedVersionLabel: meta.fixedVersionLabel }
+      : {}),
+    ...(meta.categoryLabel ? { categoryLabel: meta.categoryLabel } : {}),
+  };
 
-  consumeIfConfirm("redmine_update_issue", input);
-
-  const result = await client.updateIssue({
+  const write = {
     issueId: input.issueId,
     ...(input.subject !== undefined ? { subject: input.subject } : {}),
     ...(input.description !== undefined
@@ -568,8 +555,44 @@ export async function handleUpdateIssue(
     ...(assignee ? { assignedTo: assignee.assignedTo } : {}),
     ...(watchers ? { watcherUserIds: watchers.watcherUserIds } : {}),
     ...(input.notes !== undefined ? { notes: input.notes } : {}),
-  });
-  return { dryRun: false as const, result, changes };
+  };
+
+  return {
+    issueId: input.issueId,
+    subject: current.subject ?? null,
+    changes,
+    labels,
+    write,
+  };
+}
+
+export async function handleUpdateIssue(
+  client: RedmineClient,
+  input: UpdateIssueInput
+) {
+  if (input.notes !== undefined) {
+    const block = notesMarkupBlock(input.notes);
+    if (block) {
+      if (input.confirm) assertPlainNotesOrThrow(input.notes);
+      return { dryRun: true as const, issueId: input.issueId, ...block };
+    }
+  }
+
+  const plan = await planIssueUpdate(client, input);
+
+  if (!input.confirm) {
+    return withIssuedToken("redmine_update_issue", input, {
+      dryRun: true as const,
+      issueId: input.issueId,
+      changes: plan.changes,
+      ...plan.labels,
+    });
+  }
+
+  consumeIfConfirm("redmine_update_issue", input);
+
+  const result = await client.updateIssue(plan.write);
+  return { dryRun: false as const, result, changes: plan.changes };
 }
 
 export async function handleAddComment(
@@ -790,4 +813,101 @@ export async function handleBulkUpdateStatus(
     skipped,
     failed,
   };
+}
+
+
+export type BulkIssueRow = {
+  issueId: number;
+  subject: string | null;
+  changes: FieldChange[];
+  /** 바꿀 게 없어 건너뜀 */
+  unchanged?: true;
+  /** 읽지 못했거나 계획 단계에서 막힘 */
+  error?: string;
+};
+
+/**
+ * 여러 일감을 한 번의 미리보기로 수정한다.
+ * common은 모든 행에 적용되고, 행이 같은 필드를 주면 행이 이긴다 —
+ * 그래서 "상태는 다 같이, 댓글은 건별로" 같은 묶음이 한 번에 된다.
+ */
+export async function handleBulkUpdateIssue(
+  client: RedmineClient,
+  input: BulkUpdateIssueInput
+) {
+  for (const notes of [
+    input.common?.notes,
+    ...input.issues.map((i) => i.notes),
+  ]) {
+    if (notes === undefined) continue;
+    const block = notesMarkupBlock(notes);
+    if (block) {
+      if (input.confirm) assertPlainNotesOrThrow(notes);
+      return { dryRun: true as const, ...block };
+    }
+  }
+
+  const plans = new Map<number, Awaited<ReturnType<typeof planIssueUpdate>>>();
+  const rows: BulkIssueRow[] = [];
+  for (const row of input.issues) {
+    const merged = { ...(input.common ?? {}), ...row } as UpdateIssueInput;
+    try {
+      const plan = await planIssueUpdate(client, merged);
+      plans.set(row.issueId, plan);
+      rows.push({
+        issueId: row.issueId,
+        subject: plan.subject,
+        changes: plan.changes,
+        ...(plan.changes.length === 0 ? { unchanged: true as const } : {}),
+      });
+    } catch (err) {
+      rows.push({
+        issueId: row.issueId,
+        subject: null,
+        changes: [],
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }
+
+  const willChange = rows.filter((r) => !r.unchanged && !r.error);
+  const summary = {
+    total: rows.length,
+    willChange: willChange.length,
+    unchanged: rows.filter((r) => r.unchanged).length,
+    unreadable: rows.filter((r) => r.error).length,
+  };
+
+  if (!input.confirm) {
+    return withIssuedToken("redmine_bulk_update_issue", input, {
+      dryRun: true as const,
+      rows,
+      summary,
+    });
+  }
+
+  consumeIfConfirm("redmine_bulk_update_issue", input);
+
+  const updated: Array<{ issueId: number; changes: FieldChange[] }> = [];
+  const failed: Array<{ issueId: number; error: string }> = [];
+  const skipped = rows.filter((r) => r.unchanged).map((r) => r.issueId);
+  for (const row of willChange) {
+    const plan = plans.get(row.issueId);
+    if (!plan) continue;
+    try {
+      await client.updateIssue(plan.write);
+      updated.push({ issueId: row.issueId, changes: row.changes });
+    } catch (err) {
+      failed.push({
+        issueId: row.issueId,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }
+  // 미리보기에서 못 읽은 일감은 confirm에서도 건드리지 않는다
+  for (const row of rows) {
+    if (row.error) failed.push({ issueId: row.issueId, error: row.error });
+  }
+
+  return { dryRun: false as const, updated, skipped, failed };
 }

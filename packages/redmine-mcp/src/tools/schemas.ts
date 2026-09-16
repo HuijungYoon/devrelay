@@ -383,6 +383,58 @@ export const bulkUpdateStatusInputSchema = z
   })
   .superRefine(requirePreviewTokenWhenConfirm);
 
+/** 일괄 수정에서 줄 수 있는 필드 — subject·description·parentIssueId는 일부러 뺐다 */
+const bulkIssueFieldShape = {
+  trackerId: namedRef.optional(),
+  statusId: namedRef.optional(),
+  priorityId: namedRef.optional(),
+  fixedVersionId: nullableNamedRef.optional(),
+  categoryId: nullableNamedRef.optional(),
+  customFields: customFieldsField,
+  startDate: ymd.optional(),
+  dueDate: ymd.optional(),
+  doneRatio: doneRatio.optional(),
+  estimatedHours: z.number().positive().optional(),
+  assignedTo: userRef.optional(),
+  watchers: z.array(userRef).optional(),
+  notes: z.string().optional(),
+};
+
+const BULK_ISSUE_FIELDS = Object.keys(bulkIssueFieldShape);
+
+/** 일괄 수정 — 한 번의 미리보기로 여러 일감 (최대 50). 행이 common을 덮어쓴다 */
+export const bulkUpdateIssueInputSchema = z
+  .object({
+    issues: z
+      .array(z.object({ issueId: positiveInt, ...bulkIssueFieldShape }).strict())
+      .min(1)
+      .max(50),
+    common: z.object(bulkIssueFieldShape).strict().optional(),
+    ...confirmFields,
+  })
+  .strict()
+  .refine(
+    (v) => new Set(v.issues.map((i) => i.issueId)).size === v.issues.length,
+    { message: "issueIds must not repeat", path: ["issues"] }
+  )
+  .superRefine((v, ctx) => {
+    v.issues.forEach((row, index) => {
+      const has = BULK_ISSUE_FIELDS.some(
+        (f) =>
+          (row as Record<string, unknown>)[f] !== undefined ||
+          (v.common as Record<string, unknown> | undefined)?.[f] !== undefined
+      );
+      if (!has) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "At least one field to update is required",
+          path: ["issues", index],
+        });
+      }
+    });
+  })
+  .superRefine(requirePreviewTokenWhenConfirm);
+
 /** 첨부 내려받기 — 읽기 도구. destDir은 MCP 호스트의 폴더 */
 export const getAttachmentInputSchema = z
   .object({
@@ -461,11 +513,16 @@ export type RemoveIssueRelationInput = z.infer<
 >;
 export type GetAttachmentInput = z.infer<typeof getAttachmentInputSchema>;
 export type BulkUpdateStatusInput = z.infer<typeof bulkUpdateStatusInputSchema>;
+export type BulkUpdateIssueInput = z.infer<typeof bulkUpdateIssueInputSchema>;
 export type LogTimeInput = z.infer<typeof logTimeInputSchema>;
 export type ListTimeEntriesInput = z.infer<typeof listTimeEntriesInputSchema>;
 
 export function safeParseBulkUpdateStatus(input: unknown) {
   return bulkUpdateStatusInputSchema.safeParse(input ?? {});
+}
+
+export function safeParseBulkUpdateIssue(input: unknown) {
+  return bulkUpdateIssueInputSchema.safeParse(input ?? {});
 }
 
 export function safeParseGetAttachment(input: unknown) {
@@ -549,6 +606,108 @@ export function safeParseRemoveIssueRelation(input: unknown) {
 }
 
 /** JSON Schema objects for MCP ListTools (additionalProperties: false). */
+/** 일괄 수정의 행·common이 공유하는 필드 (ListTools용) */
+const bulkIssueFieldJsonSchema = {
+  trackerId: {
+    description: '유형 — id 또는 이름 (예: 2, "기능추가")',
+    oneOf: [
+      { type: "integer", minimum: 1 },
+      { type: "string", minLength: 1 },
+    ],
+  },
+  statusId: {
+    description: '상태 — id 또는 이름 (예: 2, "진행중")',
+    oneOf: [
+      { type: "integer", minimum: 1 },
+      { type: "string", minLength: 1 },
+    ],
+  },
+  priorityId: {
+    description: '우선순위 — id 또는 이름 (예: 4, "높음")',
+    oneOf: [
+      { type: "integer", minimum: 1 },
+      { type: "string", minLength: 1 },
+    ],
+  },
+  fixedVersionId: {
+    description: '대상 버전 — id·이름, 또는 null로 비우기',
+    oneOf: [
+      { type: "integer", minimum: 1 },
+      { type: "string", minLength: 1 },
+      { type: "null" },
+    ],
+  },
+  categoryId: {
+    description: "범주 — id·이름, 또는 null로 비우기",
+    oneOf: [
+      { type: "integer", minimum: 1 },
+      { type: "string", minLength: 1 },
+      { type: "null" },
+    ],
+  },
+  customFields: {
+    description:
+      '사용자 정의 필드 — [{ id 또는 name, value }]. ""면 비움',
+    type: "array",
+    minItems: 1,
+    items: {
+      type: "object",
+      properties: {
+        id: { type: "integer", minimum: 1 },
+        name: { type: "string", minLength: 1 },
+        value: {
+          oneOf: [
+            { type: "string" },
+            { type: "array", items: { type: "string" } },
+          ],
+        },
+      },
+      required: ["value"],
+      additionalProperties: false,
+    },
+  },
+  startDate: {
+    type: "string",
+    pattern: "^\\d{4}-\\d{2}-\\d{2}$",
+    description: "시작일 YYYY-MM-DD",
+  },
+  dueDate: {
+    type: "string",
+    pattern: "^\\d{4}-\\d{2}-\\d{2}$",
+    description: "완료기한 YYYY-MM-DD",
+  },
+  doneRatio: {
+    type: "integer",
+    minimum: 0,
+    maximum: 100,
+    description: "진척도 0-100",
+  },
+  estimatedHours: { type: "number", exclusiveMinimum: 0 },
+  assignedTo: {
+    description: '담당자: "me", user id, or name',
+    oneOf: [
+      { type: "string", const: "me" },
+      { type: "integer", minimum: 1 },
+      { type: "string", minLength: 1 },
+    ],
+  },
+  watchers: {
+    description: '일감관리자 — replace-all when provided',
+    type: "array",
+    items: {
+      oneOf: [
+        { type: "string", const: "me" },
+        { type: "integer", minimum: 1 },
+        { type: "string", minLength: 1 },
+      ],
+    },
+  },
+  notes: {
+    type: "string",
+    description: "Journal note — plain text only (no Textile/Markdown)",
+  },
+} as const;
+
 export const toolJsonSchemas = {
   redmine_test_connection: {
     type: "object",
@@ -1111,6 +1270,45 @@ export const toolJsonSchemas = {
       },
     },
     required: ["issueIds", "statusId"],
+    additionalProperties: false,
+  },
+  redmine_bulk_update_issue: {
+    type: "object",
+    properties: {
+      issues: {
+        type: "array",
+        minItems: 1,
+        maxItems: 50,
+        description:
+          "일감별 수정 내용 (1–50, 중복 금지). 같은 필드를 common에도 주면 이쪽이 이깁니다",
+        items: {
+          type: "object",
+          properties: {
+            issueId: { type: "integer", minimum: 1 },
+            ...bulkIssueFieldJsonSchema,
+          },
+          required: ["issueId"],
+          additionalProperties: false,
+        },
+      },
+      common: {
+        type: "object",
+        description: "모든 일감에 공통으로 적용할 필드",
+        properties: bulkIssueFieldJsonSchema,
+        additionalProperties: false,
+      },
+      confirm: {
+        type: "boolean",
+        description:
+          "false/omit = per-issue before→after preview (returns previewToken); true = apply (requires previewToken)",
+      },
+      previewToken: {
+        type: "string",
+        minLength: 1,
+        description: "Token from matching dry-run; required when confirm=true",
+      },
+    },
+    required: ["issues"],
     additionalProperties: false,
   },
   redmine_get_attachment: {

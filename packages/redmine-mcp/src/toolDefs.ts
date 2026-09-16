@@ -153,6 +153,13 @@ export const TOOL_DEFS = [
     annotations: writeAnnotations,
   },
   {
+    name: "redmine_bulk_update_issue",
+    description:
+      "Update several issues (1–50) in one preview. issues[] carries per-issue fields, common applies to every row and a row wins on the same field — so one round can set a shared status and a different note per issue. Dry-run returns rows[] with subject and before→after changes (unchanged/error flagged) plus one previewToken; confirm=true applies one by one and reports updated/skipped/failed. notes: plain text only.",
+    inputSchema: toolJsonSchemas.redmine_bulk_update_issue,
+    annotations: writeAnnotations,
+  },
+  {
     name: "redmine_list_issue_relations",
     description:
       "List 연결된 일감 (issue relations) with their relation ids — required before updating or removing a relation.",

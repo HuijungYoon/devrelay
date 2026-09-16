@@ -19,7 +19,8 @@ export type PreviewTool =
   | "redmine_update_issue_relation"
   | "redmine_remove_issue_relation"
   | "redmine_log_time"
-  | "redmine_bulk_update_status";
+  | "redmine_bulk_update_status"
+  | "redmine_bulk_update_issue";
 
 type PreviewEntry = {
   tool: PreviewTool;

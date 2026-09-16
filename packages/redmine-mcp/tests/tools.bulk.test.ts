@@ -1,8 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { RedmineError } from "redmine-devrelay-client";
-import { handleBulkUpdateStatus } from "../src/tools/writes.js";
+import {
+  handleBulkUpdateIssue,
+  handleBulkUpdateStatus,
+} from "../src/tools/writes.js";
 import { clearPreviewStore } from "../src/tools/previewStore.js";
-import { safeParseBulkUpdateStatus } from "../src/tools/schemas.js";
+import {
+  safeParseBulkUpdateIssue,
+  safeParseBulkUpdateStatus,
+} from "../src/tools/schemas.js";
 
 const STATUSES = [
   { id: 2, name: "진행중", isClosed: false },
@@ -139,5 +145,167 @@ describe("redmine_bulk_update_status", () => {
     expect(
       safeParseBulkUpdateStatus({ issueIds: [1], statusId: 5, confirm: true }).success
     ).toBe(false);
+  });
+});
+
+
+describe("redmine_bulk_update_issue", () => {
+  beforeEach(() => clearPreviewStore());
+
+  function issueClient(extra: Record<string, unknown> = {}) {
+    return {
+      listIssueStatuses: vi.fn().mockResolvedValue(STATUSES),
+      getIssue: vi.fn(async (id: number) => {
+        if (id === 404) {
+          throw new RedmineError({
+            code: "REDMINE_ISSUE_NOT_FOUND",
+            message: "Redmine resource not found",
+            httpStatus: 404,
+          });
+        }
+        return {
+          id,
+          subject: `Issue ${id}`,
+          description: "",
+          project: { id: 1, name: "P" },
+          tracker: { id: 1, name: "Feature" },
+          status: { id: 2, name: "진행중" },
+          priority: { id: 2, name: "Normal" },
+          assignedTo: { id: 1, name: "Me" },
+          doneRatio: id === 3 ? 30 : 0,
+          startDate: null,
+          dueDate: null,
+          estimatedHours: null,
+        };
+      }),
+      updateIssue: vi.fn(async (input: { issueId: number }) => {
+        if (input.issueId === 2) throw new Error("workflow forbids this");
+        return { issueId: input.issueId, status: null };
+      }),
+      listProjectPeople: vi.fn(),
+      searchUsers: vi.fn(),
+      getCurrentUser: vi.fn(),
+      ...extra,
+    };
+  }
+
+  it("dry-run merges common into every row and lets a row win, without writing", async () => {
+    const client = issueClient();
+    const result = await handleBulkUpdateIssue(client as never, {
+      issues: [
+        { issueId: 1, notes: "첫 번째 진행" },
+        { issueId: 3, doneRatio: 30, notes: "두 번째 진행" },
+      ],
+      common: { doneRatio: 10 },
+    });
+    expect(client.updateIssue).not.toHaveBeenCalled();
+    expect(result.summary).toEqual({
+      total: 2,
+      willChange: 2,
+      unchanged: 0,
+      unreadable: 0,
+    });
+    // common의 10%가 1번에 적용되고
+    expect(result.rows[0]).toMatchObject({ issueId: 1, subject: "Issue 1" });
+    expect(result.rows[0].changes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ field: "doneRatio", from: 0, to: 10 }),
+        expect.objectContaining({ field: "notes" }),
+      ])
+    );
+    // 3번은 자기 값(30)이 common을 이겨서 진척도는 그대로, 댓글만 남는다
+    expect(result.rows[1].changes).toEqual([
+      expect.objectContaining({ field: "notes" }),
+    ]);
+    expect(result.previewToken).toBeTruthy();
+  });
+
+  it("confirm writes each issue with its own note and keeps going after a failure", async () => {
+    const client = issueClient();
+    const args = {
+      issues: [
+        { issueId: 1, notes: "하나" },
+        { issueId: 2, notes: "둘" },
+      ],
+      common: { statusId: "완료" },
+    };
+    const dry = await handleBulkUpdateIssue(client as never, { ...args });
+    const done = await handleBulkUpdateIssue(client as never, {
+      ...args,
+      confirm: true,
+      previewToken: dry.previewToken,
+    });
+    expect(client.updateIssue).toHaveBeenCalledTimes(2);
+    expect(client.updateIssue).toHaveBeenCalledWith(
+      expect.objectContaining({ issueId: 1, statusId: 5, notes: "하나" })
+    );
+    expect(client.updateIssue).toHaveBeenCalledWith(
+      expect.objectContaining({ issueId: 2, statusId: 5, notes: "둘" })
+    );
+    expect(done.updated).toEqual([
+      expect.objectContaining({ issueId: 1 }),
+    ]);
+    expect(done.failed).toEqual([
+      { issueId: 2, error: "workflow forbids this" },
+    ]);
+  });
+
+  it("flags an unreadable issue in the preview and never writes it", async () => {
+    const client = issueClient();
+    const args = { issues: [{ issueId: 1 }, { issueId: 404 }], common: { doneRatio: 50 } };
+    const dry = await handleBulkUpdateIssue(client as never, { ...args });
+    expect(dry.summary).toMatchObject({ total: 2, willChange: 1, unreadable: 1 });
+    const done = await handleBulkUpdateIssue(client as never, {
+      ...args,
+      confirm: true,
+      previewToken: dry.previewToken,
+    });
+    expect(client.updateIssue).toHaveBeenCalledTimes(1);
+    expect(client.updateIssue).toHaveBeenCalledWith(
+      expect.objectContaining({ issueId: 1 })
+    );
+    expect(done.failed).toEqual([
+      expect.objectContaining({ issueId: 404 }),
+    ]);
+  });
+
+  it("confirm without a matching token is rejected before any write", async () => {
+    const client = issueClient();
+    await expect(
+      handleBulkUpdateIssue(client as never, {
+        issues: [{ issueId: 1, doneRatio: 10 }],
+        confirm: true,
+        previewToken: "nope",
+      })
+    ).rejects.toMatchObject({ code: "REDMINE_VALIDATION_ERROR" });
+    expect(client.updateIssue).not.toHaveBeenCalled();
+  });
+
+  it("blocks markup in a per-issue note", async () => {
+    const client = issueClient();
+    const result = await handleBulkUpdateIssue(client as never, {
+      issues: [{ issueId: 1, notes: "h3. 진행" }],
+    });
+    expect(result).toMatchObject({ dryRun: true, blocked: true });
+    expect(client.getIssue).not.toHaveBeenCalled();
+  });
+
+  it("schema rejects repeats, oversized batches, and rows with nothing to change", () => {
+    expect(
+      safeParseBulkUpdateIssue({
+        issues: [{ issueId: 1, doneRatio: 10 }, { issueId: 1, doneRatio: 20 }],
+      }).success
+    ).toBe(false);
+    expect(
+      safeParseBulkUpdateIssue({
+        issues: Array.from({ length: 51 }, (_, i) => ({ issueId: i + 1, doneRatio: 10 })),
+      }).success
+    ).toBe(false);
+    // 행에도 common에도 바꿀 필드가 없으면 거부
+    expect(safeParseBulkUpdateIssue({ issues: [{ issueId: 1 }] }).success).toBe(false);
+    // common에만 있어도 통과
+    expect(
+      safeParseBulkUpdateIssue({ issues: [{ issueId: 1 }], common: { doneRatio: 10 } }).success
+    ).toBe(true);
   });
 });
