@@ -4,7 +4,7 @@
 
 **Redmine MCP server** for Cursor · Claude Code · Codex.
 
-- **Version:** `0.9.2`
+- **Version:** `0.10.0`
 - **GitHub:** https://github.com/HuijungYoon/devrelay
 - **Client:** [redmine-devrelay-client](https://www.npmjs.com/package/redmine-devrelay-client) (same version)
 
@@ -13,7 +13,7 @@
 STDIO is the default transport. Local IDE plugins use this path.
 
 ```bash
-npx -y redmine-devrelay@0.9.2
+npx -y redmine-devrelay@0.10.0
 ```
 
 | Env var | Description |
@@ -29,7 +29,7 @@ npx -y redmine-devrelay@0.9.2
 For remote / Streamable HTTP deployments. The Codex Git marketplace keeps STDIO `npx` and does **not** switch to a remote URL.
 
 ```bash
-npx -y redmine-devrelay@0.9.2 --http
+npx -y redmine-devrelay@0.10.0 --http
 # or after build
 pnpm --filter redmine-devrelay start:http
 # port: --port 9090 or PORT (default 8080)
@@ -165,6 +165,7 @@ This server has no issue-delete tool by design; deleting an issue in Redmine is 
 
 | Version | Notes |
 | --- | --- |
+| **0.10.0** | `redmine_bulk_update_issue` — 1–50 issues in one preview, `issues[]` per-issue and `common` shared (a row wins on the same field), so a shared status with a different note per issue is one confirm |
 | **0.9.2** | Fix: `redmine_update_status` and `redmine_bulk_update_status` report the real status name after a write — Redmine answers the PUT with 204, so the status id used to appear in the name (`{ id: 2, name: "2" }`) |
 | **0.9.0** | Time entries (`redmine_log_time`, `redmine_list_time_entries`, activities kind), `redmine_get_attachment` (same-host download, inline text), search filters by name + date ranges and `redmine_search_text`, `redmine_bulk_update_status`, journal `details`, `REDMINE_PREVIEW_STORE_DIR` file-backed preview tokens |
 | **0.8.0** | Custom fields on create/update (`customFields: [{ id \| name, value }]`, names resolved per project, `""` clears, arrays for multi-select); `customFields` kind in `redmine_list_metadata` with `customFieldsSource`; Redmine older than 4.2 falls back to `/custom_fields.json`, then to sampling recent issues |
