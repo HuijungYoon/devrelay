@@ -104,7 +104,7 @@ Slash examples (Cursor):
 | `/add-comment` | Comment (dry-run → confirm) |
 | `/add-attachment` | Attach file (dry-run → confirm) |
 | `/update-status` | Status only (dry-run → confirm) |
-| `/bulk-status` | Same status for several issues — one table preview, one confirm |
+| `/bulk-status` | Several issues at once — same status, or per-issue fields — one table preview, one confirm |
 | `/log-time` | Time entries — log hours (dry-run → confirm) / list |
 | `/read-attachment` | Download and read an issue attachment (read-only) |
 | `/weekly-report` | Weekly report draft as tables from my issues, journals and time entries (read-only) |
@@ -161,6 +161,7 @@ Claude Code / Codex / Cursor / Antigravity  (plugins + skills)
 | `redmine_add_attachment` | Attach a local file to an existing issue |
 | `redmine_update_status` | Change `statusId` only |
 | `redmine_bulk_update_status` | Same status for 1–50 issues — dry-run returns a per-issue before→after table, confirm reports updated / skipped / failed |
+| `redmine_bulk_update_issue` | 1–50 issues in one preview — `issues[]` carries per-issue fields, `common` applies to all and a row wins on the same field |
 | `redmine_log_time` | Log hours on an issue or project (`spentOn` defaults to today, `activityId` by name) |
 | `redmine_add_issue_relation` | Link two issues (`relates`, `blocks`, `precedes`, …) |
 | `redmine_update_issue_relation` | Change a relation (remove + re-create) |

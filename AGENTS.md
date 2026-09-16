@@ -85,7 +85,7 @@ Redmine REST API
 | `packages/redmine-mcp/src/toolDefs.ts` | `TOOL_DEFS`(이름·설명·annotations) + `INSTRUCTIONS`(모델에게 주는 사용 규칙) |
 | `packages/redmine-mcp/src/tools/schemas.ts` | zod 입력 스키마 + `safeParse*` + `toolJsonSchemas`(ListTools용 JSON Schema). **둘 다** 갱신해야 함 |
 | `packages/redmine-mcp/src/tools/previewStore.ts` | previewToken 발급·소비, `asPayload` / `withIssuedToken` / `consumeIfConfirm` 공용 헬퍼. 기본 메모리 Map, `REDMINE_PREVIEW_STORE_DIR`이 있으면 토큰마다 파일 (HTTP 모드 다중 프로세스용, 1회용은 unlink로) |
-| `packages/redmine-mcp/src/tools/writes.ts` | 생성·수정·댓글·첨부·상태·일괄 상태(`handleBulkUpdateStatus`: 미리보기 표 한 번, 한 건씩 적용·부분 실패 보고) 핸들러 (담당자·일감관리자 해석 포함) |
+| `packages/redmine-mcp/src/tools/writes.ts` | 생성·수정·댓글·첨부·상태 핸들러 (담당자·일감관리자 해석 포함). 단건 수정의 계획은 `planIssueUpdate`가 만들고 일괄도 같이 쓴다 — `handleBulkUpdateStatus`(같은 상태로), `handleBulkUpdateIssue`(`issues[]` 건별 + `common` 공통, 행이 이김). 둘 다 미리보기 표 한 번, 한 건씩 적용·부분 실패 보고 |
 | `packages/redmine-mcp/src/tools/relations.ts` | 연결된 일감 핸들러 |
 | `packages/redmine-mcp/src/tools/timeEntries.ts` | 작업시간 기록(dry-run에 일감 제목·오늘 날짜)·조회 핸들러 |
 | `packages/redmine-mcp/src/tools/attachments.ts` | `redmine_get_attachment` — 첨부 내려받기 (읽기 도구, 게이트 없음) |
@@ -128,7 +128,7 @@ Redmine REST API
 ```bash
 pnpm install
 pnpm -r run build     # client → mcp 순서로 빌드
-pnpm -r run test      # vitest (client 118 + mcp 141)
+pnpm -r run test      # vitest (client 119 + mcp 149)
 pnpm -r run lint      # tsc --noEmit
 ```
 
